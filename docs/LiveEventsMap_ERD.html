@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>LiveMap ERD</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@700;800&display=swap"
+          rel="stylesheet"/>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #020817;
+        }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+    const {useState} = React;
+
+    const COLORS = {
+        users: "#6366f1", auth: "#8b5cf6", venues: "#0ea5e9",
+        events: "#f59e0b", engagement: "#10b981", loyalty: "#f97316",
+        promotions: "#ec4899", admin: "#64748b",
+    };
+
+    const GROUPS = {
+        "👤 Users & Auth": {
+            color: COLORS.users,
+            tables: {
+                users: {
+                    color: COLORS.users, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "phone", type: "varchar"},
+                        {name: "google_id", type: "varchar"},
+                        {name: "first_name", type: "varchar"},
+                        {name: "last_name", type: "varchar"},
+                        {name: "dob", type: "date"},
+                        {name: "avatar_url", type: "varchar"},
+                        {name: "profile_complete", type: "boolean"},
+                        {name: "location", type: "geometry"},
+                        {name: "created_at", type: "timestamp"},
+                        {name: "updated_at", type: "timestamp"},
+                    ]
+                },
+                roles: {
+                    color: COLORS.auth, fields: [
+                        {name: "id", type: "serial", pk: true},
+                        {name: "name", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                permissions: {
+                    color: COLORS.auth, fields: [
+                        {name: "id", type: "serial", pk: true},
+                        {name: "name", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                role_user: {
+                    color: COLORS.auth, fields: [
+                        {name: "id", type: "serial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "role_id", type: "int", fk: "roles"},
+                    ]
+                },
+                permission_role: {
+                    color: COLORS.auth, fields: [
+                        {name: "id", type: "serial", pk: true},
+                        {name: "role_id", type: "int", fk: "roles"},
+                        {name: "permission_id", type: "int", fk: "permissions"},
+                    ]
+                },
+                user_interests: {
+                    color: COLORS.users, fields: [
+                        {name: "id", type: "serial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "category", type: "varchar"},
+                    ]
+                },
+                device_tokens: {
+                    color: COLORS.users, fields: [
+                        {name: "id", type: "serial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "token", type: "text"},
+                        {name: "platform", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+            },
+        },
+        "🏢 Venues & Events": {
+            color: COLORS.venues,
+            tables: {
+                venues: {
+                    color: COLORS.venues, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "owner_id", type: "bigint", fk: "users"},
+                        {name: "name", type: "varchar"},
+                        {name: "type", type: "varchar"},
+                        {name: "address", type: "varchar"},
+                        {name: "city", type: "varchar"},
+                        {name: "location", type: "geometry"},
+                        {name: "is_active", type: "boolean"},
+                        {name: "is_verified", type: "boolean"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                business_verifications: {
+                    color: COLORS.venues, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "registration_doc_url", type: "varchar"},
+                        {name: "owner_id_doc_url", type: "varchar"},
+                        {name: "status", type: "varchar"},
+                        {name: "reviewed_by", type: "bigint", fk: "users"},
+                        {name: "reviewed_at", type: "timestamp"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                events: {
+                    color: COLORS.events, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "title", type: "varchar"},
+                        {name: "description", type: "text"},
+                        {name: "category", type: "varchar"},
+                        {name: "starts_at", type: "timestamp"},
+                        {name: "ends_at", type: "timestamp"},
+                        {name: "is_free", type: "boolean"},
+                        {name: "image_url", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                pins: {
+                    color: COLORS.venues, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "event_id", type: "bigint", fk: "events"},
+                        {name: "type", type: "varchar"},
+                        {name: "location", type: "geometry"},
+                        {name: "has_promotion", type: "boolean"},
+                        {name: "label", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+            },
+        },
+        "💬 Engagement": {
+            color: COLORS.engagement,
+            tables: {
+                checkins: {
+                    color: COLORS.engagement, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "event_id", type: "bigint", fk: "events"},
+                        {name: "checked_in_at", type: "timestamp"},
+                    ]
+                },
+                saved_events: {
+                    color: COLORS.engagement, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "event_id", type: "bigint", fk: "events"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                user_interactions: {
+                    color: COLORS.engagement, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "event_id", type: "bigint", fk: "events"},
+                        {name: "interaction_type", type: "varchar"},
+                        {name: "duration_seconds", type: "int"},
+                        {name: "interacted_at", type: "timestamp"},
+                    ]
+                },
+                vibe_stories: {
+                    color: COLORS.engagement, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "event_id", type: "bigint", fk: "events"},
+                        {name: "video_url", type: "varchar"},
+                        {name: "expires_at", type: "timestamp"},
+                        {name: "status", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+            },
+        },
+        "🎁 Loyalty & Promos": {
+            color: COLORS.loyalty,
+            tables: {
+                loyalty_accounts: {
+                    color: COLORS.loyalty, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "user_id", type: "bigint", fk: "users"},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "points", type: "int"},
+                    ]
+                },
+                loyalty_transactions: {
+                    color: COLORS.loyalty, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "loyalty_account_id", type: "bigint", fk: "loyalty_accounts"},
+                        {name: "checkin_id", type: "bigint", fk: "checkins"},
+                        {name: "points_change", type: "int"},
+                        {name: "reason", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                promotions: {
+                    color: COLORS.promotions, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "event_id", type: "bigint", fk: "events"},
+                        {name: "type", type: "varchar"},
+                        {name: "title", type: "varchar"},
+                        {name: "description", type: "text"},
+                        {name: "discount_percent", type: "int"},
+                        {name: "radius_meters", type: "int"},
+                        {name: "starts_at", type: "timestamp"},
+                        {name: "ends_at", type: "timestamp"},
+                        {name: "status", type: "varchar"},
+                    ]
+                },
+                transactions: {
+                    color: COLORS.promotions, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "promotion_id", type: "bigint", fk: "promotions"},
+                        {name: "venue_id", type: "bigint", fk: "venues"},
+                        {name: "amount", type: "numeric"},
+                        {name: "currency", type: "varchar"},
+                        {name: "payment_method", type: "varchar"},
+                        {name: "status", type: "varchar"},
+                        {name: "external_ref", type: "varchar"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                voucher_batches: {
+                    color: COLORS.promotions, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "name", type: "varchar"},
+                        {name: "value", type: "numeric"},
+                        {name: "count", type: "int"},
+                        {name: "created_by", type: "bigint", fk: "users"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+                vouchers: {
+                    color: COLORS.promotions, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "batch_id", type: "bigint", fk: "voucher_batches"},
+                        {name: "code", type: "varchar"},
+                        {name: "value", type: "numeric"},
+                        {name: "status", type: "varchar"},
+                        {name: "used_by", type: "bigint", fk: "users"},
+                        {name: "used_at", type: "timestamp"},
+                        {name: "expires_at", type: "timestamp"},
+                    ]
+                },
+            },
+        },
+        "🔧 Admin": {
+            color: COLORS.admin,
+            tables: {
+                activity_logs: {
+                    color: COLORS.admin, fields: [
+                        {name: "id", type: "bigserial", pk: true},
+                        {name: "actor_id", type: "bigint", fk: "users"},
+                        {name: "target_type", type: "varchar"},
+                        {name: "target_id", type: "bigint"},
+                        {name: "action", type: "varchar"},
+                        {name: "meta", type: "jsonb"},
+                        {name: "created_at", type: "timestamp"},
+                    ]
+                },
+            },
+        },
+    };
+
+    const TYPE_COLORS = {
+        bigserial: "#a78bfa", serial: "#a78bfa", varchar: "#34d399", text: "#34d399",
+        bigint: "#60a5fa", int: "#60a5fa", boolean: "#f472b6", date: "#fb923c",
+        timestamp: "#fb923c", geometry: "#facc15", numeric: "#4ade80", jsonb: "#e879f9",
+    };
+
+    function TableCard({name, fields, color, isHighlighted, onClick, dimmed}) {
+        const [expanded, setExpanded] = useState(true);
+        return (
+            <div onClick={onClick} style={{
+                border: `2px solid ${isHighlighted ? color : dimmed ? "#1e293b" : color + "60"}`,
+                borderRadius: 10, overflow: "hidden", cursor: "pointer",
+                opacity: dimmed ? 0.35 : 1, transition: "all 0.2s ease",
+                boxShadow: isHighlighted ? `0 0 20px ${color}55` : "none",
+                background: "#0f172a", minWidth: 220,
+            }}>
+                <div style={{
+                    background: color,
+                    padding: "8px 12px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                }}>
+                    <span style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 700,
+                        color: "#fff",
+                        fontSize: 13
+                    }}>{name}</span>
+                    <button onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded(!expanded);
+                    }}
+                            style={{
+                                background: "none",
+                                border: "none",
+                                color: "#fff",
+                                cursor: "pointer",
+                                fontSize: 16,
+                                lineHeight: 1
+                            }}>
+                        {expanded ? "−" : "+"}
+                    </button>
+                </div>
+                {expanded && (
+                    <div style={{padding: "6px 0"}}>
+                        {fields.map((f) => (
+                            <div key={f.name} style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                padding: "3px 12px",
+                                gap: 12
+                            }}>
+                                <div style={{display: "flex", alignItems: "center", gap: 6}}>
+                                    {f.pk && <span style={{color: "#facc15", fontSize: 10}}>🔑</span>}
+                                    {f.fk && !f.pk && <span style={{color: "#60a5fa", fontSize: 10}}>🔗</span>}
+                                    <span style={{
+                                        fontFamily: "'JetBrains Mono', monospace",
+                                        fontSize: 12,
+                                        color: f.pk ? "#facc15" : f.fk ? "#93c5fd" : "#e2e8f0"
+                                    }}>{f.name}</span>
+                                </div>
+                                <span style={{
+                                    fontFamily: "'JetBrains Mono', monospace", fontSize: 10,
+                                    color: TYPE_COLORS[f.type] || "#94a3b8",
+                                    background: (TYPE_COLORS[f.type] || "#94a3b8") + "20",
+                                    padding: "1px 6px", borderRadius: 4, whiteSpace: "nowrap",
+                                }}>{f.type}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    function App() {
+        const [selected, setSelected] = useState(null);
+        const [activeGroup, setActiveGroup] = useState(null);
+
+        const fkMap = {};
+        for (const group of Object.values(GROUPS)) {
+            for (const [tName, tData] of Object.entries(group.tables)) {
+                for (const f of tData.fields) {
+                    if (f.fk) {
+                        if (!fkMap[tName]) fkMap[tName] = new Set();
+                        fkMap[tName].add(f.fk);
+                    }
+                }
+            }
+        }
+
+        const getRelated = (tableName) => {
+            if (!tableName) return new Set();
+            const related = new Set([tableName]);
+            if (fkMap[tableName]) fkMap[tableName].forEach((t) => related.add(t));
+            for (const [t, refs] of Object.entries(fkMap)) {
+                if (refs.has(tableName)) related.add(t);
+            }
+            return related;
+        };
+
+        const related = getRelated(selected);
+
+        const allTables = {};
+        for (const group of Object.values(GROUPS)) {
+            for (const [name, data] of Object.entries(group.tables)) {
+                allTables[name] = data;
+            }
+        }
+
+        return (
+            <div style={{
+                minHeight: "100vh",
+                background: "#020817",
+                color: "#e2e8f0",
+                fontFamily: "system-ui, sans-serif"
+            }}>
+                <div style={{padding: "28px 32px 16px", borderBottom: "1px solid #1e293b"}}>
+                    <h1 style={{
+                        fontFamily: "'Syne', sans-serif",
+                        fontSize: 28,
+                        fontWeight: 800,
+                        margin: 0,
+                        letterSpacing: -1,
+                        color: "#f8fafc"
+                    }}>
+                        LiveMap <span style={{color: "#6366f1"}}>ERD</span>
+                    </h1>
+                    <p style={{margin: "4px 0 0", color: "#64748b", fontSize: 13}}>
+                        {Object.keys(allTables).length} tables · Click a table to highlight relationships · Click again
+                        to deselect
+                    </p>
+                </div>
+
+                <div style={{
+                    padding: "14px 32px",
+                    display: "flex",
+                    gap: 10,
+                    flexWrap: "wrap",
+                    borderBottom: "1px solid #1e293b"
+                }}>
+                    {Object.entries(GROUPS).map(([gName, gData]) => (
+                        <button key={gName} onClick={() => setActiveGroup(activeGroup === gName ? null : gName)}
+                                style={{
+                                    background: activeGroup === gName ? gData.color : gData.color + "20",
+                                    border: `1.5px solid ${gData.color}`,
+                                    color: activeGroup === gName ? "#fff" : gData.color,
+                                    borderRadius: 20, padding: "5px 14px", cursor: "pointer",
+                                    fontSize: 12, fontWeight: 600, transition: "all 0.15s",
+                                }}>{gName}</button>
+                    ))}
+                    {(selected || activeGroup) && (
+                        <button onClick={() => {
+                            setSelected(null);
+                            setActiveGroup(null);
+                        }} style={{
+                            background: "transparent", border: "1.5px solid #475569", color: "#94a3b8",
+                            borderRadius: 20, padding: "5px 14px", cursor: "pointer", fontSize: 12,
+                        }}>✕ Clear</button>
+                    )}
+                </div>
+
+                <div style={{
+                    padding: "10px 32px",
+                    display: "flex",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    borderBottom: "1px solid #0f172a"
+                }}>
+                    {[["🔑 PK", "#facc15"], ["🔗 FK", "#93c5fd"], ["geometry", "#facc15"], ["timestamp", "#fb923c"], ["varchar", "#34d399"], ["boolean", "#f472b6"]].map(([label, color]) => (
+                        <span key={label}
+                              style={{fontSize: 11, color, fontFamily: "'JetBrains Mono', monospace"}}>{label}</span>
+                    ))}
+                </div>
+
+                <div style={{padding: "24px 32px", display: "flex", flexDirection: "column", gap: 32}}>
+                    {Object.entries(GROUPS)
+                        .filter(([gName]) => !activeGroup || activeGroup === gName)
+                        .map(([groupName, groupData]) => (
+                            <div key={groupName}>
+                                <div style={{display: "flex", alignItems: "center", gap: 10, marginBottom: 14}}>
+                                    <div style={{width: 4, height: 20, background: groupData.color, borderRadius: 2}}/>
+                                    <h2 style={{
+                                        fontFamily: "'Syne', sans-serif",
+                                        fontSize: 16,
+                                        fontWeight: 700,
+                                        margin: 0,
+                                        color: "#f1f5f9"
+                                    }}>{groupName}</h2>
+                                    <span style={{
+                                        color: "#475569",
+                                        fontSize: 12
+                                    }}>{Object.keys(groupData.tables).length} tables</span>
+                                </div>
+                                <div style={{display: "flex", flexWrap: "wrap", gap: 14}}>
+                                    {Object.entries(groupData.tables).map(([tName, tData]) => {
+                                        const isHighlighted = selected === tName || (selected && related.has(tName));
+                                        const dimmed = selected ? !related.has(tName) : false;
+                                        return (
+                                            <TableCard key={tName} name={tName} fields={tData.fields}
+                                                       color={tData.color}
+                                                       isHighlighted={isHighlighted} dimmed={dimmed}
+                                                       onClick={() => setSelected(selected === tName ? null : tName)}/>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                </div>
+
+                {selected && (
+                    <div style={{
+                        position: "fixed", bottom: 20, right: 20, background: "#0f172a",
+                        border: `2px solid ${allTables[selected]?.color || "#6366f1"}`,
+                        borderRadius: 12, padding: "14px 18px", maxWidth: 280,
+                        boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+                    }}>
+                        <div style={{
+                            fontFamily: "'Syne', sans-serif",
+                            fontWeight: 700,
+                            fontSize: 14,
+                            color: "#f8fafc",
+                            marginBottom: 8
+                        }}>
+                            🔍 {selected}
+                        </div>
+                        {fkMap[selected] && (
+                            <div style={{marginBottom: 6}}>
+                                <div style={{fontSize: 11, color: "#64748b", marginBottom: 4}}>References →</div>
+                                {[...fkMap[selected]].map(t => (
+                                    <span key={t} style={{
+                                        display: "inline-block",
+                                        background: "#1e293b",
+                                        color: "#93c5fd",
+                                        borderRadius: 5,
+                                        padding: "2px 8px",
+                                        fontSize: 11,
+                                        marginRight: 4,
+                                        marginBottom: 4,
+                                        fontFamily: "'JetBrains Mono', monospace"
+                                    }}>{t}</span>
+                                ))}
+                            </div>
+                        )}
+                        {Object.entries(fkMap).filter(([t, refs]) => refs.has(selected) && t !== selected).length > 0 && (
+                            <div>
+                                <div style={{fontSize: 11, color: "#64748b", marginBottom: 4}}>Referenced by ←</div>
+                                {Object.entries(fkMap).filter(([t, refs]) => refs.has(selected)).map(([t]) => (
+                                    <span key={t} style={{
+                                        display: "inline-block",
+                                        background: "#1e293b",
+                                        color: "#86efac",
+                                        borderRadius: 5,
+                                        padding: "2px 8px",
+                                        fontSize: 11,
+                                        marginRight: 4,
+                                        marginBottom: 4,
+                                        fontFamily: "'JetBrains Mono', monospace"
+                                    }}>{t}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
