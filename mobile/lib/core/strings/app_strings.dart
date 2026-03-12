@@ -63,30 +63,11 @@ class AppStrings {
   static String get passwordsAreNotIdentical => 'passwordsAreNotIdentical'.tr();
   static String get passwordAgain => 'passwordAgain'.tr();
 
-  ///              nav bar
   static String get home => 'home'.tr();
-  static String get dashboard => 'dashboard'.tr();
 
   static String get menu => 'menu'.tr();
 
-  ///              home screen
-  static String get allServices => 'All Services'.tr();
 
-  static String get services => 'Services'.tr();
-
-
-  static String get driver => 'Driver'.tr();
-
-  static String get selectAService => 'Select A Service'.tr();
-
-
-  static String get homeSubTitle =>
-      'Shine that lasts, cleanliness you trust'.tr();
-
-
-  static String get bundles => 'Bundles'.tr();
-  static String get allBundles => 'All Bundles'.tr();
-  static String get specialOffers => 'Special Offers'.tr();
   static String get month => 'Month'.tr();
 
   static String get noResultFound => 'No Result Found'.tr();
@@ -97,29 +78,18 @@ class AppStrings {
 
   static String get select => 'Select'.tr();
 
-  ///             booking
 
-  static String get continueToPayment => 'Continue To Payment'.tr();
   static String get viewDetails => 'viewDetails'.tr();
-  static String get bookingDetails => 'Booking Details'.tr();
-  static String get booking => 'Booking'.tr();
-  static String get bookImmediately => 'Book Immediately'.tr();
-  static String get bookingDate => 'Booking'.tr();
-  static String get noBookingsFound => 'No Bookings Found'.tr();
-
   static String get contactInfo => 'Contact Info'.tr();
 
   static String get phoneNumber => 'Phone Number'.tr();
 
   static String get review => "Review".tr();
   static String get submit => "Submit".tr();
-  static String get mySubscription => "mySubscription".tr();
 
-  static String get bookingDoneDetails => "Your Booking Details".tr();
   static String get bookingReference => "Booking Reference".tr();
   static String get addresses => "Addresses".tr();
   static String get selectDateAndTime => "Select Date & Time".tr();
-  static String get vehicleType => "Vehicle Type".tr();
   static String get location => "Location".tr();
   static String get noPickedLocation => "noPickedLocation".tr();
   static String get yourLocation => "yourLocation".tr();
@@ -127,11 +97,22 @@ class AppStrings {
   static String get completed => "completed".tr();
   static String get rating => "rating".tr();
   static String get viewAll => "viewAll".tr();
-  static String get youAreOnline => "youAreOnline".tr();
-  static String get youAreOffline => "youAreOffline".tr();
-  static String get readyToTakeNewOrders => "readyToTakeNewOrders".tr();
-  static String get activateStatusToTakeOrders =>
-      "activateStatusToTakeOrders".tr();
-  static String get currentlyServicing => "currentlyServicing".tr();
-  static String get kmAway => "kmAway".tr();
+
+
+
+  static String get requiredField => "This field is required".tr();
+
+  static String get invalidEmail => "Incorrect email".tr();
+
+  static String get invalidPassword =>
+      "Password must be at least 6 characters".tr();
+
+  static String get invalidPassport => "Passport Number is not valid".tr();
+
+  static String get requiredDate => "Date is required".tr();
+
+  static String get invalidDate => "Date is Invalid".tr();
+
+  static String get invalidPhoneNumber =>
+      "Phone Number must be 7 to 11 digits".tr();
 }
