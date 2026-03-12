@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/dependency_injection/injection.dart' as di;
 import 'core/app_router/app_router.dart';
 import 'core/helper/app_bloc_observer.dart';
+import 'core/theme/theme.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
       locale: context.locale,
       debugShowCheckedModeBanner: false,
       routerConfig: AppRouter.router,
+      theme: AppTheme.theme,
     );
   }
 }
