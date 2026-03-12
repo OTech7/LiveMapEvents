@@ -1,38 +1,44 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
-// import 'package:network_package/error_handling/exceptions.dart';
-//
-// import '../../feature/auth/data/datasources/local_data_source/auth_local_data_source.dart';
-import '../app_router/app_router.dart';
+import 'package:mobile/core/network/token_provider.dart';
+
 import '../error_handling/exceptions.dart';
-import 'api_endpoints.dart';
 
 class AppInterceptor extends Interceptor {
+  final AuthTokenProvider authInterface;
+
   final Dio dio;
   Dio refreshDio;
-  // final AuthLocalDataSource authLocalDataSource;
+  String loginEndpoint;
+  String BASE_URL;
+  GlobalKey<NavigatorState> navigatorKey;
 
   AppInterceptor({
     required this.dio,
-    // required this.authLocalDataSource,
+    required this.authInterface,
+    required this.loginEndpoint,
+    required this.BASE_URL,
+    required this.navigatorKey,
     Dio? refreshDio,
   }) : refreshDio = refreshDio ?? Dio();
 
   /// ---------------- REQUEST ----------------
   @override
   void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
+      RequestOptions options,
+      RequestInterceptorHandler handler,
+      ) async {
     if (options.extra['requiresToken'] == true) {
-      // final auth = await authLocalDataSource.getUserFromLocal();
-      // if (auth != null) {
-      //   options.headers['Authorization'] = 'Bearer ${auth.token}';
-      // }
+      final token = await authInterface.getToken();
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     options.extra.remove('requiresToken');
-
 
     logger.d("➡️ ${options.method} ${options.uri}");
     handler.next(options);
@@ -50,7 +56,7 @@ class AppInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final status = err.response?.statusCode;
     err.logError();
-    if (status == 401 && !err.requestOptions.path.contains('EndPoints.login')) {
+    if (status == 401 && !err.requestOptions.path.contains(loginEndpoint)) {
       _forceLogout();
       return handler.next(err);
     }
@@ -61,7 +67,7 @@ class AppInterceptor extends Interceptor {
 
   /// ---------------- ERROR MAPPING ----------------
   void _forceLogout() async {
-    // await authLocalDataSource.deleteUserFromLocal();
+    await authInterface.deleteUser();
 
     final context = navigatorKey.currentContext;
     context?.go("/login");
@@ -72,7 +78,7 @@ class AppInterceptor extends Interceptor {
 
     switch (status) {
       case 401:
-        if (err.requestOptions.path.contains('EndPoints.login')) {
+        if (err.requestOptions.path.contains(loginEndpoint)) {
           return WrongDataException(message: err.response?.data?['message']);
         }
         return UnAuthorizedException();
@@ -99,41 +105,54 @@ class AppInterceptor extends Interceptor {
 
   /// ---------------- HELPER METHODS ----------------
 
-  Future<Response> get(String url,
-      {Map<String, dynamic>? query, bool withToken = false}) async {
+  Future<Response> get(
+      String url, {
+        Map<String, dynamic>? query,
+        bool withToken = false,
+      }) async {
     final headers = await getHeaders();
-    final response = await dio.get(EndPoints.BASE_URL + url,
-        queryParameters: query,
-        options:
-            Options(headers: headers, extra: {'requiresToken': withToken}));
+    final response = await dio.get(
+      BASE_URL + url,
+      queryParameters: query,
+      options: Options(headers: headers, extra: {'requiresToken': withToken}),
+    );
     return response;
   }
 
-  Future<Response> post(String url,
-      {Map<String, dynamic>? body, bool withToken = false}) async {
+  Future<Response> post(
+      String url, {
+        Map<String, dynamic>? body,
+        bool withToken = false,
+      }) async {
     final headers = await getHeaders();
-    final response = await dio.post(EndPoints.BASE_URL + url,
-        data: body != null ? jsonEncode(body) : null,
-        options:
-            Options(headers: headers, extra: {'requiresToken': withToken}));
+    final response = await dio.post(
+      BASE_URL + url,
+      data: body != null ? jsonEncode(body) : null,
+      options: Options(headers: headers, extra: {'requiresToken': withToken}),
+    );
     return response;
   }
 
-  Future<Response> put(String url,
-      {Map<String, dynamic>? body, bool withToken = false}) async {
+  Future<Response> put(
+      String url, {
+        Map<String, dynamic>? body,
+        bool withToken = false,
+      }) async {
     final headers = await getHeaders();
-    final response = await dio.put(EndPoints.BASE_URL + url,
-        data: body != null ? jsonEncode(body) : null,
-        options:
-            Options(headers: headers, extra: {'requiresToken': withToken}));
+    final response = await dio.put(
+      BASE_URL + url,
+      data: body != null ? jsonEncode(body) : null,
+      options: Options(headers: headers, extra: {'requiresToken': withToken}),
+    );
     return response;
   }
 
   Future<Response> delete(String url, {bool withToken = false}) async {
     final headers = await getHeaders();
-    final response = await dio.delete(EndPoints.BASE_URL + url,
-        options:
-            Options(headers: headers, extra: {'requiresToken': withToken}));
+    final response = await dio.delete(
+      BASE_URL + url,
+      options: Options(headers: headers, extra: {'requiresToken': withToken}),
+    );
     return response;
   }
 }
@@ -182,8 +201,8 @@ extension ResponseLogger on Response<dynamic> {
     final level = statusCode != null && statusCode! < 400
         ? logger.i
         : statusCode != null && statusCode! < 500
-            ? logger.w
-            : logger.e;
+        ? logger.w
+        : logger.e;
 
     level(
       _formatLog(

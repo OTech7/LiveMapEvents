@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:dartz/dartz.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/network/token_provider.dart';
 import '../model/auth_model.dart';
 
 abstract class AuthLocalDataSource {
@@ -16,7 +16,7 @@ abstract class AuthLocalDataSource {
 
 const String kUserKey = 'AUTH_USER';
 
-class AuthLocalDataSourceImpl implements AuthLocalDataSource {
+class AuthLocalDataSourceImpl implements AuthLocalDataSource , AuthTokenProvider{
   final SharedPreferences sharedPreferences;
 
   AuthLocalDataSourceImpl({required this.sharedPreferences});
@@ -40,6 +40,22 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     if (jsonString != null) {
       final jsonMap = jsonDecode(jsonString);
       return AuthModel.fromJson(jsonMap);
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> deleteUser()async {
+    await sharedPreferences.remove(kUserKey);
+  }
+
+  @override
+  Future<String?> getToken() async {
+    final jsonString = sharedPreferences.getString(kUserKey);
+    if (jsonString != null) {
+      final jsonMap = jsonDecode(jsonString);
+      return AuthModel.fromJson(jsonMap).token;
     } else {
       return null;
     }
