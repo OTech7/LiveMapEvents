@@ -14,6 +14,8 @@ return new class extends Migration
             $table->foreignId('venue_id')->constrained()->cascadeOnDelete();
             $table->foreignId('event_id')->nullable()->constrained()->nullOnDelete();
             $table->timestampTz('checked_in_at')->useCurrent();
+            $table->index(['venue_id','checked_in_at']);
+            $table->index(['event_id','checked_in_at']);
             $table->timestamps();
         });
     }

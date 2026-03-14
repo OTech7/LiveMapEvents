@@ -15,14 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('phone')->unique()->nullable();
             $table->string('google_id')->unique()->nullable();
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->date('dob');
+            $table->string('first_name')->nullable();
+            $table->string('last_name')->nullable();
+            $table->date('dob')->nullable();
+            $table->enum('gender', ['male' , 'female'])->nullable();
             $table->string('avatar_url')->nullable();
             $table->boolean('profile_complete')->default(false);
-            $table->string('user_type')->default('attendee');
-            $table->decimal('location_lat', 10, 7)->nullable();
-            $table->decimal('location_lng', 10, 7)->nullable();
+            $table->enum('user_type', ['attendee','business','admin'])->default('attendee');
+            $table->geometry('location','POINT',4326)->nullable();
+            $table->spatialIndex('location');
             $table->timestamps();
         });
 

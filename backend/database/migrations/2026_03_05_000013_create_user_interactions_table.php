@@ -17,6 +17,7 @@ return new class extends Migration
             $table->timestampTz('interacted_at')->useCurrent();
             $table->timestamps();
             $table->index(['event_id', 'interaction_type', 'interacted_at']);
+            $table->index('user_id');
         });
     }
 

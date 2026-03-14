@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('source')->nullable();
             $table->timestamps();
             $table->unique(['user_id', 'event_id']);
+            $table->index('user_id');
         });
     }
 
