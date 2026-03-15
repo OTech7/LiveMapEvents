@@ -16,7 +16,7 @@ class SetLocale
     {
         $locale = $request->header('Accept-Language', 'en');
 
-        if (! in_array($locale, ['en','ar'])) {
+        if (! in_array($locale, ['en','ar','de'])) {
             $locale = 'en';
         }
 
