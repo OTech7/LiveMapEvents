@@ -15,8 +15,8 @@ return new class extends Migration
             $table->string('type');
             $table->string('address')->nullable();
             $table->string('city')->nullable();
-            $table->decimal('location_lat', 10, 7)->nullable();
-            $table->decimal('location_lng', 10, 7)->nullable();
+            $table->geometry('location','POINT',4326)->nullable();
+            $table->spatialIndex('location');
             $table->boolean('is_active')->default(true);
             $table->boolean('is_verified')->default(false);
             $table->timestamps();

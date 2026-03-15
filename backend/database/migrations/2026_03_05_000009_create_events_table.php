@@ -20,6 +20,9 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->timestamps();
             $table->index(['venue_id', 'starts_at']);
+            $table->index('category');
+            $table->index('starts_at');
+            $table->index('created_at');
         });
     }
 
