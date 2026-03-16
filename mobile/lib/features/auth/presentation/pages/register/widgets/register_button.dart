@@ -7,12 +7,15 @@ import '../../../../../../core/strings/app_strings.dart';
 import '../../../../domain/payload/register_payload.dart';
 import '../../../bloc/auth_bloc.dart';
 
-Widget buildRegisterButton(
-    {required TextEditingController firstNameController,
-    required TextEditingController lastNameController,
-    required TextEditingController emailController,
-    required GlobalKey<FormState> formKey,
-    required TextEditingController passwordController}) {
+Widget buildRegisterButton({
+  required TextEditingController firstNameController,
+  required TextEditingController lastNameController,
+  required TextEditingController emailController,
+  required TextEditingController phoneController,
+  required TextEditingController codeController,
+  required GlobalKey<FormState> formKey,
+  required TextEditingController passwordController,
+}) {
   return BlocConsumer<AuthBloc, AuthState>(listener: (context, state) {
     if (state is AuthenticatedState) {
       context.go("/nav_screen");
@@ -35,12 +38,15 @@ Widget buildRegisterButton(
     return ElevatedButton(
       onPressed: () {
         if (formKey.currentState!.validate()) {
-          context.read<AuthBloc>().add(RegisterEvent(RegisterPayload(
-                firstName: firstNameController.text,
-                lastName: lastNameController.text,
-                email: emailController.text,
-                password: passwordController.text,
-              )));
+          context.push('/verification_screen');
+          // context.read<AuthBloc>().add(RegisterEvent(RegisterPayload(
+          //       firstName: firstNameController.text,
+          //       lastName: lastNameController.text,
+          //       email: emailController.text,
+          //       phoneNumber: phoneController.text,
+          //       formatCode: codeController.text,
+          //       password: passwordController.text,
+          //     )));
         }
       },
       style: ElevatedButton.styleFrom(

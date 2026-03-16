@@ -7,8 +7,10 @@ class AuthHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double headerHeight =
+        (MediaQuery.of(context).size.height * 0.15).clamp(100.0, 180.0);
     return Container(
-      height: 150,
+      height: headerHeight,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,

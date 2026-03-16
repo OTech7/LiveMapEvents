@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/helper/validator.dart';
@@ -20,12 +21,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
-  // final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  // final TextEditingController _countryCodeController = TextEditingController();
+  final TextEditingController _countryCodeController = TextEditingController(
+    text: "+963",
+  );
   final bool _obscurePassword = true;
   final bool _obscureConfirmPassword = true;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -35,59 +38,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    // _phoneController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    // _countryCodeController.dispose();
+    _countryCodeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final double hPad = size.width * 0.06;
+    final double vPad = size.width * 0.1;
+    final double vSpaceMd = size.height * 0.02;
+    final double vSpaceSm = size.height * 0.012;
+    final double vSpaceLg = size.height * 0.025;
+
     return Scaffold(
       backgroundColor: AppColors.kBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
             child: Form(
               key: _formKey,
               autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 15),
-                  const LoginHeaderWidget(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: vSpaceLg),
                   Text(
                     AppStrings.createAccount,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge!
-                        .copyWith(fontSize: 28, color: AppColors.kPrimaryColor),
+                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      fontSize: 28,
+                      color: AppColors.kPrimaryColor,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: vSpaceSm),
                   Text(
                     AppStrings.signupToStart,
                     style: Theme.of(context).textTheme.titleSmall,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: vSpaceLg),
                   CustomTextFieldWidget(
                     validator: AppValidator.regularFieldValidator,
                     controller: _firstNameController,
                     hintText: AppStrings.firstName,
                     icon: Icons.person_outline,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: vSpaceSm),
                   CustomTextFieldWidget(
                     validator: AppValidator.regularFieldValidator,
                     controller: _lastNameController,
                     hintText: AppStrings.lastName,
                     icon: Icons.person_outline,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: vSpaceSm),
                   CustomTextFieldWidget(
                     validator: AppValidator.emailFieldValidator,
                     controller: _emailController,
@@ -95,14 +104,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: vSpaceSm),
+                  CustomTextFieldWidget(
+                    controller: _phoneController,
+                    icon: Icons.phone,
+                    // prefixText: '963',
+                    formatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(9),
+                    ],
+                    hintText: AppStrings.phoneNumber,
+                    keyboardType: TextInputType.phone,
+                    validator: AppValidator.phoneNumberValidator,
+                  ),
+                  SizedBox(height: vSpaceSm),
                   PasswordInputField(
                     controller: _passwordController,
                     hintText: AppStrings.password,
                     isObscured: _obscurePassword,
                     validator: AppValidator.passwordFieldValidator,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: vSpaceSm),
                   PasswordInputField(
                     controller: _confirmPasswordController,
                     hintText: AppStrings.confirmPassword,
@@ -117,16 +139,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return AppStrings.passwordsNotMatched;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: vSpaceLg),
                   buildRegisterButton(
-                      firstNameController: _firstNameController,
-                      lastNameController: _lastNameController,
-                      emailController: _emailController,
-                      formKey: _formKey,
-                      passwordController: _passwordController),
-                  const SizedBox(height: 10),
+                    firstNameController: _firstNameController,
+                    lastNameController: _lastNameController,
+                    emailController: _emailController,
+                    phoneController: _phoneController,
+                    codeController: _countryCodeController,
+                    formKey: _formKey,
+                    passwordController: _passwordController,
+                  ),
+                  SizedBox(height: vSpaceSm),
                   buildLoginLink(context),
-                  const SizedBox(height: 20),
+                  SizedBox(height: vSpaceLg),
                 ],
               ),
             ),

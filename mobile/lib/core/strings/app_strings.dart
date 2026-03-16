@@ -115,4 +115,31 @@ class AppStrings {
 
   static String get invalidPhoneNumber =>
       "Phone Number must be 7 to 11 digits".tr();
+
+  /// NEW STRINGS
+  static String get phonePrompt =>
+      "Enter your phone number to continue exploring local events on the map.".tr();
+  static String get enterMobileNumber => "Enter mobile number".tr();
+  static String get continueText => "Continue".tr();
+  static String get or => "OR".tr();
+  static String get signInWithGoogle => "Sign in with Google".tr();
+  static String get newToEventMap => "New to EventMap? ".tr();
+  static String get createAnAccountText => "Create an account".tr();
+
+  /// ONBOARDING
+  static String get eventMap => "EventMap".tr();
+  static String get mapImagePlaceholder => "Map Image Placeholder".tr();
+  static String get discoverLocalEvents => "Discover Local Events Around You".tr();
+  static String get discoverEventsDesc =>
+      "Find music, tech, and art events happening in Damascus right now.".tr();
+
+  /// VERIFICATION
+  static String get enterFullCode => "Please enter the full 6-digit code".tr();
+  static String get step2of3 => "Step 2 of 3".tr();
+  static String get phoneVerification => "Phone Verification".tr();
+  static String get enterOtpSent => "Enter the 6-digit code sent to your phone".tr();
+  static String get didntReceiveCode => "Didn't receive the code?".tr();
+  static String get codeSentSuccess => "Code resent successfully".tr();
+  static String get resend => "Resend".tr();
+  static String get verifyAndContinue => "Verify and Continue".tr();
 }

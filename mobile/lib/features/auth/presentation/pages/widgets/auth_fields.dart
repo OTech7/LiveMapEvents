@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../../../core/constants/colors.dart';
 
@@ -19,17 +20,18 @@ class PasswordInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: StatefulBuilder(builder: (context, setState) {
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: StatefulBuilder(
+        builder: (context, setState) {
           return TextFormField(
             validator: validator,
             controller: controller,
@@ -37,15 +39,16 @@ class PasswordInputField extends StatelessWidget {
             decoration: InputDecoration(
               fillColor: Colors.white,
               suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isObscured = !isObscured;
-                    });
-                  },
-                  icon: Icon(
-                    !isObscured ? Icons.visibility : Icons.visibility_off,
-                    color: AppColors.kLightGreyColor,
-                  )),
+                onPressed: () {
+                  setState(() {
+                    isObscured = !isObscured;
+                  });
+                },
+                icon: Icon(
+                  !isObscured ? Icons.visibility : Icons.visibility_off,
+                  color: AppColors.kLightGreyColor,
+                ),
+              ),
               prefixIcon: const Icon(
                 Icons.password_outlined,
                 color: AppColors.kLightGreyColor,
@@ -58,24 +61,31 @@ class PasswordInputField extends StatelessWidget {
               ),
             ),
           );
-        }));
+        },
+      ),
+    );
   }
 }
 
 class CustomTextFieldWidget extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
+  final String? prefixText;
   final IconData icon;
   final TextInputType? keyboardType;
   FormFieldValidator<String>? validator;
+  List<TextInputFormatter>? formatters;
 
-  CustomTextFieldWidget(
-      {super.key,
-      required this.controller,
-      required this.hintText,
-      this.keyboardType,
-      this.validator,
-      required this.icon});
+  CustomTextFieldWidget({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    this.prefixText,
+    this.keyboardType,
+    this.validator,
+    this.formatters,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -91,10 +101,12 @@ class CustomTextFieldWidget extends StatelessWidget {
         ],
       ),
       child: TextFormField(
+        inputFormatters: formatters,
         validator: validator,
         controller: controller,
         keyboardType: keyboardType,
         decoration: InputDecoration(
+          prefixText: prefixText,
           fillColor: Colors.white,
           hintText: hintText,
           border: InputBorder.none,
@@ -102,10 +114,7 @@ class CustomTextFieldWidget extends StatelessWidget {
             horizontal: 15,
             vertical: 15,
           ),
-          prefixIcon: Icon(
-            icon,
-            color: AppColors.kLightGreyColor,
-          ),
+          prefixIcon: Icon(icon, color: AppColors.kLightGreyColor),
         ),
       ),
     );

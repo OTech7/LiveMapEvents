@@ -5,6 +5,7 @@ import '../../../../core/error_handling/request_handler.dart';
 import '../../domain/entity/auth_entity.dart';
 import '../../domain/payload/login_payload.dart';
 import '../../domain/payload/register_payload.dart';
+import '../../domain/payload/verify_payload.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../data_source/auth_local_data_source.dart';
 import '../data_source/auth_remote_data_source.dart';
@@ -32,6 +33,15 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, AuthEntity>> register(RegisterPayload payload) async {
     return handleRequest(() async {
       final response = await remoteDataSource.register(payload);
+      await localDataSource.saveAuthToLocal(response);
+      return authMapper.toEntity(response);
+    });
+  }
+
+  @override
+  Future<Either<Failure, AuthEntity>> verify(VerifyPayload payload) async {
+    return handleRequest(() async {
+      final response = await remoteDataSource.verify(payload);
       await localDataSource.saveAuthToLocal(response);
       return authMapper.toEntity(response);
     });

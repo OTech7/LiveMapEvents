@@ -1,29 +1,26 @@
 class RegisterPayload {
-  // final String countryCode;
-  // final String phoneNumber;
+  final String formatCode;
+  final String phoneNumber;
   final String email;
   final String password;
   final String firstName;
   final String lastName;
 
-  // final String address;
-
   RegisterPayload({
-    // required this.countryCode,
-    // required this.phoneNumber,
+    required this.formatCode,
+    required this.phoneNumber,
     required this.email,
     required this.password,
     required this.firstName,
     required this.lastName,
-    // required this.address,
   });
 
   Map<String, dynamic> toJson() => {
-        // "countryCode": countryCode,
-        // "phoneNumber": phoneNumber,
+        "format_code": formatCode,
+        "phone_number": phoneNumber,
         "email": email,
         "password": password,
-        "firstname": firstName,
-        "lastname": lastName,
+        "first_name": firstName,
+        "last_name": lastName,
       };
 }

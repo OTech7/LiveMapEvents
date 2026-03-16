@@ -18,3 +18,10 @@ final class LoginEvent extends AuthEvent {
 class LogoutEvent extends AuthEvent {}
 
 final class CheckTokenEvent extends AuthEvent {}
+
+class VerifyEvent extends AuthEvent {
+  final String code;
+  VerifyEvent(this.code);
+}
+
+class SignInWithGoogleEvent extends AuthEvent {}
