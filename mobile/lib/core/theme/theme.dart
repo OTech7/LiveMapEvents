@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
+import '../constants/fonts.dart';
 import '../constants/text_styles.dart';
 
 class AppTheme {
@@ -42,7 +43,7 @@ class AppTheme {
     primaryColor: AppColors.kPrimaryColor,
     useMaterial3: true,
     scaffoldBackgroundColor: AppColors.kBackgroundColor,
-    // fontFamily: AppFonts.kCairoNormalFont,
+    fontFamily: AppFonts.cairo,
     buttonTheme: ButtonThemeData(
       textTheme: ButtonTextTheme.primary,
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
