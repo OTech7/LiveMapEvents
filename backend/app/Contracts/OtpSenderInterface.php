@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Contracts\OTP;
+namespace App\Contracts;
 
 interface OtpSenderInterface
 {

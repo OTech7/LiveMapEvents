@@ -6,5 +6,11 @@ use Exception;
 
 class InvalidOtpException extends Exception
 {
-    protected $message = 'messages.invalid_otp';
+   public function __construct()
+    {
+        parent::__construct(
+            'messages.invalid_otp',
+            401
+        );
+    }
 }

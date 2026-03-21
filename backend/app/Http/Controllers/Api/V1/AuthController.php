@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Enums\OTP\OtpVerificationStatus;
+use App\Enums\OtpVerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RequestOtpRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
@@ -15,27 +15,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    public function __construct(
-        protected OTPService $otpService,
-        protected AuthService $authService
-    ) {}
+    public function __construct(protected OTPService $otpService,protected AuthService $authService) {}
 
     public function requestOtp(RequestOtpRequest $request)
     {
         $this->otpService->send($request->string('phone')->toString());
 
-        return ApiResponse::success(
-            message: 'messages.otp_sent',
-            status: Response::HTTP_OK
-        );
+        return ApiResponse::success(message: 'messages.otp_sent',status: Response::HTTP_OK);
     }
 
     public function verifyOtp(VerifyOtpRequest $request)
     {
-        $result = $this->otpService->verify(
-            $request->string('phone')->toString(),
-            $request->string('otp')->toString()
-        );
+        $result = $this->otpService->verify($request->string('phone')->toString(),$request->string('otp')->toString());
 
          if ($result->status === OtpVerificationStatus::VERIFIED) {
             $userData = $this->authService->loginWithPhone(
@@ -84,9 +75,7 @@ class AuthController extends Controller
     
     public function googleLogin(GoogleLoginRequest $request)
     {
-        $result = $this->authService->loginWithGoogle(
-            $request->id_token
-        );
+        $result = $this->authService->loginWithGoogle($request->id_token);
 
         return ApiResponse::success('', data: [
             'token' => $result['token'],
@@ -106,4 +95,4 @@ class AuthController extends Controller
 
         return ApiResponse::success('messages.logout_success');
     }
-}
+}   

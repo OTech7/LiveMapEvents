@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Contracts\OTP\OtpSenderInterface;
-use App\Services\OTP\Senders\UltraMsgOtpSender;
+use App\Contracts\OtpSenderInterface;
+use App\Integrations\UltraMsgOtpSender;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 

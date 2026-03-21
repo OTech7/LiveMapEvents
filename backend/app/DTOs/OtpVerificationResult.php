@@ -1,8 +1,8 @@
 <?php
 
-namespace App\DTOs\OTP;
+namespace App\DTOs;
 
-use App\Enums\OTP\OtpVerificationStatus;
+use App\Enums\OtpVerificationStatus;
 
 class OtpVerificationResult
 {

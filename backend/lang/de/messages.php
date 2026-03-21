@@ -13,5 +13,6 @@ return [
     'otp_verified' => 'Der Bestätigungscode wurde erfolgreich verifiziert.',
     'otp_max_attempts_reached' => 'Die maximale Anzahl an Verifizierungsversuchen wurde erreicht.',
     'your_otp_code' => 'Ihr Bestätigungscode lautet: :code',
-
+    'profile_already_completed' => 'Profil wurde bereits vervollständigt.',
+    'profile_completed_successfully' => 'Profil erfolgreich abgeschlossen',
 ];

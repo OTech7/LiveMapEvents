@@ -38,6 +38,8 @@ class AuthService
                 'last_name'=>$googleUser['family_name'] ?? '',
                 'avatar_url'=>$googleUser['picture'] ?? null,
                 'dob' => $googleUser['dob'] ?? '7/5/2003',
+                'profile_complete' => false
+
             ]
         );
 
@@ -49,4 +51,5 @@ class AuthService
             'user'=>$user
         ];
     }
+
 }
