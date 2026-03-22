@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -30,8 +32,7 @@ class User extends Authenticatable
         'avatar_url',
         'profile_complete',
         'user_type',
-        'location_lat',
-        'location_lng',
+        'location'
     ];
 
     /**
@@ -52,6 +53,7 @@ class User extends Authenticatable
         return [
             'dob' => 'date',
             'profile_complete' => 'boolean',
+            'location' => Point::class,
         ];
     }
 }

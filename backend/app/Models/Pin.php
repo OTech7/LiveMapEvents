@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,14 +14,14 @@ class Pin extends Model
         'venue_id',
         'event_id',
         'type',
-        'location_lat',
-        'location_lng',
+        'location',
         'has_promotion',
         'label',
     ];
 
     protected $casts = [
         'has_promotion' => 'boolean',
+        'location' => Point::class,
     ];
 
     public function venue()

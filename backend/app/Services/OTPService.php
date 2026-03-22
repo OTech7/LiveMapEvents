@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\DTOs\OTP\OtpVerificationResult;
-use App\Enums\OTP\OtpVerificationStatus;
+use App\DTOs\OtpVerificationResult;
+use App\Enums\OtpVerificationStatus;
 use App\Jobs\SendOtpJob;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;

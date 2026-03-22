@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ProfileController;
 use Illuminate\Support\Facades\Log;
 
 Route::prefix('v1')->middleware('lang')->group(function () {
@@ -19,6 +20,7 @@ Route::prefix('v1')->middleware('lang')->group(function () {
         });
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('/me',[AuthController::class,'me']);
+            Route::post('/complete-profile', [ProfileController::class, 'completeProfile']);
             Route::post('/logout',[AuthController::class,'logout']);
         });
 

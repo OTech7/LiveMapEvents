@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums\OTP;
+namespace App\Enums;
 
 enum OtpVerificationStatus: string
 {

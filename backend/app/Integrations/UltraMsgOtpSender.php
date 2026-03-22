@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\OTP\Senders;
+namespace App\Integrations;
 
-use App\Contracts\OTP\OtpSenderInterface;
+use App\Contracts\OtpSenderInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;

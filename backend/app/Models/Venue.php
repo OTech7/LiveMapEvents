@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,10 +16,13 @@ class Venue extends Model
         'type',
         'address',
         'city',
-        'location_lat',
-        'location_lng',
+        'location',
         'is_active',
         'is_verified',
+    ];
+
+    protected $casts = [
+        'location' => Point::class,
     ];
 
     public function owner()
