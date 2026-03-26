@@ -8,6 +8,8 @@
     "require": {
         "php": "^8.2",
         "clickbar/laravel-magellan": "^2.0",
+        "darkaonline/l5-swagger": "9.0",
+        "doctrine/annotations": "^2.0",
         "google/apiclient": "^2.19",
         "laravel-lang/lang": "^15.28",
         "laravel/framework": "^12.0",

@@ -86,7 +86,7 @@ class AuthController extends Controller
 
     public function me()
     {
-        return auth()->user();
+        return ApiResponse::success(data:auth()->user());
     }
 
     public function logout()
