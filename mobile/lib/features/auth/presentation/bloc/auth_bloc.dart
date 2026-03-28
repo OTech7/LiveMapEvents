@@ -5,16 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error_handling/failure_to_message.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entity/auth_entity.dart';
 import '../../domain/payload/login_payload.dart';
 import '../../domain/payload/register_payload.dart';
+import '../../domain/payload/verify_payload.dart';
 import '../../domain/use_case/checkTokenUseCase.dart';
 import '../../domain/use_case/login_usecase.dart';
 import '../../domain/use_case/logout_usecase.dart';
 import '../../domain/use_case/register_usecase.dart';
 import '../../domain/use_case/verify_usecase.dart';
-import '../../domain/payload/verify_payload.dart';
 
 part 'auth_event.dart';
 part 'auth_state.dart';
@@ -25,7 +24,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   LogoutUseCase logoutUseCase;
   CheckTokenUseCase checkTokenUseCase;
   VerifyUseCase verifyUseCase;
-
   AuthBloc({
     required this.loginUseCase,
     required this.registerUseCase,
@@ -128,5 +126,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthenticationErrorState(message: e.toString()));
       }
     });
+
   }
 }

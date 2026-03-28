@@ -25,3 +25,4 @@ class VerifyEvent extends AuthEvent {
 }
 
 class SignInWithGoogleEvent extends AuthEvent {}
+

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../assets/app_fonts.dart';
 import 'colors.dart';
-import 'fonts.dart';
 
 class TextStyles {
   // --- Title Styles (Bold weight) ---
@@ -68,5 +68,20 @@ class TextStyles {
     fontFamily: AppFonts.cairo,
     fontWeight: FontWeight.w700,
     color: Colors.white,
+  );
+
+  static const TextStyle labelMedium = TextStyle(
+    fontSize: 14,
+    fontFamily: AppFonts.cairo,
+    fontWeight: FontWeight.w700,
+    color: AppColors.kTextPrimaryColor,
+  );
+
+  static const TextStyle labelSmall = TextStyle(
+    fontSize: 12,
+    fontFamily: AppFonts.cairo,
+    fontWeight: FontWeight.w700,
+    color: AppColors.kPrimaryColor,
+    letterSpacing: 1.2,
   );
 }
