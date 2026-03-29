@@ -41,3 +41,7 @@ backend/Thumbs.db
 
 .idea/
 .vscode/
+
+# Docker
+.env.docker
+*.tar.gz
