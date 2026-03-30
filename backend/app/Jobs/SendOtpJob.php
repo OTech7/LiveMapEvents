@@ -23,7 +23,6 @@ class SendOtpJob implements ShouldQueue
     {
         Log::info('SendOtpJob started', [
             'phone' => $this->phone,
-            'code' => $this->code,
         ]);
 
         $message = trans('messages.your_otp_code', [
