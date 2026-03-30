@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use App\Contracts\OtpSenderInterface;
 use App\Integrations\UltraMsgOtpSender;
+use App\Support\CustomPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 
@@ -27,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Paginator::useBootstrapFive();
+        $this->app->alias(CustomPaginator::class, LengthAwarePaginator::class);
     }
 }

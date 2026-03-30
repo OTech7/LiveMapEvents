@@ -16,9 +16,12 @@ class UserResource extends JsonResource
             'last_name' => $this->last_name ?? null,
             'avatar_url' => $this->avatar_url ?? null,
             'dob' => $this->dob?->toDateString() ?? null,
+            'gender' => $this->gender ?? null,
+            'user_type' => $this->user_type ?? null,
+            'location' => $this->location ?? null,
             'profile_complete' => $this->profile_complete ?? null,
-            'created_at' => $this->created_at?->toDateTimeString() ?? null,
-            'updated_at' => $this->updated_at?->toDateTimeString() ?? null,
+            'created_at' => $this->created_at?->format('Y-m-d H:m') ?? null,
+            'updated_at' => $this->updated_at?->format('Y-m-d H:m') ?? null,
         ]);
     }
 }

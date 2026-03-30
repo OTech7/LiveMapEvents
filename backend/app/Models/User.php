@@ -29,6 +29,7 @@ class User extends Authenticatable
         'first_name',
         'last_name',
         'dob',
+        'gender',
         'avatar_url',
         'profile_complete',
         'user_type',
@@ -55,5 +56,10 @@ class User extends Authenticatable
             'profile_complete' => 'boolean',
             'location' => Point::class,
         ];
+    }
+
+    public function interests()
+    {
+        return $this->belongsToMany(Interest::class, 'user_interests');
     }
 }

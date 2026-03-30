@@ -21,7 +21,7 @@ class CompleteProfileRequest extends FormRequest
             'last_name' => 'required|string|max:50',
             'phone' => 'required|string|max:20',
             'gender' => 'required|in:male,female',
-            'dob' => 'required|date|before:today',
+            'dob' => 'required|date|before:' . now()->subYears(16)->toDateString(),
             'lat' => 'required|numeric|between:-90,90',
             'lng' => 'required|numeric|between:-180,180',
             'avatar_url' => 'nullable|url'
