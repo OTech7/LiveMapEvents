@@ -5,21 +5,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
+    
     public function up(): void
     {
-        Schema::create('user_interests', function (Blueprint $table) {
+        Schema::create('interests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('interest_id')->constrained()->cascadeOnDelete();
+            $table->string('name'); 
+            $table->string('slug')->unique();
             $table->timestamps();
-
-            $table->unique(['user_id', 'interest_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('user_interests');
+        Schema::dropIfExists('interests');
     }
 };
