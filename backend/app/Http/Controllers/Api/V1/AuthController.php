@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\DTOs\OtpVerificationResult;
 use App\Enums\OtpVerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RequestOtpRequest;
@@ -44,33 +45,7 @@ class AuthController extends Controller
             );
         }
 
-        return match ($result->status) {
-            OtpVerificationStatus::INVALID => ApiResponse::error(
-                message: 'messages.invalid_otp',
-                errors: [
-                    'status' => $result->status->value,
-                    'remaining_attempts' => $result->remainingAttempts,
-                ],
-                status: Response::HTTP_UNPROCESSABLE_ENTITY
-            ),
-
-            OtpVerificationStatus::EXPIRED => ApiResponse::error(
-                message: 'messages.otp_expired',
-                errors: [
-                    'status' => $result->status->value,
-                ],
-                status: Response::HTTP_UNPROCESSABLE_ENTITY
-            ),
-
-            OtpVerificationStatus::MAX_ATTEMPTS_REACHED => ApiResponse::error(
-                message: 'messages.otp_max_attempts_reached',
-                errors: [
-                    'status' => $result->status->value,
-                    'remaining_attempts' => 0,
-                ],
-                status: Response::HTTP_TOO_MANY_REQUESTS
-            ),
-        };
+        return $this->otpErrorResponse($result);
     }
     
     public function googleLogin(GoogleLoginRequest $request)
@@ -91,8 +66,38 @@ class AuthController extends Controller
 
     public function logout()
     {
-        auth()->user()->currentAccessToken()->delete();
-
+        auth()->user()?->currentAccessToken()?->delete();
         return ApiResponse::success('messages.logout_success');
+    }
+
+    private function otpErrorResponse(OtpVerificationResult $result)
+    {
+        return match ($result->status) {
+            OtpVerificationStatus::INVALID => ApiResponse::error(
+                message: 'messages.invalid_otp',
+                errors: [
+                    'status' => $result->status->value,
+                    'remaining_attempts' => $result->remainingAttempts,
+                ],
+                status: 422
+            ),
+
+            OtpVerificationStatus::EXPIRED => ApiResponse::error(
+                message: 'messages.otp_expired',
+                errors: [
+                    'status' => $result->status->value,
+                ],
+                status: 422
+            ),
+
+            OtpVerificationStatus::MAX_ATTEMPTS_REACHED => ApiResponse::error(
+                message: 'messages.otp_max_attempts_reached',
+                errors: [
+                    'status' => $result->status->value,
+                    'remaining_attempts' => 0,
+                ],
+                status: 429
+            ),
+        };
     }
 }   
