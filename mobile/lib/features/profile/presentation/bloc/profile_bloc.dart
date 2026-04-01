@@ -1,0 +1,41 @@
+import 'package:bloc/bloc.dart';
+import 'package:meta/meta.dart';
+
+import '../../../../core/error_handling/failure_to_message.dart';
+import '../../domain/entity/interest_entity.dart';
+import '../../domain/payload/complete_setup_payload.dart';
+import '../../domain/use_case/complete_setup_usecase.dart';
+import '../../domain/use_case/get_interests_usecase.dart';
+
+part 'profile_event.dart';
+part 'profile_state.dart';
+
+class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
+  GetInterestsUseCase getInterestsUseCase;
+  CompleteSetupUseCase completeSetupUseCase;
+
+  ProfileBloc({
+    required this.getInterestsUseCase,
+    required this.completeSetupUseCase,
+  }) : super(ProfileInitialState()) {
+    on<GetInterestsEvent>((event, emit) async {
+      emit(ProfileLoadingState());
+      final response = await getInterestsUseCase();
+      response.fold(
+        (failure) =>
+            emit(ProfileErrorState(message: mapFailureToMessage(failure))),
+        (interests) => emit(InterestsLoadedState(interests)),
+      );
+    });
+
+    on<CompleteSetupEvent>((event, emit) async {
+      emit(ProfileLoadingState());
+      final response = await completeSetupUseCase(event.payload);
+      response.fold(
+        (failure) =>
+            emit(ProfileErrorState(message: mapFailureToMessage(failure))),
+        (_) => emit(SetupCompletedState()),
+      );
+    });
+  }
+}

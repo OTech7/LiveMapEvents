@@ -7,6 +7,7 @@ use App\Enums\OtpVerificationStatus;
 use App\Jobs\SendOtpJob;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Validation\ValidationException;
 
 class OTPService
 {
@@ -16,17 +17,29 @@ class OTPService
 
     public function __construct()
     {
-        $this->ttl = (int) config('otp.ttl', 300);
+        $this->ttl = (int) config('otp.ttl', 300); // 5 min
         $this->maxAttempts = (int) config('otp.max_attempts', 3);
         $this->resendCooldown = (int) config('otp.resend_cooldown', 60);
     }
 
     public function send(string $phone): void
     {
+        $rateKey = $this->rateLimitKey($phone);
         $cooldownKey = $this->cooldownKey($phone);
 
+        $requests = Redis::get($rateKey);
+
+        if ($requests && $requests >= $this->maxAttempts)
+        {
+            throw ValidationException::withMessages([
+                'otp' => [__('messages.too_many_otp_requests')]
+            ]);
+        }
+
         if (Redis::exists($cooldownKey)) {
-            return;
+            throw ValidationException::withMessages([
+                'otp' => [__('messages.otp_cooldown')]
+            ]);
         }
 
         $code = (string) random_int(100000, 999999);
@@ -45,12 +58,28 @@ class OTPService
 
         Redis::setex($cooldownKey, $this->resendCooldown, 1);
 
+        if (! $requests) {
+            Redis::setex($rateKey, 3600, 1); 
+        } else {
+            Redis::incr($rateKey);
+        }
+
         dispatch(new SendOtpJob($phone, $code));
     }
 
     public function verify(string $phone, string $otp): OtpVerificationResult
     {
-        $rawData = Redis::get($this->otpKey($phone));
+        $otpKey = $this->otpKey($phone);
+        $lockKey = $this->lockKey($phone);
+
+        if (Redis::exists($lockKey)) {
+            return new OtpVerificationResult(
+                OtpVerificationStatus::MAX_ATTEMPTS_REACHED,
+                0
+            );
+        }
+
+        $rawData = Redis::get($otpKey);
 
         if (! $rawData) {
             return new OtpVerificationResult(
@@ -60,15 +89,8 @@ class OTPService
 
         $data = json_decode($rawData, true, 512, JSON_THROW_ON_ERROR);
 
-        if (($data['attempts'] ?? 0) >= $this->maxAttempts) {
-            return new OtpVerificationResult(
-                OtpVerificationStatus::MAX_ATTEMPTS_REACHED,
-                0
-            );
-        }
-
         if (($data['expires_at'] ?? 0) < now()->timestamp) {
-            Redis::del($this->otpKey($phone));
+            Redis::del($otpKey);
 
             return new OtpVerificationResult(
                 OtpVerificationStatus::EXPIRED
@@ -78,11 +100,15 @@ class OTPService
         if (! Hash::check($otp, $data['code'])) {
             $data['attempts']++;
 
-            $remainingTtl = Redis::ttl($this->otpKey($phone));
+            if ($data['attempts'] >= $this->maxAttempts) {
+                Redis::setex($lockKey, 900, 1); // 15 min lock
+            }
+
+            $remainingTtl = Redis::ttl($otpKey);
             $remainingTtl = $remainingTtl > 0 ? $remainingTtl : $this->ttl;
 
             Redis::setex(
-                $this->otpKey($phone),
+                $otpKey,
                 $remainingTtl,
                 json_encode($data, JSON_THROW_ON_ERROR)
             );
@@ -93,12 +119,9 @@ class OTPService
             );
         }
 
-        Redis::del($this->otpKey($phone));
+        Redis::del($otpKey);
 
-        return new OtpVerificationResult(
-            OtpVerificationStatus::VERIFIED,
-            $this->maxAttempts
-        );
+        return new OtpVerificationResult(OtpVerificationStatus::VERIFIED,$this->maxAttempts);
     }
 
     private function otpKey(string $phone): string
@@ -109,5 +132,15 @@ class OTPService
     private function cooldownKey(string $phone): string
     {
         return "otp_cooldown:{$phone}";
+    }
+
+    private function lockKey(string $phone): string
+    {
+        return "otp_lock:{$phone}";
+    }
+
+    private function rateLimitKey(string $phone): string
+    {
+        return "otp_rate:{$phone}";
     }
 }

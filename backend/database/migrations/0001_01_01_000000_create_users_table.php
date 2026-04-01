@@ -24,6 +24,7 @@ return new class extends Migration
             $table->enum('user_type', ['attendee','business','admin'])->default('attendee');
             $table->geometry('location','POINT',4326)->nullable();
             $table->spatialIndex('location');
+            $table->integer('discovery_radius')->default(500);
             $table->timestamps();
         });
 

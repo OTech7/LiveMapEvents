@@ -135,11 +135,30 @@ class AppStrings {
 
   /// VERIFICATION
   static String get enterFullCode => "Please enter the full 6-digit code".tr();
-  static String get step2of3 => "Step 2 of 3".tr();
   static String get phoneVerification => "Phone Verification".tr();
   static String get enterOtpSent => "Enter the 6-digit code sent to your phone".tr();
   static String get didntReceiveCode => "Didn't receive the code?".tr();
   static String get codeSentSuccess => "Code resent successfully".tr();
   static String get resend => "Resend".tr();
   static String get verifyAndContinue => "Verify and Continue".tr();
+  static String get personalization => "Personalization".tr();
+
+  /// SET UP PROFILE
+  static String get setUpProfile => "Set Up Profile".tr();
+  static String get step1of2 => "STEP 1 OF 2".tr();
+  static String get addAPhoto => "Add a photo".tr();
+  static String get helpCommunityRecognize => "Help the community and friends recognize you at events".tr();
+  static String get fullName => "Full Name".tr();
+  static String get eGName => "e.g. Alex Johnson".tr();
+  static String get bio => "Bio".tr();
+  static String get optional => "Optional".tr();
+  static String get bioHint => "Tell us what kind of events you love...\n(Concerts, tech meetups, hiking)".tr();
+  static String get editDetailsLater => "You can always edit these details later in your profile settings.".tr();
+
+  /// PERSONALIZE FEED
+  static String get personalizeFeed => "Personalize Your Feed".tr();
+  static String get whatAreYouInto => "What are you into?".tr();
+  static String get selectInterestsDesc => "Select at least 3 categories to help us find events you'll love.".tr();
+  static String get step2of2 => "STEP 2 OF 2".tr();
+  static String get selectedCount => "Selected: {}/3 required".tr();
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Google_Client;
+use Illuminate\Validation\ValidationException;
 
 class GoogleAuthService
 {
@@ -15,7 +16,9 @@ class GoogleAuthService
         $payload = $client->verifyIdToken($idToken);
 
         if(!$payload){
-            abort(401,'Invalid Google token');
+            throw ValidationException::withMessages([
+                'token' => ['Invalid Google token']
+            ]);
         }
 
         return $payload;

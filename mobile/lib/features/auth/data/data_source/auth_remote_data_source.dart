@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/interceptor.dart';
 import '../../domain/payload/login_payload.dart';
 import '../../domain/payload/register_payload.dart';
@@ -11,9 +10,8 @@ abstract class AuthDataSource {
 
   Future<AuthModel> register(RegisterPayload payload);
 
-  Future<AuthModel> verify(VerifyPayload payload);
-
   Future<Unit> logout();
+  Future<AuthModel> verify(VerifyPayload payload);
 }
 
 class AuthDataSourceImpl implements AuthDataSource {
@@ -23,27 +21,36 @@ class AuthDataSourceImpl implements AuthDataSource {
 
   @override
   Future<AuthModel> login(LoginPayload payload) async {
-    final response =
-        await interceptor.post(EndPoints.login, body: payload.toJson());
-    return AuthModel.fromJson(response.data);
+    // Simulation of network delay
+    await Future.delayed(const Duration(seconds: 1));
+    return AuthModel(
+      token: "fake_access_token_${payload.email}",
+      refreshToken: "fake_refresh_token",
+    );
   }
 
   @override
   Future<AuthModel> register(RegisterPayload payload) async {
-    final response =
-        await interceptor.post(EndPoints.register, body: payload.toJson());
-    return AuthModel.fromJson(response.data);
+    await Future.delayed(const Duration(seconds: 1));
+    return AuthModel(
+      token: "fake_register_token_${payload.email}",
+      refreshToken: "fake_refresh_token",
+    );
   }
 
   @override
   Future<Unit> logout() async {
-    await interceptor.get(EndPoints.logout);
+    await Future.delayed(const Duration(milliseconds: 500));
     return unit;
   }
 
   @override
   Future<AuthModel> verify(VerifyPayload payload) async {
-    final response = await interceptor.post(EndPoints.verify, body: payload.toJson());
-    return AuthModel.fromJson(response.data);
+    await Future.delayed(const Duration(seconds: 1));
+    return AuthModel(
+      token: "fake_verified_token",
+      refreshToken: "fake_refresh_token",
+    );
   }
+
 }

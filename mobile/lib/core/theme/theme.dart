@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../assets/app_fonts.dart';
 import '../constants/colors.dart';
-import '../constants/fonts.dart';
 import '../constants/text_styles.dart';
 
 class AppTheme {
@@ -71,6 +71,8 @@ class AppTheme {
       titleLarge: TextStyles.titleLarge,
       titleMedium: TextStyles.titleMedium,
       labelLarge: TextStyles.labelLarge,
+      labelMedium: TextStyles.labelMedium,
+      labelSmall: TextStyles.labelSmall,
       titleSmall: TextStyles.titleSmall,
       bodyLarge: TextStyles.bodyLarge,
       headlineMedium: TextStyles.headlineMedium,
