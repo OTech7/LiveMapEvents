@@ -7,8 +7,17 @@ echo "============================================"
 
 cd /var/www/html
 
+# Create .env file from environment variables if it doesn't exist
+if [ ! -f .env ]; then
+    echo "[entrypoint] Creating .env from environment variables..."
+    env | grep -E '^(APP_|DB_|REDIS_|CACHE_|QUEUE_|SESSION_|LOG_|MAIL_|BCRYPT_|GOOGLE_|ULTRAMSG_|FILESYSTEM_|BROADCAST_)' \
+        | sort > .env
+    # Ensure .env exists even if no matching vars
+    touch .env
+fi
+
 # Generate app key if not set
-if [ -z "$APP_KEY" ]; then
+if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "" ]; then
     echo "[entrypoint] Generating application key..."
     php artisan key:generate --force
 fi
