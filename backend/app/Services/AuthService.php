@@ -37,7 +37,7 @@ class AuthService
                 'first_name'=>$googleUser['given_name'] ?? '',
                 'last_name'=>$googleUser['family_name'] ?? '',
                 'avatar_url'=>$googleUser['picture'] ?? null,
-                'dob' => $googleUser['dob'] ?? '7/5/2003',
+                'dob' => $googleUser['dob'] ?? null ,
                 'profile_complete' => false
 
             ]

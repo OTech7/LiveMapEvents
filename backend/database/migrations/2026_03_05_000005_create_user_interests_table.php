@@ -4,16 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
+
     public function up(): void
     {
         Schema::create('user_interests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('category');
+            $table->foreignId('interest_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
-            $table->unique(['user_id', 'category']);
+
+            $table->unique(['user_id', 'interest_id']);
         });
     }
 
@@ -22,4 +23,3 @@ return new class extends Migration
         Schema::dropIfExists('user_interests');
     }
 };
-

@@ -8,10 +8,16 @@ import 'package:mobile/features/auth/domain/use_case/logout_usecase.dart';
 import 'package:mobile/features/auth/domain/use_case/register_usecase.dart';
 import 'package:mobile/features/auth/domain/use_case/verify_usecase.dart';
 import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mobile/features/profile/data/data_source/profile_remote_data_source.dart';
+import 'package:mobile/features/profile/domain/repository/profile_repository.dart';
+import 'package:mobile/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/data_source/auth_remote_data_source.dart';
 import '../../features/auth/data/repository/auth_repository_impl.dart';
 import '../../features/auth/domain/repository/auth_repository.dart';
+import '../../features/profile/data/repository/profile_repository_impl.dart';
+import '../../features/profile/domain/use_case/complete_setup_usecase.dart';
+import '../../features/profile/domain/use_case/get_interests_usecase.dart';
 import '../network/api_endpoints.dart';
 import '../network/interceptor.dart';
 import '../network/token_provider.dart';
@@ -29,6 +35,9 @@ Future<void> init() async {
       verifyUseCase: sl(),
     ),
   );
+  sl.registerFactory(
+    () => ProfileBloc(completeSetupUseCase: sl(), getInterestsUseCase: sl()),
+  );
 
   ///         UseCases
   sl.registerLazySingleton(() => LoginUseCase(repository: sl()));
@@ -36,15 +45,22 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LogoutUseCase(repository: sl()));
   sl.registerLazySingleton(() => CheckTokenUseCase(repository: sl()));
   sl.registerLazySingleton(() => VerifyUseCase(repository: sl()));
+  sl.registerLazySingleton(() => GetInterestsUseCase(sl()));
+  sl.registerLazySingleton(() => CompleteSetupUseCase(sl()));
 
   ///     Repositories
 
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(localDataSource: sl(), remoteDataSource: sl()),
   );
-
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remoteDataSource: sl()),
+  );
 
   ///     DataSources
+  sl.registerLazySingleton<ProfileDataSource>(
+    () => ProfileDataSourceImpl(interceptor: sl()),
+  );
   sl.registerLazySingleton<AuthDataSource>(
     () => AuthDataSourceImpl(interceptor: sl()),
   );
@@ -53,7 +69,8 @@ Future<void> init() async {
   );
 
   sl.registerLazySingleton<AuthTokenProvider>(
-          () => AuthLocalDataSourceImpl(sharedPreferences: sl()));
+    () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+  );
 
   ///     External
   sl.registerLazySingleton(
