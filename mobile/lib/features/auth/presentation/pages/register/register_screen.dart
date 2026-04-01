@@ -70,10 +70,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: vSpaceLg),
                   Text(
                     AppStrings.createAccount,
-                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                      fontSize: 28,
-                      color: AppColors.kPrimaryColor,
-                    ),
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          color: AppColors.kPrimaryColor,
+                        ),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: vSpaceSm),

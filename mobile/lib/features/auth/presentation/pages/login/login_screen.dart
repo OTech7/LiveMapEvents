@@ -42,10 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 0,
         title: Text(
           AppStrings.login,
-          style: TextStyle(
-            color: AppColors.kTextPrimaryColor,
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         centerTitle: true,
       ),
@@ -85,10 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: vSpaceSm),
               Text(
                 AppStrings.phonePrompt,
-                style: TextStyle(
-                  color: AppColors.kTextSecondaryColor,
-                  fontSize: 14,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: vSpaceLg),
@@ -97,82 +91,56 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Expanded(
                     flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppStrings.code,
-                          style: TextStyle(
-                            color: AppColors.kTextPrimaryColor,
-                            fontWeight: FontWeight.w500,
+                    child: TextFormField(
+                      controller: _codeController,
+                      readOnly: true,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.kBackgroundColor,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
                           ),
                         ),
-                        SizedBox(height: vSpaceSm),
-                        TextFormField(
-                          controller: _codeController,
-                          readOnly: true,
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: AppColors.kBackgroundColor,
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: const BorderSide(
-                                color: AppColors.kPrimaryColor,
-                              ),
-                            ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(
+                            color: AppColors.kPrimaryColor,
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                   SizedBox(width: size.width * 0.03),
                   Expanded(
                     flex: 5,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppStrings.phoneNumber,
-                          style: TextStyle(
-                            color: AppColors.kTextPrimaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SizedBox(height: vSpaceSm),
-                        TextFormField(
-                          controller: _phoneController,
-                          keyboardType: TextInputType.phone,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(9),
-                          ],
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: AppColors.kBackgroundColor,
-                            hintText: AppStrings.enterMobileNumber,
-                            hintStyle: TextStyle(color: Colors.grey.shade400),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: const BorderSide(
-                                color: AppColors.kPrimaryColor,
-                              ),
-                            ),
-                          ),
-                        ),
+                    child: TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(9),
                       ],
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.kBackgroundColor,
+                        hintText: AppStrings.enterMobileNumber,
+                        hintStyle: TextStyle(color: Colors.grey.shade400),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(
+                            color: Colors.grey.shade300,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(
+                            color: AppColors.kPrimaryColor,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -192,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: Text(
                   AppStrings.continueText,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
               SizedBox(height: vSpaceMd),
@@ -203,7 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       AppStrings.or,
-                      style: TextStyle(color: Colors.grey.shade500),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
                   Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -221,11 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 label: Text(
                   AppStrings.signInWithGoogle,
-                  style: TextStyle(
-                    color: AppColors.kTextPrimaryColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 style: OutlinedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: size.height * 0.018),
@@ -241,19 +205,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Text(
                     AppStrings.newToEventMap,
-                    style: TextStyle(color: AppColors.kTextSecondaryColor),
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   GestureDetector(
                     onTap: () {
                       context.push('/register');
                     },
-                    child: Text(
-                      AppStrings.createAnAccountText,
-                      style: TextStyle(
-                        color: AppColors.kPrimaryColor,
-                        fontWeight: FontWeight.bold,
+                      child: Text(
+                        AppStrings.createAnAccountText,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppColors.kPrimaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
-                    ),
                   ),
                 ],
               ),

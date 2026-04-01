@@ -74,7 +74,9 @@ class _VerificationScreenState extends State<VerificationScreen>
     FocusScope.of(context).unfocus();
     final code = _controllers.map((c) => c.text).join();
     if (code.length == 6) {
-      context.read<AuthBloc>().add(VerifyEvent(code));
+      // context.read<AuthBloc>().add(VerifyEvent(code));
+      context.pushNamed('set_up_profile');
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -114,52 +116,45 @@ class _VerificationScreenState extends State<VerificationScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(color: Colors.grey.shade200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.05),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+        actions: [Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.05),
+                spreadRadius: 2,
+                blurRadius: 10,
+                offset: const Offset(0, 2),
               ),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: AppColors.kTextPrimaryColor,
-                  size: 18,
-                ),
-                onPressed: () => context.pop(),
-              ),
+            ],
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: AppColors.kTextPrimaryColor,
+              size: 18,
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.kPrimaryColor.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                AppStrings.step2of3,
-                style: TextStyle(
-                  color: AppColors.kPrimaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ),
+            onPressed: () => context.pop(),
+          ),
+        )],
       ),
-      body: SafeArea(
-        child: FadeTransition(
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthenticatedState) {
+            // context.pushNamed('set_up_profile');
+          } else if (state is AuthenticationErrorState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.kRedColor,
+              ),
+            );
+          }
+        },
+        child: SafeArea(
+          child: FadeTransition(
           opacity: _fadeAnimation,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -230,8 +225,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                     children: [
                       Text(
                         AppStrings.enterOtpSent,
-                        style: TextStyle(
-                          color: AppColors.kTextSecondaryColor,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 15,
                           height: 1.5,
                         ),
@@ -241,12 +235,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
+                           Text(
                             "+963 ••• ••• •••",
-                            style: TextStyle(
-                              color: AppColors.kTextPrimaryColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               letterSpacing: 1.2,
                             ),
                           ),
@@ -310,9 +301,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
                             maxLength: 1,
-                            style: TextStyle(
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               fontSize: otpFontSize,
-                              fontWeight: FontWeight.bold,
                               color: isFocused
                                   ? AppColors.kPrimaryColor
                                   : AppColors.kTextPrimaryColor,
@@ -361,8 +351,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                     children: [
                       Text(
                         AppStrings.didntReceiveCode,
-                        style: TextStyle(
-                          color: AppColors.kTextSecondaryColor,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontSize: 15,
                         ),
                         textAlign: TextAlign.center,
@@ -382,12 +371,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                               seconds: 59,
                               build: (BuildContext context, double time) => Text(
                                 "00:${time.toInt().toString().padLeft(2, '0')}",
-                                style: const TextStyle(
-                                  color: AppColors.kTextPrimaryColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 2.0,
-                                ),
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                      letterSpacing: 2.0,
+                                    ),
                               ),
                               interval: const Duration(seconds: 1),
                               onFinished: () {
@@ -423,11 +409,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                               const SizedBox(width: 8),
                               Text(
                                 AppStrings.resend,
-                                style: const TextStyle(
-                                  color: AppColors.kPrimaryColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                      color: AppColors.kPrimaryColor,
+                                    ),
                               ),
                             ],
                           ),
@@ -455,9 +439,8 @@ class _VerificationScreenState extends State<VerificationScreen>
                     children: [
                       Text(
                         AppStrings.verifyAndContinue,
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -471,6 +454,7 @@ class _VerificationScreenState extends State<VerificationScreen>
             ),
           ),
         ),
+      ),
       ),
     );
   }
