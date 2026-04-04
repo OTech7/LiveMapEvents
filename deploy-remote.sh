@@ -68,7 +68,7 @@ generate_env() {
     cat > "$SCRIPT_DIR/.env.docker" << ENVEOF
 APP_NAME=LiveMapEvents
 APP_ENV=${APP_ENV:-production}
-APP_KEY=
+APP_KEY=${APP_KEY}
 APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}
 APP_PORT=${APP_PORT:-8080}
@@ -83,11 +83,12 @@ LOG_STACK=single
 LOG_LEVEL=warning
 
 DB_CONNECTION=pgsql
-DB_HOST=db
-DB_PORT=5432
-DB_DATABASE=${DB_DATABASE:-livemap}
-DB_USERNAME=${DB_USERNAME:-livemap}
+DB_HOST=${DB_HOST}
+DB_PORT=${DB_PORT}
+DB_DATABASE=${DB_DATABASE}
+DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
+DB_SSLMODE=${DB_SSLMODE:-require}
 
 REDIS_CLIENT=predis
 REDIS_HOST=redis
@@ -188,7 +189,20 @@ deploy() {
     $SCP_CMD "$SCRIPT_DIR/docker-compose.yml" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
     $SCP_CMD "$SCRIPT_DIR/.env.docker" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
     $SCP_CMD "$SCRIPT_DIR/deploy.sh" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
-    $SCP_CMD -r "$SCRIPT_DIR/backend" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
+
+    log "Compressing and uploading backend (this is faster than copying file by file)..."
+    tar czf /tmp/livemap-backend.tar.gz -C "$SCRIPT_DIR" \
+        --exclude='backend/.git' \
+        --exclude='backend/node_modules' \
+        --exclude='backend/storage/logs/*.log' \
+        --exclude='backend/storage/framework/cache' \
+        --exclude='backend/storage/framework/sessions' \
+        --exclude='backend/storage/framework/views' \
+        backend/
+    $SCP_CMD /tmp/livemap-backend.tar.gz "$SERVER_USER@$SERVER_IP:/tmp/"
+    $SSH_CMD "tar xzf /tmp/livemap-backend.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-backend.tar.gz"
+    rm -f /tmp/livemap-backend.tar.gz
+    log "Backend uploaded successfully."
 
     # Deploy on server
     log "Building and starting containers on server..."

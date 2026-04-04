@@ -17,7 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
          $middleware->alias([
-            'lang' => SetLocale::class
+             'lang' => SetLocale::class,
+             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -32,13 +33,11 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (AuthenticationException $e, $request) {
-            if ($request->is('api/*')) {
-                return ApiResponse::error(
-                    'messages.unauthorized',
-                    null,
-                    401
-                );
-            }
+            return ApiResponse::error(
+                'messages.unauthorized',
+                null,
+                401
+            );
         });
     })
     ->create();
