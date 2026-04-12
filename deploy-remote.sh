@@ -72,6 +72,7 @@ APP_KEY=${APP_KEY}
 APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}
 APP_PORT=${APP_PORT:-8080}
+FRONTEND_PORT=${FRONTEND_PORT:-3000}
 
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
@@ -157,6 +158,8 @@ setup_server() {
             sudo ufw allow 22/tcp
             sudo ufw allow 80/tcp
             sudo ufw allow 443/tcp
+            sudo ufw allow 3000/tcp
+            sudo ufw allow 8080/tcp
             sudo ufw --force enable
         fi
 
@@ -178,7 +181,8 @@ deploy() {
     info "Server:    $SERVER_IP"
     info "Hostname:  ${SERVER_HOSTNAME:-$SERVER_IP}"
     info "Path:      $SERVER_DEPLOY_PATH"
-    info "Port:      ${APP_PORT:-8080}"
+    info "Backend:   port ${APP_PORT:-8080}"
+    info "Frontend:  port ${FRONTEND_PORT:-3000}"
     echo ""
 
     # Generate .env.docker
@@ -190,7 +194,7 @@ deploy() {
     $SCP_CMD "$SCRIPT_DIR/.env.docker" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
     $SCP_CMD "$SCRIPT_DIR/deploy.sh" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
 
-    log "Compressing and uploading backend (this is faster than copying file by file)..."
+    log "Compressing and uploading backend..."
     tar czf /tmp/livemap-backend.tar.gz -C "$SCRIPT_DIR" \
         --exclude='backend/.git' \
         --exclude='backend/node_modules' \
@@ -204,33 +208,63 @@ deploy() {
     rm -f /tmp/livemap-backend.tar.gz
     log "Backend uploaded successfully."
 
+    log "Compressing and uploading frontend (Flutter web)..."
+    tar czf /tmp/livemap-mobile.tar.gz -C "$SCRIPT_DIR" \
+        --exclude='mobile/.git' \
+        --exclude='mobile/.dart_tool' \
+        --exclude='mobile/build' \
+        --exclude='mobile/android/.gradle' \
+        --exclude='mobile/ios/Pods' \
+        --exclude='mobile/ios/.symlinks' \
+        --exclude='mobile/.flutter-plugins-dependencies' \
+        mobile/
+    $SCP_CMD /tmp/livemap-mobile.tar.gz "$SERVER_USER@$SERVER_IP:/tmp/"
+    $SSH_CMD "tar xzf /tmp/livemap-mobile.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-mobile.tar.gz"
+    rm -f /tmp/livemap-mobile.tar.gz
+    log "Frontend uploaded successfully."
+
     # Deploy on server
     log "Building and starting containers on server..."
     $SSH_CMD << DEPLOY
         set -e
         cd $SERVER_DEPLOY_PATH
-        chmod +x deploy.sh
+        chmod +x deploy.sh 2>/dev/null || true
 
-        echo "[LiveMap] Building Docker image..."
-        docker compose build app
+        echo "[LiveMap] Building Docker images (backend + frontend)..."
+        docker compose build app frontend
 
-        echo "[LiveMap] Starting containers..."
+        echo "[LiveMap] Stopping existing containers..."
         docker compose down --timeout 30 2>/dev/null || true
+
+        echo "[LiveMap] Starting all containers..."
         docker compose up -d
 
-        echo "[LiveMap] Waiting for health check..."
+        echo "[LiveMap] Waiting for backend health check..."
         for i in \$(seq 1 30); do
             if docker compose exec -T app curl -sf http://localhost/health > /dev/null 2>&1; then
-                echo "[LiveMap] Health check passed!"
+                echo "[LiveMap] Backend health check passed!"
                 break
             fi
             if [ "\$i" -eq 30 ]; then
-                echo "[LiveMap] ERROR: Health check failed!"
+                echo "[LiveMap] ERROR: Backend health check failed!"
                 docker compose logs app --tail=30
                 exit 1
             fi
             echo "[LiveMap] Waiting... (\$i/30)"
             sleep 5
+        done
+
+        echo "[LiveMap] Waiting for frontend health check..."
+        for i in \$(seq 1 15); do
+            if docker compose exec -T frontend curl -sf http://localhost/health > /dev/null 2>&1; then
+                echo "[LiveMap] Frontend health check passed!"
+                break
+            fi
+            if [ "\$i" -eq 15 ]; then
+                echo "[LiveMap] WARNING: Frontend health check failed. Check: ./deploy-remote.sh --logs frontend"
+            fi
+            echo "[LiveMap] Waiting... (\$i/15)"
+            sleep 3
         done
 
         docker image prune -f > /dev/null 2>&1
@@ -243,9 +277,11 @@ DEPLOY
     log "Deployment complete!"
     echo ""
     info "Your app is live at:"
-    info "  App:     http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}"
-    info "  Health:  http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}/health"
-    info "  API:     http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}/api/v1/auth/me"
+    info "  Backend API:  http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}"
+    info "  Frontend:     http://${SERVER_HOSTNAME:-$SERVER_IP}:${FRONTEND_PORT:-3000}"
+    info "  Health (API): http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}/health"
+    info "  Health (Web): http://${SERVER_HOSTNAME:-$SERVER_IP}:${FRONTEND_PORT:-3000}/health"
+    info "  API:          http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}/api/v1/auth/me"
 }
 
 # ── Show server status ──
@@ -254,8 +290,10 @@ show_status() {
     $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose ps"
     echo ""
 
-    info "Testing health endpoint..."
-    $SSH_CMD "curl -sf http://localhost:${APP_PORT:-8080}/health && echo '' || echo 'UNREACHABLE'"
+    info "Testing backend health..."
+    $SSH_CMD "curl -sf http://localhost:${APP_PORT:-8080}/health && echo ' OK' || echo 'UNREACHABLE'"
+    info "Testing frontend health..."
+    $SSH_CMD "curl -sf http://localhost:${FRONTEND_PORT:-3000}/health && echo ' OK' || echo 'UNREACHABLE'"
 }
 
 # ── Main ──
