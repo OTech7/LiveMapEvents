@@ -1,5 +1,7 @@
 # Backend (Laravel)
 
+backend/app/.DS_Store
+.DS_Store
 backend/*.log/
 backend/.DS_Store
 backend/.env
