@@ -4,22 +4,33 @@
 # FILL IN YOUR VALUES BELOW, then run:
 #   cp server.conf.example server.conf
 #   nano server.conf           (edit with your real values)
-#   ./deploy-remote.sh         (deploy from your Mac)
+#   ./deploy-remote.sh         (deploy to server)
+#
+# Works from Windows (Git Bash / WSL), macOS, and Linux.
 # ============================================================
 
 # ── Your Server ──
 SERVER_IP=0.0.0.0                          # <-- Your server IP (e.g. 165.22.48.100)
 SERVER_HOSTNAME=livemap.example.com        # <-- Your domain, or same as SERVER_IP if no domain
 SERVER_USER=deploy                         # <-- SSH user on the server
-SERVER_SSH_KEY=~/.ssh/livemap_deploy       # <-- Path to your private SSH key
+SERVER_SSH_KEY=~/.ssh/livemap_deploy       # <-- Path to your private SSH key (spaces in path are OK)
 SERVER_DEPLOY_PATH=/opt/livemap            # <-- Where the app lives on the server
 
 # ── App Settings ──
-APP_PORT=8080                              # <-- Port the app listens on (80 if using domain)
+APP_PORT=8080                              # <-- Port the app listens on (80 if using a reverse proxy)
 APP_ENV=production
-APP_DEBUG=false
+APP_DEBUG=false                            # <-- Set to true temporarily for debugging 500 errors
+LOG_LEVEL=warning                          # <-- Use "debug" for troubleshooting
 
-# ── Database ──
+# ── Database (PostgreSQL — runs inside Docker) ──
+# These credentials are used to BOTH:
+#   1. Create the PostgreSQL user/database (first deploy only)
+#   2. Connect the Laravel app to the database
+#
+# IMPORTANT: If you change these after the first deploy, you must run:
+#   ./deploy-remote.sh --fresh
+# because PostgreSQL only creates the user/database on first initialization.
+# The --fresh flag wipes the database volume and recreates it.
 DB_DATABASE=livemap
 DB_USERNAME=livemap
 DB_PASSWORD=CHANGE_ME_TO_A_STRONG_PASSWORD # <-- Generate with: openssl rand -base64 24
@@ -31,3 +42,6 @@ GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com  # <-- From Google Cl
 ULTRAMSG_URL=https://api.ultramsg.com
 ULTRAMSG_INSTANCE_ID=your-instance-id      # <-- From ultramsg.com dashboard
 ULTRAMSG_TOKEN=your-token                  # <-- From ultramsg.com dashboard
+
+# ── Mail ──
+MAIL_MAILER=log                            # <-- Use "smtp" for real email delivery
