@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
          $middleware->alias([
             'lang' => SetLocale::class
         ]);
+
+        // API requests should return 401 JSON, not redirect to a login page
+        $middleware->redirectGuestsTo(fn ($request) => $request->is('api/*') ? null : '/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (ValidationException $e, $request) {
