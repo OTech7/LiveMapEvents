@@ -47,4 +47,5 @@ backend/Thumbs.db
 # Docker & Deployment
 .env.docker
 server.conf
+server.local.conf
 *.tar.gz

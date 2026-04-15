@@ -16,7 +16,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONF_FILE="$SCRIPT_DIR/server.conf"
+CONF_FILE="$SCRIPT_DIR/server.local.conf"
 
 # Colors
 RED='\033[0;31m'
