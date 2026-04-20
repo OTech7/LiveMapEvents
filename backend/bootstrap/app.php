@@ -17,8 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
          $middleware->alias([
-            'lang' => SetLocale::class
+             'lang' => SetLocale::class,
+             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
+
+        // API requests should return 401 JSON, not redirect to a login page
+        $middleware->redirectGuestsTo(fn ($request) => $request->is('api/*') ? null : '/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (ValidationException $e, $request) {
@@ -32,13 +36,11 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (AuthenticationException $e, $request) {
-            if ($request->is('api/*')) {
-                return ApiResponse::error(
-                    'messages.unauthorized',
-                    null,
-                    401
-                );
-            }
+            return ApiResponse::error(
+                'messages.unauthorized',
+                null,
+                401
+            );
         });
     })
     ->create();
