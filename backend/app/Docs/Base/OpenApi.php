@@ -16,7 +16,7 @@ use OpenApi\Annotations as OA;
  *         description="Local Server"
  *     ),
  *     @OA\Server(
- *         url="http://live-events-map.tech:3000",
+ *         url="http://live-events-map.tech:8080",
  *         description="Live Server"
  *     )
  * )

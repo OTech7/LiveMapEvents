@@ -46,9 +46,14 @@ php artisan migrate --force || {
     }
 }
 
-# ── Step 5: Storage and permissions ──
+# ── Step 5: Generate Swagger API docs ──
+echo "[entrypoint] Generating Swagger API docs..."
+php artisan l5-swagger:generate || echo "[entrypoint] WARNING: Swagger generation failed (non-fatal)"
+
+# ── Step 6: Storage and permissions ──
 php artisan storage:link 2>/dev/null || true
 chown -R www-data:www-data storage bootstrap/cache
+
 
 echo "[entrypoint] Starting services..."
 exec "$@"
