@@ -12,7 +12,11 @@ abstract class AuthRepository {
 
   Future<Either<Failure, AuthEntity>> verify(VerifyPayload payload);
 
+  Future<Either<Failure, Unit>> sendOTP(String phoneNumber);
+
   Future<Either<Failure, Unit>> logout();
 
   Future<Either<Failure, AuthEntity?>> checkToken();
+
+  Future<Either<Failure, AuthEntity>> signInWithGoogle(String idToken);
 }

@@ -41,10 +41,15 @@ class AppRouter {
       GoRoute(
         path: '/verification_screen',
         name: 'verification_screen',
-        builder: (context, state) => BlocProvider(
-          create: (context) => di.sl<AuthBloc>(),
-          child: VerificationScreen(),
-        ),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return BlocProvider(
+            create: (context) => di.sl<AuthBloc>(),
+            child: VerificationScreen(
+              phoneNumber: extra?['phoneNumber'] ?? '',
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/set_up_profile',

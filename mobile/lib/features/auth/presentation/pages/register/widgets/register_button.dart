@@ -38,7 +38,8 @@ Widget buildRegisterButton({
     return ElevatedButton(
       onPressed: () {
         if (formKey.currentState!.validate()) {
-          context.push('/verification_screen');
+          final fullPhoneNumber = "${codeController.text}${phoneController.text}";
+          context.push('/verification_screen', extra: {'phoneNumber': fullPhoneNumber});
           // context.read<AuthBloc>().add(RegisterEvent(RegisterPayload(
           //       firstName: firstNameController.text,
           //       lastName: lastNameController.text,

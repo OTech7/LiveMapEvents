@@ -8,8 +8,9 @@ import 'core/dependency_injection/injection.dart' as di;
 import 'core/app_router/app_router.dart';
 import 'core/helper/app_bloc_observer.dart';
 import 'core/theme/theme.dart';
+import 'features/auth/presentation/bloc/auth_bloc.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   await di.init();
@@ -31,20 +32,22 @@ void main() async{
   );
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Event Map',
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      debugShowCheckedModeBanner: false,
-      routerConfig: AppRouter.router,
-      theme: AppTheme.theme,
+    return BlocProvider(
+      create: (context) => di.sl<AuthBloc>(),
+      child: MaterialApp.router(
+        title: 'Event Map',
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
+        debugShowCheckedModeBanner: false,
+        routerConfig: AppRouter.router,
+        theme: AppTheme.theme,
+      ),
     );
   }
 }

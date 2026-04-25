@@ -1,9 +1,11 @@
 class EndPoints {
-  static const String BASE_URL = "http://example.com/api/";
-  static const String login = "$BASE_URL/login";
-  static const String register = "$BASE_URL/register";
-  static const String logout = "$BASE_URL/logout";
-  static const String verify = "$BASE_URL/verify";
-  static const String interests = "$BASE_URL/interests";
-  static const String completeSetup = "$BASE_URL/complete-setup";
+  static const String BASE_URL = "http://live-events-map.tech:8080/api/v1/";
+  static const String login = "auth/login";
+  static const String sendOTP = "auth/phone/request-otp";
+  static const String register = "auth/register";
+  static const String logout = "auth/logout";
+  static const String verify = "auth/phone/verify-otp";
+  static const String interests = "interests";
+  static const String completeSetup = "complete-setup";
+  static const String googleAuth = "auth/google";
 }

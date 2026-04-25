@@ -46,6 +46,13 @@ class AuthRepositoryImpl implements AuthRepository {
       return authMapper.toEntity(response);
     });
   }
+  @override
+  Future<Either<Failure, Unit>> sendOTP(String phoneNumber) async {
+    return handleRequest(() async {
+      final response = await remoteDataSource.sendOTP(phoneNumber);
+      return unit;
+    });
+  }
 
   @override
   Future<Either<Failure, Unit>> logout() async {
@@ -65,6 +72,15 @@ class AuthRepositoryImpl implements AuthRepository {
       } else {
         return null;
       }
+    });
+  }
+
+  @override
+  Future<Either<Failure, AuthEntity>> signInWithGoogle(String idToken) async {
+    return handleRequest(() async {
+      final response = await remoteDataSource.signInWithGoogle(idToken);
+      await localDataSource.saveAuthToLocal(response);
+      return authMapper.toEntity(response);
     });
   }
 }

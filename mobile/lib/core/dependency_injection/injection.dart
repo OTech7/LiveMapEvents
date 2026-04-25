@@ -2,11 +2,13 @@ import 'package:dio/dio.dart' as dio;
 import 'package:get_it/get_it.dart';
 import 'package:mobile/core/app_router/app_router.dart';
 import 'package:mobile/features/auth/data/data_source/auth_local_data_source.dart';
-import 'package:mobile/features/auth/domain/use_case/checkTokenUseCase.dart';
+import 'package:mobile/features/auth/domain/use_case/check_token_usecase.dart';
 import 'package:mobile/features/auth/domain/use_case/login_usecase.dart';
 import 'package:mobile/features/auth/domain/use_case/logout_usecase.dart';
 import 'package:mobile/features/auth/domain/use_case/register_usecase.dart';
+import 'package:mobile/features/auth/domain/use_case/send_otp_usecase.dart';
 import 'package:mobile/features/auth/domain/use_case/verify_usecase.dart';
+import 'package:mobile/features/auth/domain/use_case/sign_in_with_google_usecase.dart';
 import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile/features/profile/data/data_source/profile_remote_data_source.dart';
 import 'package:mobile/features/profile/domain/repository/profile_repository.dart';
@@ -29,10 +31,12 @@ Future<void> init() async {
   sl.registerFactory(
     () => AuthBloc(
       loginUseCase: sl(),
+      sendOTPUseCase: sl(),
       registerUseCase: sl(),
       checkTokenUseCase: sl(),
       logoutUseCase: sl(),
       verifyUseCase: sl(),
+      signInWithGoogleUseCase: sl(),
     ),
   );
   sl.registerFactory(
@@ -45,6 +49,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => LogoutUseCase(repository: sl()));
   sl.registerLazySingleton(() => CheckTokenUseCase(repository: sl()));
   sl.registerLazySingleton(() => VerifyUseCase(repository: sl()));
+  sl.registerLazySingleton(() => SendOTPUseCase(repository: sl()));
+  sl.registerLazySingleton(() => SignInWithGoogleUseCase(sl()));
   sl.registerLazySingleton(() => GetInterestsUseCase(sl()));
   sl.registerLazySingleton(() => CompleteSetupUseCase(sl()));
 

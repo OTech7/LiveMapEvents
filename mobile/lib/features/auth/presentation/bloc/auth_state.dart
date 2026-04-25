@@ -1,6 +1,5 @@
 part of 'auth_bloc.dart';
 
-
 @immutable
 sealed class AuthState {}
 
@@ -8,6 +7,12 @@ final class AuthenticatedState extends AuthState {
   final AuthEntity authEntity;
 
   AuthenticatedState({required this.authEntity});
+}
+
+final class OTPSentSuccessfullyState extends AuthState {
+  final String phoneNumber;
+
+  OTPSentSuccessfullyState({required this.phoneNumber});
 }
 
 final class UnAuthenticatedState extends AuthState {}

@@ -7,7 +7,8 @@ import '../../bloc/auth_bloc.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 
 class VerificationScreen extends StatefulWidget {
-  const VerificationScreen({super.key});
+  final String phoneNumber;
+  const VerificationScreen({super.key, required this.phoneNumber});
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
@@ -37,7 +38,6 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
     _fadeController.forward();
 
-    // Add listeners to focus nodes to update UI on focus change
     for (var node in _focusNodes) {
       node.addListener(() {
         if (mounted) setState(() {});
@@ -64,7 +64,6 @@ class _VerificationScreenState extends State<VerificationScreen>
       FocusScope.of(context).requestFocus(_focusNodes[index - 1]);
     }
 
-    // Auto submit if last field is filled
     if (value.length == 1 && index == 5) {
       _submit();
     }
@@ -74,9 +73,10 @@ class _VerificationScreenState extends State<VerificationScreen>
     FocusScope.of(context).unfocus();
     final code = _controllers.map((c) => c.text).join();
     if (code.length == 6) {
-      // context.read<AuthBloc>().add(VerifyEvent(code));
-      context.pushNamed('set_up_profile');
-
+      context.read<AuthBloc>().add(VerifyEvent(
+            code: code,
+            phoneNumber: widget.phoneNumber,
+          ));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -236,7 +236,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                            Text(
-                            "+963 ••• ••• •••",
+                            widget.phoneNumber,
                             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               letterSpacing: 1.2,
                             ),
@@ -389,6 +389,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                       else
                         GestureDetector(
                           onTap: () {
+                            context
+                                .read<AuthBloc>()
+                                .add(SendOTPEvent(widget.phoneNumber));
                             setState(() {
                               _canResend = false;
                             });
