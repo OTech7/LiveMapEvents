@@ -58,20 +58,27 @@ services:
       retries: 10
       start_period: 10s
 
-  # ── Redis (Cache + Queue + OTP Storage) ──
+  # ── Redis (Cache + Queue + Sessions + OTP storage) ──
   redis:
     image: redis:7-alpine
     container_name: livemap-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    # No host port published: only the app container needs to reach it,
+    # over the internal docker network. This keeps Redis off the public IP.
+    expose:
+      - "6379"
     volumes:
       - redis-data:/data
     networks:
       - livemap
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5

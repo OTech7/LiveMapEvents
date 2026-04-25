@@ -7,10 +7,11 @@
 #   2. Fill in your real values in server.conf
 #   3. chmod +x deploy-remote.sh
 #   4. ./deploy-remote.sh              (full deploy)
-#   5. ./deploy-remote.sh --setup      (first-time server setup)
-#   6. ./deploy-remote.sh --status     (check server status)
-#   7. ./deploy-remote.sh --logs       (tail server logs)
-#   8. ./deploy-remote.sh --ssh        (open SSH session)
+#   5. ./deploy-remote.sh --setup       (first-time server setup: docker, ufw)
+#   6. ./deploy-remote.sh --setup-redis (cleanup any orphan Redis containers, then redeploy)
+#   7. ./deploy-remote.sh --status      (check server + Redis status)
+#   8. ./deploy-remote.sh --logs        (tail server logs)
+#   9. ./deploy-remote.sh --ssh         (open SSH session)
 # ============================================================
 
 set -e
@@ -42,6 +43,19 @@ fi
 
 source "$CONF_FILE"
 
+# ── Auto-generate REDIS_PASSWORD if empty, then write it back to server.local.conf ──
+if [ -z "$REDIS_PASSWORD" ] || [ "$REDIS_PASSWORD" = "null" ]; then
+    GENERATED_REDIS_PASSWORD="$(openssl rand -base64 32 | tr -d '/+=' | cut -c1-32)"
+    if grep -qE '^REDIS_PASSWORD=' "$CONF_FILE"; then
+        # Use a temp file because sed -i differs between GNU and BSD/macOS
+        awk -v pw="$GENERATED_REDIS_PASSWORD" 'BEGIN{FS=OFS="="} /^REDIS_PASSWORD=/{print "REDIS_PASSWORD=" pw; next} {print}' "$CONF_FILE" > "$CONF_FILE.tmp" && mv "$CONF_FILE.tmp" "$CONF_FILE"
+    else
+        echo "REDIS_PASSWORD=$GENERATED_REDIS_PASSWORD" >> "$CONF_FILE"
+    fi
+    REDIS_PASSWORD="$GENERATED_REDIS_PASSWORD"
+    log "Generated a new REDIS_PASSWORD and saved it to server.local.conf"
+fi
+
 # ── Validate required fields ──
 MISSING=()
 [ "$SERVER_IP" = "0.0.0.0" ] || [ -z "$SERVER_IP" ] && MISSING+=("SERVER_IP")
@@ -49,6 +63,9 @@ MISSING=()
 [ -z "$SERVER_SSH_KEY" ] && MISSING+=("SERVER_SSH_KEY")
 [ -z "$SERVER_DEPLOY_PATH" ] && MISSING+=("SERVER_DEPLOY_PATH")
 [ "$DB_PASSWORD" = "CHANGE_ME_TO_A_STRONG_PASSWORD" ] && MISSING+=("DB_PASSWORD")
+[ -z "$REDIS_HOST" ] && MISSING+=("REDIS_HOST")
+[ -z "$REDIS_PORT" ] && MISSING+=("REDIS_PORT")
+[ -z "$REDIS_PASSWORD" ] && MISSING+=("REDIS_PASSWORD")
 
 if [ ${#MISSING[@]} -gt 0 ]; then
     error "Missing or default values in server.conf:"
@@ -91,14 +108,16 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 DB_SSLMODE=${DB_SSLMODE:-require}
 
-REDIS_CLIENT=predis
-REDIS_HOST=redis
-REDIS_PASSWORD=null
-REDIS_PORT=6379
+REDIS_CLIENT=${REDIS_CLIENT:-predis}
+REDIS_HOST=${REDIS_HOST}
+REDIS_PORT=${REDIS_PORT:-6379}
+REDIS_PASSWORD=${REDIS_PASSWORD}
+REDIS_DB=${REDIS_DB:-0}
+REDIS_CACHE_DB=${REDIS_CACHE_DB:-1}
 
-SESSION_DRIVER=redis
-CACHE_STORE=redis
-QUEUE_CONNECTION=redis
+SESSION_DRIVER=${SESSION_DRIVER:-redis}
+CACHE_STORE=${CACHE_STORE:-redis}
+QUEUE_CONNECTION=${QUEUE_CONNECTION:-redis}
 
 GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-your-google-client-id-here}
 
@@ -224,30 +243,40 @@ deploy() {
     log "Frontend uploaded successfully."
 
     # Deploy on server
+    # Note: --env-file .env.docker tells docker compose to use that file for BOTH
+    # the app's env_file substitution AND \${VAR} interpolation in compose itself
+    # (e.g. \${REDIS_PASSWORD} in the redis service's command).
     log "Building and starting containers on server..."
     $SSH_CMD << DEPLOY
         set -e
         cd $SERVER_DEPLOY_PATH
         chmod +x deploy.sh 2>/dev/null || true
 
+        # Stop any standalone redis container that's hogging port 6379
+        if docker ps --format '{{.Names}} {{.Image}}' | grep -E '^[^ ]+ redis(:|$)' | grep -v livemap-redis > /dev/null; then
+            echo "[LiveMap] Found a standalone Redis container; stopping it..."
+            docker ps --format '{{.ID}} {{.Image}}' | awk '/redis/ && \$0 !~ /livemap-redis/ {print \$1}' | xargs -r docker stop
+            docker ps -a --format '{{.ID}} {{.Image}}' | awk '/redis/ && \$0 !~ /livemap-redis/ {print \$1}' | xargs -r docker rm
+        fi
+
         echo "[LiveMap] Building Docker images (backend + frontend)..."
-        docker compose build app frontend
+        docker compose --env-file .env.docker build app frontend
 
         echo "[LiveMap] Stopping existing containers..."
-        docker compose down --timeout 30 2>/dev/null || true
+        docker compose --env-file .env.docker down --timeout 30 2>/dev/null || true
 
         echo "[LiveMap] Starting all containers..."
-        docker compose up -d
+        docker compose --env-file .env.docker up -d
 
         echo "[LiveMap] Waiting for backend health check..."
         for i in \$(seq 1 30); do
-            if docker compose exec -T app curl -sf http://localhost/health > /dev/null 2>&1; then
+            if docker compose --env-file .env.docker exec -T app curl -sf http://localhost/health > /dev/null 2>&1; then
                 echo "[LiveMap] Backend health check passed!"
                 break
             fi
             if [ "\$i" -eq 30 ]; then
                 echo "[LiveMap] ERROR: Backend health check failed!"
-                docker compose logs app --tail=30
+                docker compose --env-file .env.docker logs app --tail=30
                 exit 1
             fi
             echo "[LiveMap] Waiting... (\$i/30)"
@@ -256,7 +285,7 @@ deploy() {
 
         echo "[LiveMap] Waiting for frontend health check..."
         for i in \$(seq 1 15); do
-            if docker compose exec -T frontend curl -sf http://localhost/health > /dev/null 2>&1; then
+            if docker compose --env-file .env.docker exec -T frontend curl -sf http://localhost/health > /dev/null 2>&1; then
                 echo "[LiveMap] Frontend health check passed!"
                 break
             fi
@@ -270,7 +299,7 @@ deploy() {
         docker image prune -f > /dev/null 2>&1
         echo ""
         echo "[LiveMap] Deployment successful!"
-        docker compose ps
+        docker compose --env-file .env.docker ps
 DEPLOY
 
     echo ""
@@ -284,16 +313,58 @@ DEPLOY
     info "  API:          http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}/api/v1/auth/me"
 }
 
+# ── Stop & remove any standalone Redis container that might conflict with docker-compose's redis ──
+setup_redis() {
+    log "Cleaning up any standalone Redis container on $SERVER_IP..."
+    info "docker-compose now manages Redis itself (service 'redis'), so any other"
+    info "Redis container or host service holding port 6379 needs to go away."
+    echo ""
+
+    $SSH_CMD bash -s << 'REDISCLEAN'
+        set -e
+
+        echo "[LiveMap] Looking for Redis containers..."
+        # List anything that is a Redis image but is NOT our compose-managed livemap-redis
+        ORPHANS=$(docker ps -a --format '{{.ID}} {{.Names}} {{.Image}}' | awk '/redis/ && $2 !~ /^livemap-redis$/ {print $1}')
+        if [ -z "$ORPHANS" ]; then
+            echo "[LiveMap] No orphan Redis containers found."
+        else
+            echo "[LiveMap] Found orphan Redis containers — stopping and removing:"
+            docker ps -a --format '  - {{.Names}} ({{.Image}}) {{.Status}}' | grep -i redis | grep -v livemap-redis || true
+            echo "$ORPHANS" | xargs -r docker stop
+            echo "$ORPHANS" | xargs -r docker rm
+            echo "[LiveMap] Orphan Redis containers removed."
+        fi
+
+        # If a native redis-server is running on the host, warn (don't auto-stop — user might want it)
+        if pgrep -x redis-server > /dev/null 2>&1 && ! docker top livemap-redis 2>/dev/null | grep -q redis-server; then
+            echo "[LiveMap] WARNING: A redis-server process is running on the host that is NOT in a Docker container."
+            echo "[LiveMap]          It would block port 6379 if you publish the compose redis port."
+            echo "[LiveMap]          To stop it: sudo systemctl stop redis-server && sudo systemctl disable redis-server"
+            echo "[LiveMap]          (Our compose redis uses 'expose' not 'ports', so this only matters if you change that.)"
+        fi
+
+        echo "[LiveMap] Redis cleanup done."
+REDISCLEAN
+
+    log "Cleanup complete."
+    info "Next: ./deploy-remote.sh   (will start the compose-managed Redis with the password from server.local.conf)"
+}
+
 # ── Show server status ──
 show_status() {
     log "Checking server at $SERVER_IP..."
-    $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose ps"
+    $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker ps"
     echo ""
 
     info "Testing backend health..."
     $SSH_CMD "curl -sf http://localhost:${APP_PORT:-8080}/health && echo ' OK' || echo 'UNREACHABLE'"
     info "Testing frontend health..."
     $SSH_CMD "curl -sf http://localhost:${FRONTEND_PORT:-3000}/health && echo ' OK' || echo 'UNREACHABLE'"
+    info "Testing Redis container PING..."
+    $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker exec -T redis redis-cli -a '$REDIS_PASSWORD' --no-auth-warning ping 2>/dev/null || echo 'UNREACHABLE'"
+    info "Testing Redis from inside app container (Laravel/Predis)..."
+    $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker exec -T app php artisan tinker --execute=\"echo Redis::connection()->ping();\" 2>&1 | tail -n 1 || echo 'container not running'"
 }
 
 # ── Main ──
@@ -301,11 +372,14 @@ case "${1:-}" in
     --setup)
         setup_server
         ;;
+    --setup-redis)
+        setup_redis
+        ;;
     --status)
         show_status
         ;;
     --logs)
-        $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose logs -f --tail=100 ${2:-app}"
+        $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker logs -f --tail=100 ${2:-app}"
         ;;
     --ssh)
         log "Connecting to $SERVER_USER@$SERVER_IP..."
@@ -313,12 +387,12 @@ case "${1:-}" in
         ;;
     --down)
         log "Stopping containers on server..."
-        $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose down"
+        $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker down"
         log "All containers stopped."
         ;;
     --restart)
         log "Restarting containers on server..."
-        $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose restart"
+        $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker restart"
         show_status
         ;;
     *)
