@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../auth/presentation/pages/widgets/auth_fields.dart';
+import 'widgets/bio_field_widget.dart';
+import 'widgets/profile_photo_picker_widget.dart';
+import 'widgets/step_indicator_widget.dart';
 
 class SetUpProfileScreen extends StatefulWidget {
   const SetUpProfileScreen({super.key});
@@ -55,103 +58,9 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Progress Bar
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: AppColors.kPrimaryColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: AppColors.kSelectedColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: vSpaceSm),
-              Text(
-                AppStrings.step1of2,
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
+              const StepIndicatorWidget(currentStep: 1, totalSteps: 2),
               SizedBox(height: vSpaceLg),
-
-              // Profile Picture Placeholder
-              Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.camera_alt_rounded,
-                          size: 40,
-                          color: AppColors.kPrimaryColor,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.kPrimaryColor,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
-                        ),
-                        child: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: vSpaceMd),
-
-              // Add a photo text
-              Text(
-                AppStrings.addAPhoto,
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: vSpaceSm),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
-                child: Text(
-                  AppStrings.helpCommunityRecognize,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              const ProfilePhotoPickerWidget(),
               SizedBox(height: vSpaceLg),
 
               // Full Name field
@@ -168,49 +77,16 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
               SizedBox(height: vSpaceMd),
 
               // Bio field
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppStrings.bio,
-                    style: Theme.of(context).textTheme.labelMedium,
-                  ),
-                  Text(
-                    AppStrings.optional,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              SizedBox(height: vSpaceSm),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                ),
-                child: TextField(
-                  controller: _bioController,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    hintText: AppStrings.bioHint,
-                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.kLightGreyColor,
-                      fontSize: 15,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(16),
-                  ),
-                ),
-              ),
+              BioFieldWidget(controller: _bioController),
               SizedBox(height: vSpaceLg),
 
               // Bottom note
               Text(
                 AppStrings.editDetailsLater,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontStyle: FontStyle.italic,
-                  height: 1.5,
-                ),
+                      fontStyle: FontStyle.italic,
+                      height: 1.5,
+                    ),
                 textAlign: TextAlign.center,
               ),
 
@@ -219,20 +95,14 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
               // Next Button
               ElevatedButton(
                 onPressed: () {
-                  // if (_fullNameController.text.isNotEmpty) {
-                    context.pushNamed(
-                      'personalize_feed',
-                      extra: {
-                        'fullName': _fullNameController.text,
-                        'bio': _bioController.text,
-                        'profilePhoto': null, // TODO: handle photo
-                      },
-                    );
-                  // } else {
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     SnackBar(content: Text(AppStrings.thisFieldIsRequired)),
-                  //   );
-                  // }
+                  context.pushNamed(
+                    'personalize_feed',
+                    extra: {
+                      'fullName': _fullNameController.text,
+                      'bio': _bioController.text,
+                      'profilePhoto': null, // TODO: handle photo
+                    },
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.kPrimaryColor,
@@ -251,8 +121,8 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
                     Text(
                       AppStrings.next,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontSize: 18,
-                      ),
+                            fontSize: 18,
+                          ),
                     ),
                     const SizedBox(width: 8),
                     const Icon(Icons.arrow_forward_rounded, size: 20),
@@ -267,3 +137,4 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
     );
   }
 }
+

@@ -4,7 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../bloc/auth_bloc.dart';
-import 'package:timer_count_down/timer_count_down.dart';
+import 'widgets/otp_input_row_widget.dart';
+import 'widgets/phone_number_display_widget.dart';
+import 'widgets/resend_section_widget.dart';
+import 'widgets/verification_header_widget.dart';
+import 'widgets/verify_button_widget.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
@@ -73,10 +77,9 @@ class _VerificationScreenState extends State<VerificationScreen>
     FocusScope.of(context).unfocus();
     final code = _controllers.map((c) => c.text).join();
     if (code.length == 6) {
-      context.read<AuthBloc>().add(VerifyEvent(
-            code: code,
-            phoneNumber: widget.phoneNumber,
-          ));
+      context.read<AuthBloc>().add(
+            VerifyEvent(code: code, phoneNumber: widget.phoneNumber),
+          );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -91,21 +94,6 @@ class _VerificationScreenState extends State<VerificationScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final double hPad = size.width * 0.06;
-
-    // Responsive OTP box: fill width minus padding minus gaps between 6 boxes
-    final double otpBoxWidth = ((size.width - hPad * 2 - 5 * 8) / 6).clamp(
-      40.0,
-      58.0,
-    );
-    final double otpBoxHeight = (otpBoxWidth * 1.25).clamp(50.0, 72.0);
-    final double otpFontSize = (otpBoxWidth * 0.44).clamp(18.0, 26.0);
-
-    // Icon ring sizes scaled to screen
-    final double iconOuter = (size.width * 0.22).clamp(70.0, 110.0);
-    final double iconMid = (size.width * 0.16).clamp(52.0, 82.0);
-    final double iconInner = (size.width * 0.12).clamp(38.0, 62.0);
-    final double iconSz = (size.width * 0.1).clamp(32.0, 48.0);
-
     final double vSpaceLg = size.height * 0.04;
     final double vSpaceMd = size.height * 0.025;
     final double vSpaceSm = size.height * 0.015;
@@ -116,349 +104,106 @@ class _VerificationScreenState extends State<VerificationScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        actions: [Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.05),
-                spreadRadius: 2,
-                blurRadius: 10,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: const Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: AppColors.kTextPrimaryColor,
-              size: 18,
+        actions: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.05),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            onPressed: () => context.pop(),
+            child: IconButton(
+              icon: const Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppColors.kTextPrimaryColor,
+                size: 18,
+              ),
+              onPressed: () => context.pop(),
+            ),
           ),
-        )],
+        ],
       ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthenticatedState) {
-            // context.pushNamed('set_up_profile');
-          } else if (state is AuthenticationErrorState) {
+            if (state.authEntity.profileComplete) {
+              context.go('/nav_screen');
+            } else {
+              context.push('/set_up_profile');
+            }
+          }
+          if (state is AuthenticationErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: AppColors.kRedColor,
               ),
             );
+            // context.push('/set_up_profile');
           }
         },
         child: SafeArea(
           child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vSpaceSm),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: vSpaceMd),
-                // Premium Icon presentation — sizes scale with screen width
-                Center(
-                  child: Container(
-                    padding: EdgeInsets.all(iconOuter * 0.20),
-                    decoration: BoxDecoration(
-                      color: AppColors.kPrimaryColor.withOpacity(0.04),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Container(
-                      padding: EdgeInsets.all(iconMid * 0.22),
-                      decoration: BoxDecoration(
-                        color: AppColors.kPrimaryColor.withOpacity(0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.all(iconInner * 0.28),
-                        decoration: BoxDecoration(
-                          color: AppColors.kPrimaryColor,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.kPrimaryColor.withOpacity(0.4),
-                              spreadRadius: 4,
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.mark_email_read_rounded,
-                          size: iconSz,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+            opacity: _fadeAnimation,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                horizontal: hPad,
+                vertical: vSpaceSm,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const VerificationHeaderWidget(),
+                  SizedBox(height: vSpaceMd),
+                  PhoneNumberDisplayWidget(phoneNumber: widget.phoneNumber),
+                  SizedBox(height: vSpaceLg),
+                  OtpInputRowWidget(
+                    controllers: _controllers,
+                    focusNodes: _focusNodes,
+                    onInputChanged: _onInputChanged,
                   ),
-                ),
-                SizedBox(height: vSpaceLg),
-                Text(
-                  AppStrings.phoneVerification,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppColors.kTextPrimaryColor,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: vSpaceMd),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: size.width * 0.05,
-                    vertical: vSpaceMd,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.kBackgroundColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        AppStrings.enterOtpSent,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 15,
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: vSpaceSm),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                           Text(
-                            widget.phoneNumber,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.edit_rounded,
-                            size: 16,
-                            color: AppColors.kPrimaryColor.withOpacity(0.7),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: vSpaceLg),
-                // OTP boxes — width/height adapt to screen size
-                Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(6, (index) {
-                      final isFocused = _focusNodes[index].hasFocus;
-                      final isFilled = _controllers[index].text.isNotEmpty;
-
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: otpBoxWidth,
-                        height: otpBoxHeight,
-                        decoration: BoxDecoration(
-                          color:
-                              // isFocused
-                              //     ? Colors.white
-                              //     :
-                              AppColors.kBackgroundColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isFocused
-                                ? AppColors.kPrimaryColor
-                                : isFilled
-                                ? AppColors.kPrimaryColor.withOpacity(0.3)
-                                : Colors.transparent,
-                            width: 2,
-                          ),
-                          boxShadow: isFocused
-                              ? [
-                                  BoxShadow(
-                                    color: AppColors.kPrimaryColor.withOpacity(
-                                      0.15,
-                                    ),
-                                    blurRadius: 10,
-                                    spreadRadius: 0,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ]
-                              : [],
-                        ),
-                        child: Center(
-                          child: TextFormField(
-                            controller: _controllers[index],
-                            focusNode: _focusNodes[index],
-                            keyboardType: TextInputType.number,
-                            textAlign: TextAlign.center,
-                            maxLength: 1,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontSize: otpFontSize,
-                              color: isFocused
-                                  ? AppColors.kPrimaryColor
-                                  : AppColors.kTextPrimaryColor,
-                            ),
-                            cursorColor: AppColors.kPrimaryColor,
-                            decoration: const InputDecoration(
-                              fillColor: Colors.transparent,
-                              filled: true,
-                              counterText: "",
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                            onChanged: (value) => _onInputChanged(value, index),
-                          ),
+                  SizedBox(height: vSpaceLg),
+                  ResendSectionWidget(
+                    canResend: _canResend,
+                    onResend: () {
+                      context.read<AuthBloc>().add(
+                            SendOTPEvent(widget.phoneNumber),
+                          );
+                      setState(() {
+                        _canResend = false;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(AppStrings.codeSentSuccess),
                         ),
                       );
-                    }),
+                    },
+                    onCountdownFinished: () {
+                      if (mounted) {
+                        setState(() {
+                          _canResend = true;
+                        });
+                      }
+                    },
                   ),
-                ),
-                SizedBox(height: vSpaceLg),
-                // Resend section
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    vertical: vSpaceMd,
-                    horizontal: size.width * 0.05,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.04),
-                        spreadRadius: 1,
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        AppStrings.didntReceiveCode,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 15,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: vSpaceSm),
-                      if (!_canResend)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.timer_outlined,
-                              size: 18,
-                              color: AppColors.kLightGreyColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Countdown(
-                              seconds: 59,
-                              build: (BuildContext context, double time) => Text(
-                                "00:${time.toInt().toString().padLeft(2, '0')}",
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      letterSpacing: 2.0,
-                                    ),
-                              ),
-                              interval: const Duration(seconds: 1),
-                              onFinished: () {
-                                if (mounted) {
-                                  setState(() {
-                                    _canResend = true;
-                                  });
-                                }
-                              },
-                            ),
-                          ],
-                        )
-                      else
-                        GestureDetector(
-                          onTap: () {
-                            context
-                                .read<AuthBloc>()
-                                .add(SendOTPEvent(widget.phoneNumber));
-                            setState(() {
-                              _canResend = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(AppStrings.codeSentSuccess),
-                              ),
-                            );
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.refresh_rounded,
-                                color: AppColors.kPrimaryColor,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                AppStrings.resend,
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                      color: AppColors.kPrimaryColor,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: vSpaceLg),
-                ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.kPrimaryColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                      vertical: size.height * 0.022,
-                    ),
-                    elevation: 8,
-                    shadowColor: AppColors.kPrimaryColor.withOpacity(0.5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        AppStrings.verifyAndContinue,
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontSize: 18,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward_rounded, size: 20),
-                    ],
-                  ),
-                ),
-                SizedBox(height: vSpaceMd),
-              ],
+                  SizedBox(height: vSpaceLg),
+                  VerifyButtonWidget(onPressed: _submit),
+                  SizedBox(height: vSpaceMd),
+                ],
+              ),
             ),
           ),
         ),
       ),
-      ),
     );
   }
 }
+

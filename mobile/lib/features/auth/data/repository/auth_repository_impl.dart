@@ -9,13 +9,11 @@ import '../../domain/payload/verify_payload.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../data_source/auth_local_data_source.dart';
 import '../data_source/auth_remote_data_source.dart';
-import '../mapper/auth_mapper.dart';
 import '../model/auth_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
-  final AuthMapper authMapper = AuthMapper();
 
   AuthRepositoryImpl(
       {required this.remoteDataSource, required this.localDataSource});
@@ -25,7 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return handleRequest(() async {
       final response = await remoteDataSource.login(payload);
       await localDataSource.saveAuthToLocal(response);
-      return authMapper.toEntity(response);
+      return response;
     });
   }
 
@@ -34,7 +32,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return handleRequest(() async {
       final response = await remoteDataSource.register(payload);
       await localDataSource.saveAuthToLocal(response);
-      return authMapper.toEntity(response);
+      return response;
     });
   }
 
@@ -43,7 +41,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return handleRequest(() async {
       final response = await remoteDataSource.verify(payload);
       await localDataSource.saveAuthToLocal(response);
-      return authMapper.toEntity(response);
+      return response;
     });
   }
   @override
@@ -68,7 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return handleRequest(() async {
       final AuthModel? authModel = await localDataSource.getAuthFromLocal();
       if (authModel != null) {
-        return authMapper.toEntity(authModel);
+        return authModel;
       } else {
         return null;
       }
@@ -80,7 +78,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return handleRequest(() async {
       final response = await remoteDataSource.signInWithGoogle(idToken);
       await localDataSource.saveAuthToLocal(response);
-      return authMapper.toEntity(response);
+      return response;
     });
   }
 }

@@ -30,9 +30,12 @@ class OnboardingScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.language, color: AppColors.kTextPrimaryColor),
+            icon: const Icon(
+              Icons.language,
+              color: AppColors.kTextPrimaryColor,
+            ),
             onPressed: () {},
-          )
+          ),
         ],
       ),
       body: SafeArea(
@@ -51,8 +54,7 @@ class OnboardingScreen extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(30),
-                    child: Image.asset(AppImages.mapImage,fit: BoxFit.fill,
-                    ),
+                    child: Image.asset(AppImages.mapImage, fit: BoxFit.fill),
                   ),
                 ),
               ),
@@ -60,9 +62,9 @@ class OnboardingScreen extends StatelessWidget {
               Text(
                 AppStrings.discoverLocalEvents,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: AppColors.kTextPrimaryColor,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  color: AppColors.kTextPrimaryColor,
+                  fontWeight: FontWeight.w900,
+                ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: vSpaceSm),

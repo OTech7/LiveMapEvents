@@ -64,16 +64,11 @@ class AuthDataSourceImpl implements AuthDataSource {
 
   @override
   Future<AuthModel> signInWithGoogle(String idToken) async {
-    final response = await interceptor.dio.post(
+    final response = await interceptor.post(
       EndPoints.googleAuth,
-      data: FormData.fromMap({'id_token': idToken}),
-      options: Options(headers: {"Accept": "application/json"}),
+      body: {'id_token': idToken},
     );
 
-    final data = response.data['data'];
-    return AuthModel(
-      token: data['token'] ?? '',
-      refreshToken: '',
-    );
+    return AuthModel.fromJson(response.data['data']);
   }
 }

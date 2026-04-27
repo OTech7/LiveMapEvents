@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile/features/auth/presentation/pages/login/widgets/new_user_widget.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../bloc/auth_bloc.dart';
-import '../../../../../core/helper/validator.dart';
+import 'widgets/divider_widget.dart';
+import 'widgets/login_button_widget.dart';
+import 'widgets/login_fields_widget.dart';
+import 'widgets/login_logo_widget.dart';
+import 'widgets/login_with_google_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,202 +62,61 @@ class _LoginScreenState extends State<LoginScreen> {
                   '/verification_screen',
                   extra: {'phoneNumber': state.phoneNumber},
                 );
+              } else if (state is AuthenticatedState) {
+                if (state.authEntity.profileComplete) {
+                  context.go('/nav_screen');
+                } else {
+                  context.push('/set_up_profile');
+                }
               }
             },
             child: Form(
               key: _formKey,
               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: vSpaceLg),
-                Center(
-                  child: Container(
-                    width: iconSize,
-                    height: iconSize,
-                    decoration: BoxDecoration(
-                      color: AppColors.kSelectedColor,
-                      shape: BoxShape.circle,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SizedBox(height: vSpaceLg),
+                  LoginLogoWidget(iconSize: iconSize),
+                  SizedBox(height: vSpaceLg),
+                  Text(
+                    AppStrings.welcomeBack,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: AppColors.kTextPrimaryColor,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: Center(
-                      child: Icon(
-                        Icons.map,
-                        size: iconSize * 0.5,
-                        color: AppColors.kPrimaryColor,
-                      ),
-                    ),
+                    textAlign: TextAlign.center,
                   ),
-                ),
-                SizedBox(height: vSpaceLg),
-                Text(
-                  AppStrings.welcomeBack,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: AppColors.kTextPrimaryColor,
-                    fontWeight: FontWeight.bold,
+                  SizedBox(height: vSpaceSm),
+                  Text(
+                    AppStrings.phonePrompt,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: vSpaceSm),
-                Text(
-                  AppStrings.phonePrompt,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: vSpaceLg),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: TextFormField(
-                        controller: _codeController,
-                        readOnly: true,
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.kBackgroundColor,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(
-                              color: AppColors.kPrimaryColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: size.width * 0.03),
-                    Expanded(
-                      flex: 5,
-                      child: TextFormField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(9),
-                        ],
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: AppColors.kBackgroundColor,
-                          hintText: AppStrings.enterMobileNumber,
-                          hintStyle: TextStyle(color: Colors.grey.shade400),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(
-                              color: AppColors.kPrimaryColor,
-                            ),
-                          ),
-                        ),
-                        validator: AppValidator.phoneNumberValidator,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: vSpaceMd),
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    return ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          final fullPhoneNumber =
-                              "${_codeController.text}${_phoneController.text}";
-                          context.read<AuthBloc>().add(
-                                SendOTPEvent(fullPhoneNumber),
-                              );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.kPrimaryColor,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                          vertical: size.height * 0.02,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      child: Text(
-                        AppStrings.continueText,
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: vSpaceMd),
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: Colors.grey.shade300)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        AppStrings.or,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                    Expanded(child: Divider(color: Colors.grey.shade300)),
-                  ],
-                ),
-                SizedBox(height: vSpaceMd),
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    return OutlinedButton.icon(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(SignInWithGoogleEvent());
-                      },
-                      icon: const Icon(
-                        Icons.g_mobiledata,
-                        color: Colors.red,
-                        size: 30,
-                      ),
-                      label: Text(
-                        AppStrings.signInWithGoogle,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(
-                          vertical: size.height * 0.018,
-                        ),
-                        side: BorderSide(color: Colors.grey.shade300),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                SizedBox(height: vSpaceLg),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      AppStrings.newToEventMap,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        context.push('/register');
-                      },
-                      child: Text(
-                        AppStrings.createAnAccountText,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.kPrimaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  SizedBox(height: vSpaceLg),
+                  LoginFieldsWidget(
+                    codeController: _codeController,
+                    size: size,
+                    phoneController: _phoneController,
+                  ),
+                  SizedBox(height: vSpaceMd),
+                  LoginButtonWidget(
+                    formKey: _formKey,
+                    codeController: _codeController,
+                    phoneController: _phoneController,
+                    size: size,
+                  ),
+                  SizedBox(height: vSpaceMd),
+                  DividerWidget(),
+                  SizedBox(height: vSpaceMd),
+                  LoginWithGoogleWidget(size: size),
+                  SizedBox(height: vSpaceLg),
+                  NewUserWidget(),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ));
+    );
   }
 }
