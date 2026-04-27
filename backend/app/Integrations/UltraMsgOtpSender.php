@@ -14,9 +14,15 @@ class UltraMsgOtpSender implements OtpSenderInterface
         $url = config('services.ultramsg.url');
         $token = config('services.ultramsg.token');
 
+        // UltraMsg's WhatsApp API expects 'to' as digits with country code,
+        // WITHOUT the leading '+'. Strip it here at the gateway boundary so
+        // the rest of the app can keep using +E.164 internally.
+        $to = ltrim($phone, '+');
+
         Log::info('UltraMsg send attempt', [
             'url' => $url,
             'phone' => $phone,
+            'to' => $to,
             'message' => $message,
             'token_exists' => !empty($token),
         ]);
@@ -25,7 +31,7 @@ class UltraMsgOtpSender implements OtpSenderInterface
             ->timeout(20)
             ->post($url, [
                 'token' => $token,
-                'to' => $phone,
+                'to' => $to,
                 'body' => $message,
             ]);
 
