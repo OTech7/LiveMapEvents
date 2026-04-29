@@ -6,6 +6,6 @@ class EndPoints {
   static const String logout = "auth/logout";
   static const String verify = "auth/phone/verify-otp";
   static const String interests = "interests";
-  static const String completeSetup = "complete-setup";
+  static const String completeSetup = "auth/complete-profile";
   static const String googleAuth = "auth/google";
 }

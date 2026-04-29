@@ -67,9 +67,13 @@ class AppRouter {
           return BlocProvider(
             create: (context) => di.sl<ProfileBloc>(),
             child: PersonalizeFeedScreen(
-              fullName: extra?['fullName'] ?? '',
-              bio: extra?['bio'],
-              profilePhoto: extra?['profilePhoto'],
+              firstName: extra?['firstName'] ?? '',
+              lastName: extra?['lastName'] ?? '',
+              phone: extra?['phone'] ?? '',
+              gender: extra?['gender'] ?? 'male',
+              dob: extra?['dob'] ?? '',
+              lat: extra?['lat'] ?? 0.0,
+              lng: extra?['lng'] ?? 0.0,
             ),
           );
         },

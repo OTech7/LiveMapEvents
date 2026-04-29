@@ -161,4 +161,13 @@ class AppStrings {
   static String get selectInterestsDesc => "Select at least 3 categories to help us find events you'll love.".tr();
   static String get step2of2 => "STEP 2 OF 2".tr();
   static String get selectedCount => "Selected: {}/3 required".tr();
+  static String get gender => "Gender".tr();
+  static String get male => "Male".tr();
+  static String get female => "Female".tr();
+  static String get dob => "Date of Birth".tr();
+  static String get selectDate => "Select Date".tr();
+  static String get lat => "Latitude".tr();
+  static String get lng => "Longitude".tr();
+  static String get phone => "Phone".tr();
+
 }

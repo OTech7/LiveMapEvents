@@ -10,15 +10,23 @@ import 'widgets/complete_setup_section_widget.dart';
 import 'widgets/interests_grid_widget.dart';
 
 class PersonalizeFeedScreen extends StatefulWidget {
-  final String fullName;
-  final String? bio;
-  final String? profilePhoto;
+  final String firstName;
+  final String lastName;
+  final String phone;
+  final String gender;
+  final String dob;
+  final double lat;
+  final double lng;
 
   const PersonalizeFeedScreen({
     super.key,
-    required this.fullName,
-    this.bio,
-    this.profilePhoto,
+    required this.firstName,
+    required this.lastName,
+    required this.phone,
+    required this.gender,
+    required this.dob,
+    required this.lat,
+    required this.lng,
   });
 
   @override
@@ -47,12 +55,16 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
   void _onComplete() {
     if (_selectedIds.length >= 3) {
       final payload = CompleteSetupPayload(
-        fullName: widget.fullName,
-        bio: widget.bio,
-        profilePhoto: widget.profilePhoto,
+        firstName: widget.firstName,
+        lastName: widget.lastName,
+        phone: widget.phone,
+        gender: widget.gender,
+        dob: widget.dob,
+        lat: widget.lat,
+        lng: widget.lng,
         interestIds: _selectedIds,
       );
-      // context.read<AuthBloc>().add(CompleteSetupEvent(payload));
+      context.read<ProfileBloc>().add(CompleteSetupEvent(payload));
     }
   }
 
@@ -98,7 +110,7 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
     return BlocListener<ProfileBloc, ProfileState>(
       listener: (context, state) {
         if (state is SetupCompletedState) {
-          // TODO: Navigate to Home or Success screen
+        //  context.go('/home');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Profile Setup Successful!")),
           );
@@ -204,4 +216,3 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
     );
   }
 }
-
