@@ -42,7 +42,11 @@ class OTPService
             ]);
         }
 
-        $code = (string) random_int(100000, 999999);
+        $fake = (bool)config('otp.fake', false);
+
+        $code = $fake
+            ? (string)config('otp.fake_code', '000000')
+            : (string)random_int(100000, 999999);
 
         $payload = [
             'code' => Hash::make($code),
@@ -59,12 +63,14 @@ class OTPService
         Redis::setex($cooldownKey, $this->resendCooldown, 1);
 
         if (! $requests) {
-            Redis::setex($rateKey, 3600, 1); 
+            Redis::setex($rateKey, 3600, 1);
         } else {
             Redis::incr($rateKey);
         }
 
-        dispatch(new SendOtpJob($phone, $code));
+        if (!$fake) {
+            dispatch(new SendOtpJob($phone, $code));
+        }
     }
 
     public function verify(string $phone, string $otp): OtpVerificationResult
