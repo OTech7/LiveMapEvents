@@ -33,6 +33,41 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+<!--
+  One-time cleanup: the previous deploy registered a Flutter service worker
+  that aggressively cached the bundle and caused "redeploys don't appear"
+  bugs. We've since switched to --pwa-strategy=none, but existing visitors
+  still have the old SW installed. This snippet unregisters any leftover
+  service workers and clears their caches on next visit, then reloads once
+  so the user immediately sees the fresh build.
+  Safe to leave in place — it's a no-op for browsers without a registered SW.
+-->
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+            if (regs.length === 0) return;
+            Promise.all(regs.map(function (r) {
+                return r.unregister();
+            }))
+                .then(function () {
+                    if (window.caches && caches.keys) {
+                        return caches.keys().then(function (keys) {
+                            return Promise.all(keys.map(function (k) {
+                                return caches.delete(k);
+                            }));
+                        });
+                    }
+                })
+                .then(function () {
+                    // Reload once so the next request bypasses the dying SW.
+                    if (!sessionStorage.getItem('__sw_cleared__')) {
+                        sessionStorage.setItem('__sw_cleared__', '1');
+                        window.location.reload();
+                    }
+                });
+        });
+    }
+</script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

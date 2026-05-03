@@ -24,8 +24,11 @@ COPY . .
 
 # Build for web with release optimizations
 # --base-href ensures assets load correctly behind a reverse proxy
+# --pwa-strategy=none disables the offline service worker so users always
+# get the latest deploy on reload (no stale caches between releases).
+# Drop --pwa-strategy=none if you later want true PWA / offline support.
 ARG BASE_HREF=/
-RUN flutter build web --release --base-href "$BASE_HREF"
+RUN flutter build web --release --base-href "$BASE_HREF" --pwa-strategy=none
 
 # ---- Stage 2: Nginx to serve static files ----
 FROM nginx:1.27-alpine AS production
