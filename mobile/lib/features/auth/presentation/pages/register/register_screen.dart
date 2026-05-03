@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../../core/constants/colors.dart';
+import '../../../../../core/data/countries.dart';
 import '../../../../../core/helper/validator.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/widgets/country_code_picker.dart';
 import '../login/widgets/login_header_widget.dart';
 import '../widgets/auth_fields.dart';
 import 'widgets/go_login_button.dart';
@@ -26,9 +28,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  final TextEditingController _countryCodeController = TextEditingController(
-    text: "+963",
-  );
+  // Defaults to Syria (+963). User can change via the picker.
+  Country _country = Countries.defaultCountry;
+
+  // Mirror the dial code into a TextEditingController so that the existing
+  // RegisterPayload contract (which expects a controller) keeps working.
+  late final TextEditingController _countryCodeController =
+  TextEditingController(text: _country.dialCode);
   final bool _obscurePassword = true;
   final bool _obscureConfirmPassword = true;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -104,17 +110,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                   ),
                   SizedBox(height: vSpaceSm),
-                  CustomTextFieldWidget(
-                    controller: _phoneController,
-                    icon: Icons.phone,
-                    // prefixText: '963',
-                    formatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(9),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CountryCodePicker(
+                        selected: _country,
+                        onChanged: (c) =>
+                            setState(() {
+                              _country = c;
+                              _countryCodeController.text = c.dialCode;
+                            }),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: CustomTextFieldWidget(
+                          controller: _phoneController,
+                          icon: Icons.phone,
+                          formatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            // E.164 caps at 15 digits (excluding country code).
+                            LengthLimitingTextInputFormatter(15),
+                          ],
+                          hintText: AppStrings.phoneNumber,
+                          keyboardType: TextInputType.phone,
+                          validator: AppValidator.phoneNumberValidator,
+                        ),
+                      ),
                     ],
-                    hintText: AppStrings.phoneNumber,
-                    keyboardType: TextInputType.phone,
-                    validator: AppValidator.phoneNumberValidator,
                   ),
                   SizedBox(height: vSpaceSm),
                   PasswordInputField(

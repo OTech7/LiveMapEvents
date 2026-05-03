@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/colors.dart';
+import '../../../../../core/data/countries.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/widgets/country_code_picker.dart';
 import '../../bloc/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,14 +17,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _codeController = TextEditingController(
-    text: "+963",
-  );
+
+  // Defaults to Syria (+963). User can change via the picker.
+  Country _country = Countries.defaultCountry;
 
   @override
   void dispose() {
     _phoneController.dispose();
-    _codeController.dispose();
     super.dispose();
   }
 
@@ -89,39 +90,19 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      controller: _codeController,
-                      readOnly: true,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: AppColors.kBackgroundColor,
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: BorderSide(
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          borderSide: const BorderSide(
-                            color: AppColors.kPrimaryColor,
-                          ),
-                        ),
-                      ),
-                    ),
+                  CountryCodePicker(
+                    selected: _country,
+                    onChanged: (c) => setState(() => _country = c),
                   ),
                   SizedBox(width: size.width * 0.03),
                   Expanded(
-                    flex: 5,
                     child: TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(9),
+                        // E.164 caps at 15 digits (excluding the country code).
+                        LengthLimitingTextInputFormatter(15),
                       ],
                       decoration: InputDecoration(
                         filled: true,
