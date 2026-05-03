@@ -3,7 +3,6 @@
 namespace App\Integrations;
 
 use App\Contracts\OtpSenderInterface;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -12,12 +11,8 @@ class UltraMsgOtpSender implements OtpSenderInterface
 {
     public function send(string $phone, string $message): void
     {
-        $url = $this->resolveUrl();
-        $token = trim((string) config('services.ultramsg.token', ''));
-
-        if ($token === '') {
-            throw new RuntimeException('ULTRAMSG_TOKEN is missing.');
-        }
+        $url = config('services.ultramsg.url');
+        $token = config('services.ultramsg.token');
 
         // UltraMsg's WhatsApp API expects 'to' as digits with country code,
         // WITHOUT the leading '+'. Strip it here at the gateway boundary so
@@ -40,38 +35,15 @@ class UltraMsgOtpSender implements OtpSenderInterface
                 'body' => $message,
             ]);
 
-            // throw new RuntimeException(
-            //     'OTP provider is unreachable. Check DNS or internet connectivity for api.ultramsg.com.',
-            //     0,
-            //     $exception
-            // );
-            
         Log::info('UltraMsg response', [
             'status' => $response->status(),
             'successful' => $response->successful(),
             'failed' => $response->failed(),
             'body' => $response->body(),
-            ]);
-            
+        ]);
+
         if ($response->failed()) {
             throw new RuntimeException('UltraMsg request failed: ' . $response->body());
-            }
-    }
-
-    private function resolveUrl(): string
-    {
-        $configuredUrl = trim((string) config('services.ultramsg.url', ''));
-
-        if ($configuredUrl !== '') {
-            return $configuredUrl;
         }
-
-        $instanceId = trim((string) config('services.ultramsg.instanceId', ''));
-
-        if ($instanceId === '') {
-            throw new RuntimeException('UltraMsg URL is missing. Set ULTRAMSG_URL or ULTRAMSG_INSTANCE_ID.');
-        }
-
-        return sprintf('https://api.ultramsg.com/%s/messages/chat', $instanceId);
     }
 }
