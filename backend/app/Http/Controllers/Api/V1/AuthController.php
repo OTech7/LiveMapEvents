@@ -11,6 +11,7 @@ use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Services\OTPService;
 use App\Support\ApiResponse;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -19,7 +20,16 @@ class AuthController extends Controller
 
     public function requestOtp(RequestOtpRequest $request)
     {
-        $this->otpService->send($request->string('phone')->toString());
+        try {
+            $this->otpService->send($request->string('phone')->toString());
+        } catch (RuntimeException $exception) {
+            report($exception);
+
+            return ApiResponse::error(
+                message: 'messages.otp_provider_unreachable',
+                status: Response::HTTP_SERVICE_UNAVAILABLE
+            );
+        }
 
         return ApiResponse::success(message: 'messages.otp_sent',status: Response::HTTP_OK);
     }

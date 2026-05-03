@@ -151,6 +151,16 @@
                                 }
                             }
                         }
+                    },
+                    "503": {
+                        "description": "OTP provider unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -399,6 +409,113 @@
                 ]
             }
         },
+        "/api/v1/profile/interests": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get all available interests",
+                "operationId": "78574295a7a082ddf09165d43d6cebb3",
+                "responses": {
+                    "200": {
+                        "description": "Interests fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Interests fetched successfully"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Interest"
+                                            }
+                                        },
+                                        "errors": {
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Update user interests",
+                "operationId": "fcc51d0477e05c4260cbc09ffab86829",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "interests"
+                                ],
+                                "properties": {
+                                    "interests": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "music"
+                                        },
+                                        "maxItems": 10,
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Interests updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/v1/profile": {
             "get": {
                 "tags": [
@@ -574,59 +691,6 @@
                 ]
             }
         },
-        "/api/v1/profile/interests": {
-            "put": {
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Update user interests",
-                "operationId": "fcc51d0477e05c4260cbc09ffab86829",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "interests"
-                                ],
-                                "properties": {
-                                    "interests": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string",
-                                            "example": "music"
-                                        },
-                                        "maxItems": 10,
-                                        "minItems": 3
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Interests updated successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiResponse"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error"
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
         "/api/v1/profile/avatar": {
             "post": {
                 "tags": [
@@ -735,6 +799,23 @@
                     "errors": {
                         "type": "object",
                         "additionalProperties": true
+                    }
+                },
+                "type": "object"
+            },
+            "Interest": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Music"
+                    },
+                    "slug": {
+                        "type": "string",
+                        "example": "music"
                     }
                 },
                 "type": "object"

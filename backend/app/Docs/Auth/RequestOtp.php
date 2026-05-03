@@ -18,6 +18,11 @@ use OpenApi\Annotations as OA;
  *         response=200,
  *         description="OTP sent",
  *         @OA\JsonContent(ref="#/components/schemas/ApiResponse")
+ *     ),
+ *     @OA\Response(
+ *         response=503,
+ *         description="OTP provider unavailable",
+ *         @OA\JsonContent(ref="#/components/schemas/ErrorResponse")
  *     )
  * )
  */

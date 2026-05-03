@@ -16,11 +16,13 @@ return [
     'your_otp_code' => 'Your OTP code is: :code',
     'too_many_otp_requests' => 'Too many OTP requests. Try again later.',
     'otp_cooldown' => 'Please wait before requesting another OTP.',
+    'otp_provider_unreachable' => 'OTP service is currently unavailable. Please try again later.',
     
     'profile_completed_successfully' =>  'Profile completed successfully.',
     'profile_already_completed' => 'Profile already completed.',
     'profile_fetched_successfully' => 'Profile fetched successfully',
     'profile_updated_successfully' => 'Profile updated successfully',
+    'interests_fetched_successfully' => 'Interests fetched successfully',
     'interests_updated_successfully' => 'Interests updated successfully',
     'avatar_uploaded_successfully' => 'Avatar uploaded successfully',
     'nearby_pins_fetched_successfully' => 'Nearby pins fetched successfully',
