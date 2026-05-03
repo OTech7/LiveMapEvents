@@ -14,6 +14,10 @@ use OpenApi\Annotations as OA;
  *     @OA\Server(
  *         url="http://localhost:8000",
  *         description="Local Server"
+ *     ),
+ *     @OA\Server(
+ *         url="http://live-events-map.tech:8080",
+ *         description="Live Server"
  *     )
  * )
  *
@@ -24,4 +28,6 @@ use OpenApi\Annotations as OA;
  *     bearerFormat="JWT"
  * )
  */
-class OpenApi {}
+class OpenApi
+{
+}

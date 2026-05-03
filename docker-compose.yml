@@ -1,0 +1,116 @@
+# ============================================================
+# LiveMapEvents — Docker Compose (Staging / Production)
+# ============================================================
+# Usage:
+#   cp .env.docker.example .env.docker
+#   docker compose up -d --build
+#   docker compose logs -f app
+# ============================================================
+
+services:
+  # ── Laravel Application (PHP-FPM + Nginx + Queue Worker) ──
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: livemap-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    env_file:
+      - .env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - app-storage:/var/www/html/storage
+    networks:
+      - livemap
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── PostgreSQL + PostGIS ──
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: livemap-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-livemap}
+      POSTGRES_USER: ${DB_USERNAME:-livemap}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - livemap
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-livemap} -d ${DB_DATABASE:-livemap}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Redis (Cache + Queue + Sessions + OTP storage) ──
+  redis:
+    image: redis:7-alpine
+    container_name: livemap-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    # No host port published: only the app container needs to reach it,
+    # over the internal docker network. This keeps Redis off the public IP.
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - livemap
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Flutter Web Frontend ──
+  frontend:
+    build:
+      context: ./mobile
+      dockerfile: Dockerfile.web
+      args:
+        BASE_HREF: /
+    container_name: livemap-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    networks:
+      - livemap
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  db-data:
+    driver: local
+  redis-data:
+    driver: local
+  app-storage:
+    driver: local
+
+networks:
+  livemap:
+    driver: bridge

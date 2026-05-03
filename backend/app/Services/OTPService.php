@@ -29,7 +29,8 @@ class OTPService
 
         $requests = Redis::get($rateKey);
 
-        if ($requests && $requests >= 3) {
+        if ($requests && $requests >= $this->maxAttempts)
+        {
             throw ValidationException::withMessages([
                 'otp' => [__('messages.too_many_otp_requests')]
             ]);
@@ -41,7 +42,11 @@ class OTPService
             ]);
         }
 
-        $code = (string) random_int(100000, 999999);
+        $fake = (bool)config('otp.fake', false);
+
+        $code = $fake
+            ? (string)config('otp.fake_code', '000000')
+            : (string)random_int(100000, 999999);
 
         $payload = [
             'code' => Hash::make($code),
@@ -58,12 +63,14 @@ class OTPService
         Redis::setex($cooldownKey, $this->resendCooldown, 1);
 
         if (! $requests) {
-            Redis::setex($rateKey, 3600, 1); 
+            Redis::setex($rateKey, 3600, 1);
         } else {
             Redis::incr($rateKey);
         }
 
-        dispatch(new SendOtpJob($phone, $code));
+        if (!$fake) {
+            dispatch(new SendOtpJob($phone, $code));
+        }
     }
 
     public function verify(string $phone, string $otp): OtpVerificationResult
@@ -120,10 +127,7 @@ class OTPService
 
         Redis::del($otpKey);
 
-        return new OtpVerificationResult(
-            OtpVerificationStatus::VERIFIED,
-            $this->maxAttempts
-        );
+        return new OtpVerificationResult(OtpVerificationStatus::VERIFIED,$this->maxAttempts);
     }
 
     private function otpKey(string $phone): string

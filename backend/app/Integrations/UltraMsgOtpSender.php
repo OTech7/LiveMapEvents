@@ -19,46 +19,43 @@ class UltraMsgOtpSender implements OtpSenderInterface
             throw new RuntimeException('ULTRAMSG_TOKEN is missing.');
         }
 
+        // UltraMsg's WhatsApp API expects 'to' as digits with country code,
+        // WITHOUT the leading '+'. Strip it here at the gateway boundary so
+        // the rest of the app can keep using +E.164 internally.
+        $to = ltrim($phone, '+');
+
         Log::info('UltraMsg send attempt', [
             'url' => $url,
             'phone' => $phone,
+            'to' => $to,
             'message' => $message,
             'token_exists' => !empty($token),
         ]);
 
-        try {
-            $response = Http::asForm()
-                ->connectTimeout(10)
-                ->timeout(20)
-                ->retry(2, 500, null, false)
-                ->post($url, [
-                    'token' => $token,
-                    'to' => $phone,
-                    'body' => $message,
-                ]);
-        } catch (ConnectionException $exception) {
-            Log::error('UltraMsg connection error', [
-                'url' => $url,
-                'error' => $exception->getMessage(),
+        $response = Http::asForm()
+            ->timeout(20)
+            ->post($url, [
+                'token' => $token,
+                'to' => $to,
+                'body' => $message,
             ]);
 
-            throw new RuntimeException(
-                'OTP provider is unreachable. Check DNS or internet connectivity for api.ultramsg.com.',
-                0,
-                $exception
-            );
-        }
-
+            // throw new RuntimeException(
+            //     'OTP provider is unreachable. Check DNS or internet connectivity for api.ultramsg.com.',
+            //     0,
+            //     $exception
+            // );
+            
         Log::info('UltraMsg response', [
             'status' => $response->status(),
             'successful' => $response->successful(),
             'failed' => $response->failed(),
             'body' => $response->body(),
-        ]);
-
+            ]);
+            
         if ($response->failed()) {
             throw new RuntimeException('UltraMsg request failed: ' . $response->body());
-        }
+            }
     }
 
     private function resolveUrl(): string

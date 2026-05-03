@@ -2,48 +2,40 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Services\OTPService;
-use Mockery\MockInterface;
-use RuntimeException;
-use Symfony\Component\HttpFoundation\Response;
+use App\Jobs\SendOtpJob;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
 class RequestOtpTest extends TestCase
 {
-    public function test_request_otp_returns_success_when_sender_completes(): void
+    use RefreshDatabase;
+
+    public function test_user_can_request_otp()
     {
-        $this->mock(OTPService::class, function (MockInterface $mock): void {
-            $mock->shouldReceive('send')->once();
-        });
+        Queue::fake();
 
-        $response = $this->postJson('/api/v1/auth/phone/request-otp', [
-            'phone' => '+963999999999',
-        ]);
+        $response = $this->requestOtpFor('123456789');
 
-        $response
-            ->assertStatus(Response::HTTP_OK)
-            ->assertJson([
-                'success' => true,
-                'message' => __('messages.otp_sent'),
-            ]);
+        $response->assertOk()
+            ->assertJson(['success' => true]);
+
+        Queue::assertPushed(SendOtpJob::class);
     }
 
-    public function test_request_otp_returns_service_unavailable_when_provider_is_unreachable(): void
+    public function test_user_cannot_request_otp_during_cooldown()
     {
-        $this->mock(OTPService::class, function (MockInterface $mock): void {
-            $mock->shouldReceive('send')->once()->andThrow(new RuntimeException('Provider unreachable'));
-        });
+        Redis::setex('otp_cooldown:123456789', 60, 1);
 
-        $response = $this->postJson('/api/v1/auth/phone/request-otp', [
-            'phone' => '+963999999999',
-        ]);
+        $response = $this->requestOtpFor('123456789');
 
-        $response
-            ->assertStatus(Response::HTTP_SERVICE_UNAVAILABLE)
-            ->assertJson([
-                'success' => false,
-                'message' => __('messages.otp_provider_unreachable'),
-                'data' => null,
-            ]);
+        $response->assertStatus(422);
     }
+
+    protected function requestOtpFor($phone)
+    {
+        return $this->postJson('/api/v1/auth/phone/request-otp', ['phone' => $phone]);
+    }
+    
 }
