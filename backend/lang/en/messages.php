@@ -20,6 +20,7 @@ return [
     
     'profile_completed_successfully' =>  'Profile completed successfully.',
     'profile_already_completed' => 'Profile already completed.',
+    'phone_already_set' => 'Phone number is already on file and cannot be changed here.',
     'profile_fetched_successfully' => 'Profile fetched successfully',
     'profile_updated_successfully' => 'Profile updated successfully',
     'interests_fetched_successfully' => 'Interests fetched successfully',

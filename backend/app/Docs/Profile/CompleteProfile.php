@@ -2,6 +2,7 @@
 
 namespace App\Docs\Profile;
 use OpenApi\Annotations as OA;
+
 /**
  * @OA\Post(
  *     path="/api/v1/auth/complete-profile",
@@ -11,10 +12,15 @@ use OpenApi\Annotations as OA;
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"first_name","last_name","phone","gender","dob","lat","lng"},
+ *             required={"first_name","last_name","gender","dob","lat","lng"},
  *             @OA\Property(property="first_name", type="string"),
  *             @OA\Property(property="last_name", type="string"),
- *             @OA\Property(property="phone", type="string"),
+ *             @OA\Property(
+ *                 property="phone",
+ *                 type="string",
+ *                 nullable=true,
+ *                 description="Required ONLY for users who do not already have a phone on file (e.g. Google sign-in). Must be omitted for phone-OTP users — their phone is already stored at OTP verification."
+ *             ),
  *             @OA\Property(property="gender", type="string", enum={"male","female"}),
  *             @OA\Property(property="dob", type="string", format="date"),
  *             @OA\Property(property="lat", type="number"),

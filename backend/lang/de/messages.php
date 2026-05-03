@@ -19,6 +19,7 @@ return [
     
     'profile_already_completed' => 'Profil wurde bereits vervollständigt.',
     'profile_completed_successfully' => 'Profil erfolgreich abgeschlossen',
+    'phone_already_set' => 'Die Telefonnummer ist bereits hinterlegt und kann hier nicht geändert werden.',
     'profile_fetched_successfully' => 'Profil erfolgreich abgerufen',
     'profile_updated_successfully' => 'Profil erfolgreich aktualisiert',
     'interests_fetched_successfully' => 'Interessen erfolgreich abgerufen',

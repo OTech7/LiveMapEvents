@@ -20,6 +20,7 @@ return [
     
     'profile_already_completed' => 'تم إكمال الملف الشخصي مسبقاً.',
     'profile_completed_successfully' => 'تم إكمال الملف الشخصي بنجاح.',
+    'phone_already_set' => 'رقم الهاتف مسجّل مسبقاً ولا يمكن تعديله من هنا.',
     'profile_fetched_successfully' => 'تم جلب الملف الشخصي بنجاح',
     'profile_updated_successfully' => 'تم تحديث الملف الشخصي بنجاح',
     'interests_fetched_successfully' => 'تم جلب الاهتمامات بنجاح',

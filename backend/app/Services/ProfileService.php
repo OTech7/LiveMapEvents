@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use App\Exceptions\ProfileAlreadyCompletedException;
 use App\Exceptions\ProfileCompletionException;
+use App\Models\User;
 use Clickbar\Magellan\Data\Geometries\Point;
+use Illuminate\Support\Facades\DB;
 
 class ProfileService
 {
@@ -15,23 +15,34 @@ class ProfileService
      */
     public function completeProfile(User $user, array $data): User
     {
-        if ($user->profile_complete) {
-            throw new ProfileAlreadyCompletedException();
-        }
-
         return DB::transaction(function () use ($user, $data) {
+            // Re-fetch with row-level lock so two concurrent requests
+            // can't both pass the "not yet complete" check.
+            $user = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+
+            if ($user->profile_complete) {
+                throw new ProfileAlreadyCompletedException();
+            }
 
             $location = $this->makePoint($data['lat'], $data['lng']);
 
-            $user->update([
+            $update = [
                 'first_name' => $data['first_name'],
-                'last_name'  => $data['last_name'],
-                'gender'     => $data['gender'],
-                'dob'        => $data['dob'],
+                'last_name' => $data['last_name'],
+                'gender' => $data['gender'],
+                'dob' => $data['dob'],
                 'avatar_url' => $data['avatar_url'] ?? $user->avatar_url,
-                'location'   => $location,
+                'location' => $location,
                 'profile_complete' => true,
-            ]);
+            ];
+
+            // Only set the phone if the user doesn't already have one
+            // (Google sign-in case). Phone-OTP users already have it.
+            if (empty($user->phone) && !empty($data['phone'])) {
+                $update['phone'] = $data['phone'];
+            }
+
+            $user->update($update);
 
             return $user->fresh();
         });
