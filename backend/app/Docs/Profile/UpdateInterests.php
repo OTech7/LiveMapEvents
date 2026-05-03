@@ -17,7 +17,7 @@ use OpenApi\Annotations as OA;
  *             @OA\Property(
  *                 property="interests",
  *                 type="array",
- *                 minItems=3,
+ *                 minItems=1,
  *                 maxItems=10,
  *                 @OA\Items(
  *                     type="string",

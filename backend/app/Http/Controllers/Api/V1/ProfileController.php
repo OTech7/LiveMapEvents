@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InterestResource;
 use App\Http\Requests\Auth\CompleteProfileRequest;
 use App\Http\Requests\Profile\UpdateDiscoverySettingsRequest;
 use App\Http\Requests\Profile\UpdateInterestsRequest;
@@ -29,6 +30,18 @@ class ProfileController extends Controller
     public function show()
     {
         return ApiResponse::success('messages.profile_fetched_successfully',UserResource::make(auth()->user()));
+    }
+
+    public function getInterests()
+    {
+        $interests = Interest::query()
+            ->orderBy('name')
+            ->get();
+
+        return ApiResponse::success(
+            'messages.interests_fetched_successfully',
+            InterestResource::collection($interests)
+        );
     }
 
     public function update(UpdateProfileRequest $request)

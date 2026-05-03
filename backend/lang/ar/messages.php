@@ -16,11 +16,13 @@ return [
     'your_otp_code' => 'رمز التحقق الخاص بك هو: :code',
     'too_many_otp_requests' => 'عدد طلبات رمز التحقق كبير جدًا. حاول لاحقًا.',
     'otp_cooldown' => 'يرجى الانتظار قبل طلب رمز تحقق جديد.',
+    'otp_provider_unreachable' => 'خدمة رمز التحقق غير متاحة حالياً. يرجى المحاولة لاحقاً.',
     
     'profile_already_completed' => 'تم إكمال الملف الشخصي مسبقاً.',
     'profile_completed_successfully' => 'تم إكمال الملف الشخصي بنجاح.',
     'profile_fetched_successfully' => 'تم جلب الملف الشخصي بنجاح',
     'profile_updated_successfully' => 'تم تحديث الملف الشخصي بنجاح',
+    'interests_fetched_successfully' => 'تم جلب الاهتمامات بنجاح',
     'interests_updated_successfully' => 'تم تحديث الاهتمامات بنجاح',
     'avatar_uploaded_successfully' => 'تم رفع الصورة الشخصية بنجاح',
     'nearby_pins_fetched_successfully' => 'تم جلب النقاط القريبة بنجاح',

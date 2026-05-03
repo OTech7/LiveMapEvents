@@ -22,6 +22,7 @@ Route::prefix('v1')->middleware('lang')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('profile')->group(function () {
             Route::get('/', [ProfileController::class, 'show']);
+            Route::get('/interests', [ProfileController::class, 'getInterests']);
             Route::put('/', [ProfileController::class, 'update']);
             Route::put('/interests', [ProfileController::class, 'updateInterests']);
             Route::post('/avatar', [ProfileController::class, 'uploadAvatar']);
