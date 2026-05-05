@@ -16,3 +16,9 @@ class DiscoverySettingsEvent extends ProfileEvent {
 
   DiscoverySettingsEvent(this.payload);
 }
+
+class SaveInterestsEvent extends ProfileEvent {
+  final List<String> interests;
+
+  SaveInterestsEvent(this.interests);
+}

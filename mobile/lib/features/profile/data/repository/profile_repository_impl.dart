@@ -40,4 +40,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return unit;
     });
   }
+
+  @override
+  Future<Either<Failure, Unit>> saveInterests(List<String> interests) async {
+    return handleRequest(() async {
+      await remoteDataSource.saveInterests(interests);
+      return unit;
+    });
+  }
 }

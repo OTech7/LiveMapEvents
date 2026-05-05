@@ -5,11 +5,13 @@ import '../../../../../../../core/strings/app_strings.dart';
 class CompleteSetupSectionWidget extends StatelessWidget {
   final int selectedCount;
   final VoidCallback? onComplete;
+  final bool isLoading;
 
   const CompleteSetupSectionWidget({
     super.key,
     required this.selectedCount,
     this.onComplete,
+    this.isLoading = false,
   });
 
   @override
@@ -34,33 +36,44 @@ class CompleteSetupSectionWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           ElevatedButton(
-            onPressed: onComplete,
+            onPressed: isLoading ? null : onComplete,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.kPrimaryColor,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.grey.shade300,
-              padding: EdgeInsets.symmetric(vertical: size.height * 0.022),
+              disabledBackgroundColor:
+                  isLoading ? AppColors.kPrimaryColor : Colors.grey.shade300,
+              minimumSize: const Size(double.infinity, 56),
               elevation: 4,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Complete Setup",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  selectedCount >= 3
-                      ? Icons.check_circle_rounded
-                      : Icons.check_circle_outline_rounded,
-                  size: 20,
-                ),
-              ],
-            ),
+            child: isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Complete Setup",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        selectedCount >= 3
+                            ? Icons.check_circle_rounded
+                            : Icons.check_circle_outline_rounded,
+                        size: 20,
+                      ),
+                    ],
+                  ),
           ),
           SizedBox(height: vSpaceSm),
           Text(

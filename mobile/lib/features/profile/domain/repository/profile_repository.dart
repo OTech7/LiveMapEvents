@@ -12,4 +12,6 @@ abstract class ProfileRepository {
   Future<Either<Failure, Unit>> discoverySettings(
     DiscoverySettingsPayload payload,
   );
+
+  Future<Either<Failure, Unit>> saveInterests(List<String> interests);
 }

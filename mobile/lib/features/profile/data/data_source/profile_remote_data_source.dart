@@ -11,6 +11,8 @@ abstract class ProfileDataSource {
   Future<Unit> completeSetup(CompleteSetupPayload payload);
 
   Future<Unit> discoverySettings(DiscoverySettingsPayload payload);
+
+  Future<Unit> saveInterests(List<String> interests);
 }
 
 class ProfileDataSourceImpl implements ProfileDataSource {
@@ -44,6 +46,18 @@ class ProfileDataSourceImpl implements ProfileDataSource {
     await interceptor.put(
       EndPoints.discoverySettings,
       body: payload.toJson(),
+      withToken: true,
+    );
+    return unit;
+  }
+
+  @override
+  Future<Unit> saveInterests(List<String> interests) async {
+    await interceptor.put(
+      EndPoints.interests,
+      body: {
+        'interests': interests,
+      },
       withToken: true,
     );
     return unit;

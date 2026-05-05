@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../domain/entity/interest_entity.dart';
 import '../../../domain/payload/complete_setup_payload.dart';
 import '../../bloc/profile_bloc.dart';
 import '../profile_setup/widgets/step_indicator_widget.dart';
@@ -35,6 +36,7 @@ class PersonalizeFeedScreen extends StatefulWidget {
 
 class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
   final List<int> _selectedIds = [];
+  List<InterestEntity> _availableInterests = [];
 
   @override
   void initState() {
@@ -54,17 +56,12 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
 
   void _onComplete() {
     if (_selectedIds.length >= 3) {
-      final payload = CompleteSetupPayload(
-        firstName: widget.firstName,
-        lastName: widget.lastName,
-        // phone: widget.phone,
-        gender: widget.gender,
-        dob: widget.dob,
-        lat: widget.lat,
-        lng: widget.lng,
-        interestIds: _selectedIds,
-      );
-      context.read<ProfileBloc>().add(CompleteSetupEvent(payload));
+      final selectedNames = _availableInterests
+          .where((interest) => _selectedIds.contains(interest.id))
+          .map((interest) => interest.name)
+          .toList();
+
+      context.read<ProfileBloc>().add(SaveInterestsEvent(selectedNames));
     }
   }
 
@@ -182,7 +179,7 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                             curr is InterestsLoadedState ||
                             curr is ProfileLoadingState,
                         builder: (context, state) {
-                          if (state is ProfileLoadingState) {
+                          if (state is ProfileLoadingState && _availableInterests.isEmpty) {
                             return const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(40.0),
@@ -191,9 +188,12 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                             );
                           }
 
-                          if (state is InterestsLoadedState) {
+                          if (state is InterestsLoadedState || _availableInterests.isNotEmpty) {
+                            if (state is InterestsLoadedState) {
+                              _availableInterests = state.interests;
+                            }
                             return InterestsGridWidget(
-                              interests: state.interests,
+                              interests: _availableInterests,
                               selectedIds: _selectedIds,
                               onInterestTap: _onInterestTap,
                               getIconData: _getIconData,
@@ -207,9 +207,14 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                   ),
                 ),
               ),
-              CompleteSetupSectionWidget(
-                selectedCount: _selectedIds.length,
-                onComplete: _selectedIds.length >= 3 ? _onComplete : null,
+              BlocBuilder<ProfileBloc, ProfileState>(
+                builder: (context, state) {
+                  return CompleteSetupSectionWidget(
+                    isLoading: state is ProfileLoadingState && _availableInterests.isNotEmpty,
+                    selectedCount: _selectedIds.length,
+                    onComplete: _selectedIds.length >= 3 ? _onComplete : null,
+                  );
+                },
               ),
             ],
           ),

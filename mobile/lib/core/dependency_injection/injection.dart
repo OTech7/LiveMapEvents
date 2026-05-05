@@ -20,6 +20,7 @@ import '../../features/auth/domain/repository/auth_repository.dart';
 import '../../features/profile/data/repository/profile_repository_impl.dart';
 import '../../features/profile/domain/use_case/complete_setup_usecase.dart';
 import '../../features/profile/domain/use_case/discovery_settings_usecase.dart';
+import '../../features/profile/domain/use_case/save_interests_usecase.dart';
 import '../../features/profile/domain/use_case/get_interests_usecase.dart';
 import '../network/api_endpoints.dart';
 import '../network/interceptor.dart';
@@ -45,6 +46,7 @@ Future<void> init() async {
       completeSetupUseCase: sl(),
       getInterestsUseCase: sl(),
       discoverySettingsUseCase: sl(),
+      saveInterestsUseCase: sl(),
     ),
   );
 
@@ -59,6 +61,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetInterestsUseCase(sl()));
   sl.registerLazySingleton(() => CompleteSetupUseCase(sl()));
   sl.registerLazySingleton(() => DiscoverySettingsUseCase(sl()));
+  sl.registerLazySingleton(() => SaveInterestsUseCase(sl()));
 
   ///     Repositories
 

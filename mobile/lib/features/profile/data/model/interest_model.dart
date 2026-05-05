@@ -7,7 +7,7 @@ class InterestModel extends InterestEntity {
     return InterestModel(
       id: json['id'],
       name: json['name'],
-      icon: json['icon'],
+      icon: json['icon']??"",
     );
   }
 
