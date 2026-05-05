@@ -15,8 +15,10 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
 
-  AuthRepositoryImpl(
-      {required this.remoteDataSource, required this.localDataSource});
+  AuthRepositoryImpl({
+    required this.remoteDataSource,
+    required this.localDataSource,
+  });
 
   @override
   Future<Either<Failure, AuthEntity>> login(LoginPayload payload) async {
@@ -44,6 +46,7 @@ class AuthRepositoryImpl implements AuthRepository {
       return response;
     });
   }
+
   @override
   Future<Either<Failure, Unit>> sendOTP(String phoneNumber) async {
     return handleRequest(() async {

@@ -11,14 +11,18 @@ class GoRegisterButton extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(AppStrings.dontHaveAccount,
-            style: Theme.of(context).textTheme.bodyMedium),
+        Text(
+          AppStrings.dontHaveAccount,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
         TextButton(
           onPressed: () {
             context.pushNamed("register");
           },
-          child: Text(AppStrings.register,
-              style: Theme.of(context).textTheme.bodyLarge),
+          child: Text(
+            AppStrings.register,
+            style: Theme.of(context).textTheme.bodyLarge,
+          ),
         ),
       ],
     );

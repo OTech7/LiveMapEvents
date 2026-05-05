@@ -12,6 +12,7 @@ import 'widgets/verify_button_widget.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String phoneNumber;
+
   const VerificationScreen({super.key, required this.phoneNumber});
 
   @override
@@ -78,8 +79,8 @@ class _VerificationScreenState extends State<VerificationScreen>
     final code = _controllers.map((c) => c.text).join();
     if (code.length == 6) {
       context.read<AuthBloc>().add(
-            VerifyEvent(code: code, phoneNumber: widget.phoneNumber),
-          );
+        VerifyEvent(code: code, phoneNumber: widget.phoneNumber),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -175,15 +176,13 @@ class _VerificationScreenState extends State<VerificationScreen>
                     canResend: _canResend,
                     onResend: () {
                       context.read<AuthBloc>().add(
-                            SendOTPEvent(widget.phoneNumber),
-                          );
+                        SendOTPEvent(widget.phoneNumber),
+                      );
                       setState(() {
                         _canResend = false;
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(AppStrings.codeSentSuccess),
-                        ),
+                        SnackBar(content: Text(AppStrings.codeSentSuccess)),
                       );
                     },
                     onCountdownFinished: () {
@@ -206,4 +205,3 @@ class _VerificationScreenState extends State<VerificationScreen>
     );
   }
 }
-

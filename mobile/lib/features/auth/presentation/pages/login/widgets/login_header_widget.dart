@@ -5,13 +5,11 @@ class LoginHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double headerHeight =
-        (MediaQuery.of(context).size.height * 0.12).clamp(80.0, 150.0);
+    final double headerHeight = (MediaQuery.of(context).size.height * 0.12)
+        .clamp(80.0, 150.0);
     return Container(
       height: headerHeight,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
       child: const Center(
         // child: SvgPicture.asset(
         //   AppImages.logo,

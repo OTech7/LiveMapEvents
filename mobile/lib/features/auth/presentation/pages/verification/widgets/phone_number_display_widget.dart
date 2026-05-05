@@ -4,6 +4,7 @@ import '../../../../../../core/strings/app_strings.dart';
 
 class PhoneNumberDisplayWidget extends StatelessWidget {
   final String phoneNumber;
+
   const PhoneNumberDisplayWidget({super.key, required this.phoneNumber});
 
   @override
@@ -26,10 +27,9 @@ class PhoneNumberDisplayWidget extends StatelessWidget {
         children: [
           Text(
             AppStrings.enterOtpSent,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontSize: 15, height: 1.5),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontSize: 15, height: 1.5),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: vSpaceSm),
@@ -38,10 +38,9 @@ class PhoneNumberDisplayWidget extends StatelessWidget {
             children: [
               Text(
                 phoneNumber,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(letterSpacing: 1.2),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(letterSpacing: 1.2),
               ),
               const SizedBox(width: 8),
               Icon(

@@ -64,13 +64,18 @@ class CompleteSetupSectionWidget extends StatelessWidget {
           ),
           SizedBox(height: vSpaceSm),
           Text(
-            AppStrings.selectedCount.replaceFirst("{}", selectedCount.toString()),
+            AppStrings.selectedCount.replaceFirst(
+              "{}",
+              selectedCount.toString(),
+            ),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: selectedCount >= 3
-                      ? AppColors.kPrimaryColor
-                      : AppColors.kTextSecondaryColor,
-                  fontWeight: selectedCount >= 3 ? FontWeight.bold : FontWeight.normal,
-                ),
+              color: selectedCount >= 3
+                  ? AppColors.kPrimaryColor
+                  : AppColors.kTextSecondaryColor,
+              fontWeight: selectedCount >= 3
+                  ? FontWeight.bold
+                  : FontWeight.normal,
+            ),
           ),
         ],
       ),

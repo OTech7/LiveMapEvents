@@ -1,11 +1,7 @@
 import '../../domain/entity/interest_entity.dart';
 
 class InterestModel extends InterestEntity {
-  InterestModel({
-    required super.id,
-    required super.name,
-    required super.icon,
-  });
+  InterestModel({required super.id, required super.name, required super.icon});
 
   factory InterestModel.fromJson(Map<String, dynamic> json) {
     return InterestModel(
@@ -16,10 +12,6 @@ class InterestModel extends InterestEntity {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'icon': icon,
-    };
+    return {'id': id, 'name': name, 'icon': icon};
   }
 }

@@ -4,6 +4,7 @@ import 'package:mobile/features/profile/data/data_source/profile_remote_data_sou
 import '../../../../core/error_handling/failures.dart';
 import '../../../../core/error_handling/request_handler.dart';
 import '../../domain/payload/complete_setup_payload.dart';
+import '../../domain/payload/discovery_settings_payload.dart';
 import '../../domain/entity/interest_entity.dart';
 import '../../domain/repository/profile_repository.dart';
 
@@ -26,6 +27,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
   ) async {
     return handleRequest(() async {
       await remoteDataSource.completeSetup(payload);
+      return unit;
+    });
+  }
+
+  @override
+  Future<Either<Failure, Unit>> discoverySettings(
+    DiscoverySettingsPayload payload,
+  ) async {
+    return handleRequest(() async {
+      await remoteDataSource.discoverySettings(payload);
       return unit;
     });
   }

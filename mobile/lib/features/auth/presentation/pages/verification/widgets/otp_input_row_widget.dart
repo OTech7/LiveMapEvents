@@ -44,8 +44,8 @@ class OtpInputRowWidget extends StatelessWidget {
                 color: isFocused
                     ? AppColors.kPrimaryColor
                     : isFilled
-                        ? AppColors.kPrimaryColor.withOpacity(0.3)
-                        : Colors.transparent,
+                    ? AppColors.kPrimaryColor.withOpacity(0.3)
+                    : Colors.transparent,
                 width: 2,
               ),
               boxShadow: isFocused
@@ -67,11 +67,11 @@ class OtpInputRowWidget extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLength: 1,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: otpFontSize,
-                      color: isFocused
-                          ? AppColors.kPrimaryColor
-                          : AppColors.kTextPrimaryColor,
-                    ),
+                  fontSize: otpFontSize,
+                  color: isFocused
+                      ? AppColors.kPrimaryColor
+                      : AppColors.kTextPrimaryColor,
+                ),
                 cursorColor: AppColors.kPrimaryColor,
                 decoration: const InputDecoration(
                   fillColor: Colors.transparent,

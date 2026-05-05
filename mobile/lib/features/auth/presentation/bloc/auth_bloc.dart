@@ -18,6 +18,7 @@ import '../../domain/use_case/verify_usecase.dart';
 import '../../domain/use_case/sign_in_with_google_usecase.dart';
 
 part 'auth_event.dart';
+
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -28,6 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   VerifyUseCase verifyUseCase;
   SendOTPUseCase sendOTPUseCase;
   SignInWithGoogleUseCase signInWithGoogleUseCase;
+
   AuthBloc({
     required this.loginUseCase,
     required this.registerUseCase,

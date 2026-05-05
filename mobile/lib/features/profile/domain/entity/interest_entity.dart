@@ -3,9 +3,5 @@ class InterestEntity {
   final String name;
   final String icon; // Icon name or URL
 
-  InterestEntity({
-    required this.id,
-    required this.name,
-    required this.icon,
-  });
+  InterestEntity({required this.id, required this.name, required this.icon});
 }

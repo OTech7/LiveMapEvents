@@ -40,7 +40,7 @@ class StepIndicatorWidget extends StatelessWidget {
         ),
         SizedBox(height: vSpaceSm),
         Text(
-          AppStrings.step1of2,
+          "STEP $currentStep OF $totalSteps",
           style: Theme.of(context).textTheme.labelSmall,
         ),
       ],

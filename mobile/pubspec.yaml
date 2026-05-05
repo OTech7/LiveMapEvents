@@ -29,10 +29,13 @@ dependencies:
   logger:
   go_router:
   google_maps_flutter:
+  google_maps_flutter_android:
+  google_maps_flutter_platform_interface:
   permission_handler:
   timeago:
   google_sign_in: ^7.2.0
   timer_count_down: ^2.2.2
+  geolocator: ^14.0.2
 
 
 

@@ -25,14 +25,17 @@ class LoginButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
+        final isLoading = state is AuthenticationLoadingState;
         return ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              final fullPhoneNumber =
-                  "${_codeController.text}${_phoneController.text}";
-              context.read<AuthBloc>().add(SendOTPEvent(fullPhoneNumber));
-            }
-          },
+          onPressed: isLoading
+              ? null
+              : () {
+                  if (_formKey.currentState!.validate()) {
+                    final fullPhoneNumber =
+                        "${_codeController.text}${_phoneController.text}";
+                    context.read<AuthBloc>().add(SendOTPEvent(fullPhoneNumber));
+                  }
+                },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.kPrimaryColor,
             foregroundColor: Colors.white,
@@ -41,10 +44,19 @@ class LoginButtonWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(30),
             ),
           ),
-          child: Text(
-            AppStrings.continueText,
-            style: Theme.of(context).textTheme.labelLarge,
-          ),
+          child: isLoading
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2.5,
+                  ),
+                )
+              : Text(
+                  AppStrings.continueText,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
         );
       },
     );

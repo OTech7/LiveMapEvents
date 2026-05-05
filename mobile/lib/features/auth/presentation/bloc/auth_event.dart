@@ -22,11 +22,13 @@ final class CheckTokenEvent extends AuthEvent {}
 class VerifyEvent extends AuthEvent {
   final String code;
   final String phoneNumber;
+
   VerifyEvent({required this.code, required this.phoneNumber});
 }
 
 class SendOTPEvent extends AuthEvent {
   final String phoneNumber;
+
   SendOTPEvent(this.phoneNumber);
 }
 

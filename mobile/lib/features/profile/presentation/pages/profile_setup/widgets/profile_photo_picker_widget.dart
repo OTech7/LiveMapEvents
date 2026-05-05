@@ -49,11 +49,7 @@ class ProfilePhotoPickerWidget extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
                   ),
-                  child: const Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: 16,
-                  ),
+                  child: const Icon(Icons.edit, color: Colors.white, size: 16),
                 ),
               ),
             ],
@@ -70,9 +66,9 @@ class ProfilePhotoPickerWidget extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
           child: Text(
             AppStrings.helpCommunityRecognize,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  height: 1.5,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.5),
             textAlign: TextAlign.center,
           ),
         ),

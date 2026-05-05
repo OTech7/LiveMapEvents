@@ -58,10 +58,10 @@ class VerificationHeaderWidget extends StatelessWidget {
         Text(
           AppStrings.phoneVerification,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.kTextPrimaryColor,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
-              ),
+            color: AppColors.kTextPrimaryColor,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.5,
+          ),
           textAlign: TextAlign.center,
         ),
       ],

@@ -43,7 +43,9 @@ class ResendSectionWidget extends StatelessWidget {
         children: [
           Text(
             AppStrings.didntReceiveCode,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 15),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontSize: 15),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: vSpaceSm),
@@ -61,10 +63,9 @@ class ResendSectionWidget extends StatelessWidget {
                   seconds: 59,
                   build: (BuildContext context, double time) => Text(
                     "00:${time.toInt().toString().padLeft(2, '0')}",
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(letterSpacing: 2.0),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleSmall?.copyWith(letterSpacing: 2.0),
                   ),
                   interval: const Duration(seconds: 1),
                   onFinished: onCountdownFinished,
@@ -86,8 +87,8 @@ class ResendSectionWidget extends StatelessWidget {
                   Text(
                     AppStrings.resend,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AppColors.kPrimaryColor,
-                        ),
+                      color: AppColors.kPrimaryColor,
+                    ),
                   ),
                 ],
               ),

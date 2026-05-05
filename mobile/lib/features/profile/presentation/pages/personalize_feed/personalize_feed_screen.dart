@@ -57,7 +57,7 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
       final payload = CompleteSetupPayload(
         firstName: widget.firstName,
         lastName: widget.lastName,
-        phone: widget.phone,
+        // phone: widget.phone,
         gender: widget.gender,
         dob: widget.dob,
         lat: widget.lat,
@@ -110,15 +110,16 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
     return BlocListener<ProfileBloc, ProfileState>(
       listener: (context, state) {
         if (state is SetupCompletedState) {
-        //  context.go('/home');
+          //  context.go('/home');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Profile Setup Successful!")),
           );
         } else if (state is ProfileErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.kRedColor),
+              content: Text(state.message),
+              backgroundColor: AppColors.kRedColor,
+            ),
           );
         }
       },
@@ -129,8 +130,10 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
           elevation: 0,
           centerTitle: true,
           leading: IconButton(
-            icon:
-                const Icon(Icons.arrow_back, color: AppColors.kTextPrimaryColor),
+            icon: const Icon(
+              Icons.arrow_back,
+              color: AppColors.kTextPrimaryColor,
+            ),
             onPressed: () => context.pop(),
           ),
           title: Text(
@@ -143,18 +146,18 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: hPad, vertical: vSpaceSm),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: hPad,
+                    vertical: vSpaceSm,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const StepIndicatorWidget(currentStep: 2, totalSteps: 2),
+                      const StepIndicatorWidget(currentStep: 3, totalSteps: 3),
                       SizedBox(height: vSpaceLg),
                       Text(
                         AppStrings.whatAreYouInto,
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineLarge
+                        style: Theme.of(context).textTheme.headlineLarge
                             ?.copyWith(
                               fontWeight: FontWeight.w900,
                               color: AppColors.kTextPrimaryColor,
@@ -163,15 +166,13 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                       ),
                       SizedBox(height: vSpaceMd),
                       Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: size.width * 0.1),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: size.width * 0.1,
+                        ),
                         child: Text(
                           AppStrings.selectInterestsDesc,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontSize: 15,
-                                    height: 1.5,
-                                  ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(fontSize: 15, height: 1.5),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -183,10 +184,11 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                         builder: (context, state) {
                           if (state is ProfileLoadingState) {
                             return const Center(
-                                child: Padding(
-                              padding: EdgeInsets.all(40.0),
-                              child: CircularProgressIndicator(),
-                            ));
+                              child: Padding(
+                                padding: EdgeInsets.all(40.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
                           }
 
                           if (state is InterestsLoadedState) {

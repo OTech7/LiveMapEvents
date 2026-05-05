@@ -1,6 +1,7 @@
 class LoginPayload {
   // final String countryCode;
   final String phoneNumber;
+
   // final String email;
   // final String password;
 
@@ -12,9 +13,9 @@ class LoginPayload {
   });
 
   Map<String, dynamic> toJson() => {
-        // "countryCode": countryCode,
-        "phoneNumber": phoneNumber,
-        // "email": email,
-        // "password": password,
-      };
+    // "countryCode": countryCode,
+    "phoneNumber": phoneNumber,
+    // "email": email,
+    // "password": password,
+  };
 }

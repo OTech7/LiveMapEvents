@@ -18,10 +18,10 @@ class AuthModel extends AuthEntity {
   }
 
   Map<String, dynamic> toJson() => {
-        "token": token,
-        "refreshToken": refreshToken,
-        "profile_complete": profileComplete,
-      };
+    "token": token,
+    "refreshToken": refreshToken,
+    "profile_complete": profileComplete,
+  };
 
   @override
   List<Object?> get props => [token, refreshToken, profileComplete];

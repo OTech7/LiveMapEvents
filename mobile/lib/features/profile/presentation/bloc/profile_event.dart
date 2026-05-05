@@ -7,5 +7,12 @@ class GetInterestsEvent extends ProfileEvent {}
 
 class CompleteSetupEvent extends ProfileEvent {
   final CompleteSetupPayload payload;
+
   CompleteSetupEvent(this.payload);
+}
+
+class DiscoverySettingsEvent extends ProfileEvent {
+  final DiscoverySettingsPayload payload;
+
+  DiscoverySettingsEvent(this.payload);
 }

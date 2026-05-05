@@ -13,8 +13,11 @@ abstract class AuthDataSource {
   Future<AuthModel> register(RegisterPayload payload);
 
   Future<Unit> logout();
+
   Future<AuthModel> verify(VerifyPayload payload);
+
   Future<Unit> sendOTP(String phoneNumber);
+
   Future<AuthModel> signInWithGoogle(String idToken);
 }
 

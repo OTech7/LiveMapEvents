@@ -7,18 +7,15 @@ class AuthHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double headerHeight =
-        (MediaQuery.of(context).size.height * 0.15).clamp(100.0, 180.0);
+    final double headerHeight = (MediaQuery.of(context).size.height * 0.15)
+        .clamp(100.0, 180.0);
     return Container(
       height: headerHeight,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.kPrimaryColor,
-            AppColors.kPrimaryColor,
-          ],
+          colors: [AppColors.kPrimaryColor, AppColors.kPrimaryColor],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [

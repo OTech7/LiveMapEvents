@@ -8,6 +8,7 @@ import '/features/auth/presentation/pages/login/login_screen.dart';
 import '/features/auth/presentation/pages/register/register_screen.dart';
 import '/features/auth/presentation/pages/verification/verification_screen.dart';
 import '../../features/profile/presentation/pages/profile_setup/set_up_profile_screen.dart';
+import '../../features/profile/presentation/pages/discovery_settings/discovery_settings_screen.dart';
 import '../../features/profile/presentation/pages/personalize_feed/personalize_feed_screen.dart';
 import 'package:mobile/core/dependency_injection/injection.dart' as di;
 
@@ -45,9 +46,7 @@ class AppRouter {
           final extra = state.extra as Map<String, dynamic>?;
           return BlocProvider(
             create: (context) => di.sl<AuthBloc>(),
-            child: VerificationScreen(
-              phoneNumber: extra?['phoneNumber'] ?? '',
-            ),
+            child: VerificationScreen(phoneNumber: extra?['phoneNumber'] ?? ''),
           );
         },
       ),
@@ -58,6 +57,25 @@ class AppRouter {
           create: (context) => di.sl<ProfileBloc>(),
           child: SetUpProfileScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/discovery_settings',
+        name: 'discovery_settings',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return BlocProvider(
+            create: (context) => di.sl<ProfileBloc>(),
+            child: DiscoverySettingsScreen(
+              firstName: extra?['firstName'] ?? '',
+              lastName: extra?['lastName'] ?? '',
+              phone: extra?['phone'] ?? '',
+              gender: extra?['gender'] ?? 'male',
+              dob: extra?['dob'] ?? '',
+              lat: extra?['lat'] ?? 0.0,
+              lng: extra?['lng'] ?? 0.0,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/personalize_feed',

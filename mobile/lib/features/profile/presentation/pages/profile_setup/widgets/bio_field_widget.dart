@@ -5,10 +5,7 @@ import '../../../../../../../core/strings/app_strings.dart';
 class BioFieldWidget extends StatelessWidget {
   final TextEditingController controller;
 
-  const BioFieldWidget({
-    super.key,
-    required this.controller,
-  });
+  const BioFieldWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +40,9 @@ class BioFieldWidget extends StatelessWidget {
             decoration: InputDecoration(
               hintText: AppStrings.bioHint,
               hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.kLightGreyColor,
-                    fontSize: 15,
-                  ),
+                color: AppColors.kLightGreyColor,
+                fontSize: 15,
+              ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),

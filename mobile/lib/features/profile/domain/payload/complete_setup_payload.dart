@@ -1,7 +1,8 @@
 class CompleteSetupPayload {
   final String firstName;
   final String lastName;
-  final String phone;
+
+  // final String phone;
   final String gender;
   final String dob;
   final double lat;
@@ -11,7 +12,7 @@ class CompleteSetupPayload {
   CompleteSetupPayload({
     required this.firstName,
     required this.lastName,
-    required this.phone,
+    // required this.phone,
     required this.gender,
     required this.dob,
     required this.lat,
@@ -23,7 +24,7 @@ class CompleteSetupPayload {
     return {
       'first_name': firstName,
       'last_name': lastName,
-      'phone': phone,
+      // 'phone': phone,
       'gender': gender,
       'dob': dob,
       'lat': lat,
