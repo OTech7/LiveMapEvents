@@ -8,6 +8,33 @@
 # ============================================================
 
 services:
+  # ── Caddy reverse proxy (HTTPS termination + subdomain routing) ──
+  # Public entrypoint. Listens on 80/443 and routes to internal services
+  # over the docker network. Auto-issues Let's Encrypt certs on first boot.
+  caddy:
+    image: caddy:2-alpine
+    container_name: livemap-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - livemap
+    depends_on:
+      - app
+      - frontend
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:80" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
   # ── Laravel Application (PHP-FPM + Nginx + Queue Worker) ──
   app:
     build:
@@ -16,8 +43,11 @@ services:
       target: production
     container_name: livemap-app
     restart: unless-stopped
-    ports:
-      - "${APP_PORT:-8080}:80"
+    # No host port published: Caddy reaches us at app:80 over the docker
+    # network. Set APP_PORT in .env.docker only if you need to expose the
+    # raw container directly (e.g. for debugging) — not recommended.
+    expose:
+      - "80"
     env_file:
       - .env.docker
     depends_on:
@@ -92,8 +122,10 @@ services:
         BASE_HREF: /
     container_name: livemap-frontend
     restart: unless-stopped
-    ports:
-      - "${FRONTEND_PORT:-3000}:80"
+    # No host port published: Caddy reaches us at frontend:80 over the
+    # docker network. Public traffic enters through Caddy on 80/443.
+    expose:
+      - "80"
     networks:
       - livemap
     healthcheck:
@@ -109,6 +141,10 @@ volumes:
   redis-data:
     driver: local
   app-storage:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
     driver: local
 
 networks:

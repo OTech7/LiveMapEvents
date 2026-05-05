@@ -12,12 +12,12 @@ use OpenApi\Annotations as OA;
  *         description="API documentation for Live Map Events backend"
  *     ),
  *     @OA\Server(
- *         url="http://localhost:8000",
- *         description="Local Server"
+ *         url="https://api.live-events-map.tech",
+ *         description="Production"
  *     ),
  *     @OA\Server(
- *         url="http://live-events-map.tech:8080",
- *         description="Live Server"
+ *         url="http://localhost:8000",
+ *         description="Local development (artisan serve)"
  *     )
  * )
  *

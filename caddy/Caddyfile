@@ -1,0 +1,79 @@
+# ============================================================
+# LiveMapEvents — Caddy reverse proxy
+# ============================================================
+# Caddy auto-issues Let's Encrypt certificates on first boot for
+# every site label below. Requirements:
+#
+#   1. DNS A records pointing at this server (187.124.180.7):
+#        live-events-map.tech       A  187.124.180.7
+#        api.live-events-map.tech   A  187.124.180.7
+#
+#   2. Ports 80/443 open in the host firewall (UFW). Port 80 must
+#      be reachable from the public internet — Let's Encrypt's
+#      HTTP-01 challenge needs it. Container ports 3000/8080 are
+#      no longer exposed; remove their UFW allow rules.
+#
+# Internal routing happens over the docker bridge network using
+# the compose service names `app` and `frontend` (each listens
+# on container port 80).
+# ============================================================
+
+{
+# Email Let's Encrypt uses for cert expiry notices.
+    email omarallouni@gmail.com
+
+# Uncomment for first-time testing — uses LE staging so you
+# don't burn through the real-cert rate limit if DNS is wrong:
+# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# ── Frontend (Flutter web) ───────────────────────────────────
+
+live-events-map.tech {
+    encode zstd gzip
+
+    reverse_proxy frontend:80 {
+                                  header_up X-Real-IP {remote_host}
+                                  header_up X-Forwarded-For {remote_host}
+                                  header_up X-Forwarded-Proto {scheme}
+                              }
+
+# Sensible defaults for an SPA. Long-cache the hashed asset
+# files Flutter emits; never cache index.html / the bootstrap
+# so users always pick up new releases on reload.
+    @hashed_assets path_regexp ^/(assets|canvaskit|icons)/.*\.(js|wasm|json|png|jpg|svg|woff2?|ttf)$
+    header @hashed_assets Cache-Control "public, max-age=31536000, immutable"
+    header /index.html Cache-Control "no-store, must-revalidate"
+    header / Cache-Control "no-store, must-revalidate"
+
+    log {
+            output stdout
+            format console
+        }
+}
+
+# ── Backend API (Laravel) ────────────────────────────────────
+
+api.live-events-map.tech {
+    encode zstd gzip
+
+    reverse_proxy app:80 {
+                             header_up X-Real-IP {remote_host}
+                             header_up X-Forwarded-For {remote_host}
+                             header_up X-Forwarded-Proto {scheme}
+                         }
+
+    log {
+            output stdout
+            format console
+        }
+}
+
+# ── Redirect www → apex ──────────────────────────────────────
+# DNS has a CNAME: www -> live-events-map.tech (verified 2026-05-05).
+# Caddy will issue a separate cert for www.live-events-map.tech and
+# send 308 redirects to the apex.
+
+www.live-events-map.tech {
+    redir https://live-events-map.tech {uri} permanent
+}

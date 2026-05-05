@@ -247,8 +247,14 @@ return [
         /*
          * Edit to trust the proxy's ip address - needed for AWS Load Balancer
          * string[]
+         *
+         * We sit behind Caddy on the docker bridge. Trusting '*' is safe
+         * because the app container has no published host ports — the only
+         * peer that can reach it is the caddy service. Without this, L5
+         * Swagger ignores X-Forwarded-Proto and builds asset URLs with the
+         * raw http:// scheme, which the browser then blocks as mixed content.
          */
-        'proxy' => false,
+        'proxy' => '*',
 
         /*
          * Configs plugin allows to fetch external configs instead of passing them to SwaggerUIBundle.
