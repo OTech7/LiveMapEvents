@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Docs\Profile;
+namespace App\Docs\Interests;
 
 use OpenApi\Annotations as OA;
 
 /**
  * @OA\Get(
- *     path="/api/v1/profile/interests",
- *     summary="Get all available interests",
- *     tags={"Profile"},
+ *     path="/api/v1/interests",
+ *     summary="List the global interest catalog",
+ *     description="Returns the full list of interests available for users to choose from (Music, Sport, Food, etc.). Read-only — used by the mobile app to render the interest picker during profile completion.",
+ *     tags={"Interests"},
  *     security={{"sanctum":{}}},
  *     @OA\Response(
  *         response=200,
@@ -32,4 +33,6 @@ use OpenApi\Annotations as OA;
  *     )
  * )
  */
-class GetInterests {}
+class ListInterests
+{
+}
