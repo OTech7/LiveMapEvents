@@ -241,7 +241,11 @@ deploy() {
         --exclude='backend/storage/framework/views' \
         backend/
     $SCP_CMD /tmp/livemap-backend.tar.gz "$SERVER_USER@$SERVER_IP:/tmp/"
-    $SSH_CMD "tar xzf /tmp/livemap-backend.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-backend.tar.gz"
+    # Wipe the previous backend tree before extracting so files deleted locally
+    # also disappear on the server. tar -xzf alone only adds/overwrites — it
+    # never removes stale files, which has bitten us in the past (e.g. an old
+    # @OA-annotated Doc class lingering and polluting Swagger).
+    $SSH_CMD "rm -rf $SERVER_DEPLOY_PATH/backend && tar xzf /tmp/livemap-backend.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-backend.tar.gz"
     rm -f /tmp/livemap-backend.tar.gz
     log "Backend uploaded successfully."
 
@@ -256,7 +260,9 @@ deploy() {
         --exclude='mobile/.flutter-plugins-dependencies' \
         mobile/
     $SCP_CMD /tmp/livemap-mobile.tar.gz "$SERVER_USER@$SERVER_IP:/tmp/"
-    $SSH_CMD "tar xzf /tmp/livemap-mobile.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-mobile.tar.gz"
+    # Same cleanup pattern as backend — remove old mobile tree before extracting
+    # so locally-deleted files also disappear on the server.
+    $SSH_CMD "rm -rf $SERVER_DEPLOY_PATH/mobile && tar xzf /tmp/livemap-mobile.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-mobile.tar.gz"
     rm -f /tmp/livemap-mobile.tar.gz
     log "Frontend uploaded successfully."
 
