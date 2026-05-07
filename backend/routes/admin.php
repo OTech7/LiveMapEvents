@@ -5,39 +5,51 @@
 | Admin API Routes — /api/admin/v1/*
 |--------------------------------------------------------------------------
 |
-| These routes are mounted in bootstrap/app.php under the prefix
-| `api/admin/v1`. They power the Next.js admin panel in /web.
+| Mounted in bootstrap/app.php under the prefix `api/admin/v1`. Powers the
+| Next.js admin panel in /web.
 |
-| Auth model: same Sanctum tokens as the public mobile API. A user is
-| considered an admin if they have the `admin` role (Spatie permissions).
-| `/me` is reachable by any authenticated user so the panel can detect
-| "logged in but not admin" and show a friendly error. Everything else
-| is gated by `role:admin`.
+| Auth model: same Sanctum tokens as the public mobile API.
+|   - /me, /logout — any authenticated user (so the panel can detect "logged
+|     in but no panel role" and render a friendly error).
+|   - /health      — admin-only sanity probe.
+|   - /<resource>/* — resolved via Route::bind('admin_resource') below; the
+|     ResourceController applies the per-action permission gate
+|     (users.view / users.update / …) using the resource's permission() base.
+|
+| The routes are static (no closures) so `php artisan route:cache` works
+| in production. The dynamic part is the `{admin_resource}` slug.
 |
 */
 
 use App\Http\Controllers\Admin\V1\AuthController;
 use App\Http\Controllers\Admin\V1\HealthController;
-use App\Http\Controllers\Admin\V1\UsersController;
+use App\Http\Controllers\Admin\V1\ResourceController;
+use App\Modules\Admin\AdminResources;
 use Illuminate\Support\Facades\Route;
+
+// Resolve {admin_resource} → AdminResource instance. 404 for unknown slugs.
+Route::bind('admin_resource', function (string $value) {
+    $resource = AdminResources::find($value);
+    abort_if($resource === null, 404, "Unknown admin resource: {$value}");
+    return $resource;
+});
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Identity — does NOT require admin role, so the panel can show
-    // "you're logged in but not an admin" rather than a 403 dead-end.
+    // Identity — does NOT require any role/permission.
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Everything below requires the `admin` role.
-    Route::middleware('role:admin')->group(function () {
+    // Health probe — admin-only.
+    Route::get('/health', [HealthController::class, 'index'])
+        ->middleware('role:admin');
 
-        Route::get('/health', [HealthController::class, 'index']);
-
-        // First resource. Will be replaced by the generic AdminResource
-        // engine in Phase 3 of the plan — for now, hand-rolled.
-        Route::get('/users', [UsersController::class, 'index']);
-        Route::get('/users/{user}', [UsersController::class, 'show']);
-        Route::put('/users/{user}', [UsersController::class, 'update']);
-        Route::delete('/users/{user}', [UsersController::class, 'destroy']);
-    });
+    // Generic resource CRUD. Each method authorises against the resource's
+    // permission base internally — see ResourceController.
+    Route::get('/{admin_resource}/schema', [ResourceController::class, 'schema']);
+    Route::get('/{admin_resource}', [ResourceController::class, 'index']);
+    Route::post('/{admin_resource}', [ResourceController::class, 'store']);
+    Route::get('/{admin_resource}/{key}', [ResourceController::class, 'show']);
+    Route::put('/{admin_resource}/{key}', [ResourceController::class, 'update']);
+    Route::delete('/{admin_resource}/{key}', [ResourceController::class, 'destroy']);
 });
