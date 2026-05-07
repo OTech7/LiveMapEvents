@@ -31,10 +31,4 @@ return [
     'avatar_uploaded_successfully' => 'Avatar uploaded successfully',
     'nearby_pins_fetched_successfully' => 'Nearby pins fetched successfully',
     'discovery_settings_updated' => 'Discovery settings updated successfully.',
-
-    // Admin panel
-    'success' => 'Success',
-    'forbidden' => 'You do not have permission to perform this action.',
-    'cannot_delete_self' => 'You cannot delete your own account.',
-    'deleted' => 'Deleted successfully.',
 ];
