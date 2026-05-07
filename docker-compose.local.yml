@@ -1,0 +1,88 @@
+# ============================================================
+# LiveMapEvents — LOCAL DEV compose stack
+# ============================================================
+# Runs the Laravel API + Postgres + Redis on your machine.
+# Uses .env.local.docker (NOT .env.docker — production is untouched).
+#
+# Usage:
+#   docker compose -f docker-compose.local.yml up -d --build
+#   docker compose -f docker-compose.local.yml logs -f app
+#   docker compose -f docker-compose.local.yml down            # keeps data
+#   docker compose -f docker-compose.local.yml down -v         # wipes data
+#
+# Once it's up, the API is at http://localhost:8000 and the admin
+# panel (run separately with `npm run dev` in /web) talks to it.
+# ============================================================
+
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: livemap-local-app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    env_file:
+      - .env.local.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - app-storage-local:/var/www/html/storage
+    networks:
+      - livemap-local
+
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: livemap-local-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: livemap
+      POSTGRES_USER: livemap
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5433:5432"   # 5433 on host so you can connect with TablePlus/DBeaver
+      # without colliding with any existing local Postgres on 5432
+    volumes:
+      - db-data-local:/var/lib/postgresql/data
+    networks:
+      - livemap-local
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U livemap -d livemap" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: livemap-local-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "6380:6379"   # 6380 on host to avoid colliding with any local Redis
+    volumes:
+      - redis-data-local:/data
+    networks:
+      - livemap-local
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data-local:
+  redis-data-local:
+  app-storage-local:
+
+networks:
+  livemap-local:
+    driver: bridge
