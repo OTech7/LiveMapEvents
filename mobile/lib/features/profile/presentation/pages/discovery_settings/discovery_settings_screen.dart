@@ -262,12 +262,6 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                                         Text("200m",
                                             style:
                                                 TextStyle(color: Colors.grey)),
-                                        Text("1km",
-                                            style:
-                                                TextStyle(color: Colors.grey)),
-                                        Text("2.5km",
-                                            style:
-                                                TextStyle(color: Colors.grey)),
                                         Text("5km",
                                             style:
                                                 TextStyle(color: Colors.grey)),

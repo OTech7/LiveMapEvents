@@ -249,4 +249,8 @@ class AppStrings {
   static String get lng => "Longitude".tr();
 
   static String get phone => "Phone".tr();
+
+  static String get noInterestsFound => "No interests found. Please try again.".tr();
+
+  static String get retry => "Retry".tr();
 }

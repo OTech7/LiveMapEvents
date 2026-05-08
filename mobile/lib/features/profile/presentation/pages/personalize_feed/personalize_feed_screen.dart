@@ -35,7 +35,7 @@ class PersonalizeFeedScreen extends StatefulWidget {
 }
 
 class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
-  final List<int> _selectedIds = [];
+  final List<String> _selectedSlugs = [];
   List<InterestEntity> _availableInterests = [];
 
   @override
@@ -44,55 +44,19 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
     context.read<ProfileBloc>().add(GetInterestsEvent());
   }
 
-  void _onInterestTap(int id) {
+  void _onInterestTap(String slug) {
     setState(() {
-      if (_selectedIds.contains(id)) {
-        _selectedIds.remove(id);
+      if (_selectedSlugs.contains(slug)) {
+        _selectedSlugs.remove(slug);
       } else {
-        _selectedIds.add(id);
+        _selectedSlugs.add(slug);
       }
     });
   }
 
   void _onComplete() {
-    if (_selectedIds.length >= 3) {
-      final selectedNames = _availableInterests
-          .where((interest) => _selectedIds.contains(interest.id))
-          .map((interest) => interest.name)
-          .toList();
-
-      context.read<ProfileBloc>().add(SaveInterestsEvent(selectedNames));
-    }
-  }
-
-  IconData _getIconData(String iconName) {
-    switch (iconName.toLowerCase()) {
-      case 'music':
-        return Icons.music_note_rounded;
-      case 'tech':
-        return Icons.settings_input_component_rounded;
-      case 'art':
-        return Icons.palette_rounded;
-      case 'sports':
-        return Icons.sports_basketball_rounded;
-      case 'food':
-        return Icons.restaurant_rounded;
-      case 'networking':
-        return Icons.people_alt_rounded;
-      case 'wellness':
-        return Icons.self_improvement_rounded;
-      case 'travel':
-        return Icons.flight_rounded;
-      case 'gaming':
-        return Icons.sports_esports_rounded;
-      case 'fashion':
-        return Icons.checkroom_rounded;
-      case 'business':
-        return Icons.work_rounded;
-      case 'film':
-        return Icons.movie_rounded;
-      default:
-        return Icons.category_rounded;
+    if (_selectedSlugs.length >= 3) {
+      context.read<ProfileBloc>().add(SaveInterestsEvent(_selectedSlugs));
     }
   }
 
@@ -107,10 +71,7 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
     return BlocListener<ProfileBloc, ProfileState>(
       listener: (context, state) {
         if (state is SetupCompletedState) {
-          //  context.go('/home');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Profile Setup Successful!")),
-          );
+          context.go('/home');
         } else if (state is ProfileErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -137,6 +98,23 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
             AppStrings.personalizeFeed,
             style: Theme.of(context).textTheme.titleLarge,
           ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                context.go('/home');
+                // context.read<ProfileBloc>().add(SaveInterestsEvent(const []));
+              },
+              child: Text(
+                AppStrings.skip,
+                style: const TextStyle(
+                  color: AppColors.kPrimaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
         body: SafeArea(
           child: Column(
@@ -177,30 +155,74 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                       BlocBuilder<ProfileBloc, ProfileState>(
                         buildWhen: (prev, curr) =>
                             curr is InterestsLoadedState ||
-                            curr is ProfileLoadingState,
+                            curr is ProfileLoadingState ||
+                            curr is ProfileErrorState,
                         builder: (context, state) {
-                          if (state is ProfileLoadingState && _availableInterests.isEmpty) {
+                          if (state is ProfileLoadingState &&
+                              _availableInterests.isEmpty) {
                             return const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(40.0),
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: AppColors.kPrimaryColor,
+                                ),
                               ),
                             );
                           }
 
-                          if (state is InterestsLoadedState || _availableInterests.isNotEmpty) {
-                            if (state is InterestsLoadedState) {
-                              _availableInterests = state.interests;
-                            }
-                            return InterestsGridWidget(
-                              interests: _availableInterests,
-                              selectedIds: _selectedIds,
-                              onInterestTap: _onInterestTap,
-                              getIconData: _getIconData,
+                          if (state is InterestsLoadedState) {
+                            _availableInterests = state.interests;
+                          }
+
+                          if (_availableInterests.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.category_outlined,
+                                    size: 64,
+                                    color: AppColors.kTextSecondaryColor
+                                        .withOpacity(0.5),
+                                  ),
+                                  SizedBox(height: vSpaceMd),
+                                  Text(
+                                    state is ProfileErrorState
+                                        ? state.message
+                                        : AppStrings.noInterestsFound,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                          color: AppColors.kTextSecondaryColor,
+                                        ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(height: vSpaceMd),
+                                  ElevatedButton.icon(
+                                    onPressed: () => context
+                                        .read<ProfileBloc>()
+                                        .add(GetInterestsEvent()),
+                                    icon: const Icon(Icons.refresh),
+                                    label: Text(AppStrings.retry),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.kPrimaryColor,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             );
                           }
 
-                          return const SizedBox();
+                          return InterestsGridWidget(
+                            interests: _availableInterests,
+                            selectedSlugs: _selectedSlugs,
+                            onInterestTap: _onInterestTap,
+                          );
                         },
                       ),
                     ],
@@ -211,8 +233,8 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                 builder: (context, state) {
                   return CompleteSetupSectionWidget(
                     isLoading: state is ProfileLoadingState && _availableInterests.isNotEmpty,
-                    selectedCount: _selectedIds.length,
-                    onComplete: _selectedIds.length >= 3 ? _onComplete : null,
+                    selectedCount: _selectedSlugs.length,
+                    onComplete: _selectedSlugs.length >= 3 ? _onComplete : null,
                   );
                 },
               ),

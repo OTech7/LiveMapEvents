@@ -4,16 +4,14 @@ import 'interest_card_widget.dart';
 
 class InterestsGridWidget extends StatelessWidget {
   final List<InterestEntity> interests;
-  final List<int> selectedIds;
-  final Function(int) onInterestTap;
-  final IconData Function(String) getIconData;
+  final List<String> selectedSlugs;
+  final Function(String) onInterestTap;
 
   const InterestsGridWidget({
     super.key,
     required this.interests,
-    required this.selectedIds,
+    required this.selectedSlugs,
     required this.onInterestTap,
-    required this.getIconData,
   });
 
   @override
@@ -30,13 +28,13 @@ class InterestsGridWidget extends StatelessWidget {
       itemCount: interests.length,
       itemBuilder: (context, index) {
         final interest = interests[index];
-        final isSelected = selectedIds.contains(interest.id);
+        final isSelected = selectedSlugs.contains(interest.slug);
 
         return InterestCardWidget(
           name: interest.name,
-          icon: getIconData(interest.icon),
+          icon: Icons.category_rounded,
           isSelected: isSelected,
-          onTap: () => onInterestTap(interest.id),
+          onTap: () => onInterestTap(interest.slug),
         );
       },
     );

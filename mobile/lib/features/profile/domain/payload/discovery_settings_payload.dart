@@ -10,7 +10,7 @@ class DiscoverySettingsPayload {
   Map<String, dynamic> toJson() {
     return {
       'radius': radius,
-      'notify_nearby': notify,
+      'notifications': notify,
     };
   }
 }

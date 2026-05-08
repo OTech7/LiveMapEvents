@@ -54,7 +54,7 @@ class ProfileDataSourceImpl implements ProfileDataSource {
   @override
   Future<Unit> saveInterests(List<String> interests) async {
     await interceptor.put(
-      EndPoints.interests,
+      EndPoints.assignInterests,
       body: {
         'interests': interests,
       },
