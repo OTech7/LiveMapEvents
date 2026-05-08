@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {ChevronLeft, ChevronRight, Search} from 'lucide-react';
 import {formatCellValue, ListMeta} from '@/lib/admin/resource';
 
@@ -29,6 +29,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                                                  columns, rows, meta, resource, routeKey, labels = {},
                                                                  isLoading, isFetching, q, onQ, page, onPage,
                                                              }: DataTableProps<T>) {
+    const router = useRouter();
     return (
         <>
             <div className="flex items-center justify-end mb-4">
@@ -68,21 +69,39 @@ export function DataTable<T extends Record<string, unknown>>({
                     )}
                     {rows?.map((row, i) => {
                         const key = (row[routeKey] ?? row['id'] ?? i) as string | number;
+                        const href = `/admin/${resource}/${key}`;
                         return (
-                            <tr key={String(key)} className="hover:bg-slate-50">
+                            <tr
+                                key={String(key)}
+                                role="link"
+                                tabIndex={0}
+                                onClick={(e) => {
+                                    // Don't hijack the click if the user is selecting text
+                                    // or interacting with a button/link inside the row.
+                                    const sel = window.getSelection?.();
+                                    if (sel && sel.toString().length > 0) return;
+                                    if ((e.target as HTMLElement).closest('a,button,input,select,textarea')) return;
+                                    // Cmd/Ctrl-click → open in new tab
+                                    if (e.metaKey || e.ctrlKey) {
+                                        window.open(href, '_blank', 'noopener,noreferrer');
+                                        return;
+                                    }
+                                    router.push(href);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') router.push(href);
+                                }}
+                                className="hover:bg-slate-50 cursor-pointer focus:outline-none focus:bg-slate-50"
+                            >
                                 {columns.map((c, idx) => {
                                     const cell = formatCellValue(row[c], c);
-                                    // Make the first column a link to the detail page so the
-                                    // table is keyboard-navigable.
+                                    // Style the first column distinctly so it still reads as
+                                    // the row's identifier, but the click handler is on the
+                                    // whole row — clicking anywhere navigates.
                                     if (idx === 0) {
                                         return (
-                                            <td key={c} className="px-4 py-3">
-                                                <Link
-                                                    href={`/admin/${resource}/${key}`}
-                                                    className="text-brand-600 hover:underline font-mono text-xs"
-                                                >
-                                                    {cell}
-                                                </Link>
+                                            <td key={c} className="px-4 py-3 font-mono text-xs text-brand-600">
+                                                {cell}
                                             </td>
                                         );
                                     }

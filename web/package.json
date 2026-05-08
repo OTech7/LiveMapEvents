@@ -4,7 +4,7 @@
   "private": true,
   "description": "LiveMapEvents admin panel — Next.js + TypeScript + Tailwind",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev --turbo -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",

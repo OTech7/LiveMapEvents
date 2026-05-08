@@ -24,15 +24,10 @@
 use App\Http\Controllers\Admin\V1\AuthController;
 use App\Http\Controllers\Admin\V1\HealthController;
 use App\Http\Controllers\Admin\V1\ResourceController;
-use App\Modules\Admin\AdminResources;
 use Illuminate\Support\Facades\Route;
 
-// Resolve {admin_resource} → AdminResource instance. 404 for unknown slugs.
-Route::bind('admin_resource', function (string $value) {
-    $resource = AdminResources::find($value);
-    abort_if($resource === null, 404, "Unknown admin resource: {$value}");
-    return $resource;
-});
+// Note: {admin_resource} → AdminResource instance binding is registered in
+// AppServiceProvider::boot() so it survives `php artisan route:cache`.
 
 Route::middleware('auth:sanctum')->group(function () {
 

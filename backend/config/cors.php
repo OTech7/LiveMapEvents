@@ -18,7 +18,8 @@ $extra = array_filter(array_map('trim', explode(',', (string)env('CORS_EXTRA_ORI
 
 return [
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    // 'docs' / 'docs/*' covers the raw OpenAPI JSON that Swagger UI fetches.
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'docs', 'docs/*'],
 
     'allowed_methods' => ['*'],
 

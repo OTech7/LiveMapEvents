@@ -78,6 +78,26 @@ services:
       timeout: 5s
       retries: 5
 
+  # Flutter mobile app, built for web — let you preview the mobile UI
+  # locally without an emulator. Use Chrome DevTools "device mode"
+  # (Ctrl+Shift+M) once it's open to view it at phone dimensions.
+  #
+  # Note: the Flutter app's BASE_URL in
+  # mobile/lib/core/network/api_endpoints.dart still needs to point at
+  # http://localhost:8000/api/ for API calls to work locally.
+  frontend:
+    build:
+      context: ./mobile
+      dockerfile: Dockerfile.web
+      args:
+        BASE_HREF: /
+    container_name: livemap-local-frontend
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    networks:
+      - livemap-local
+
 volumes:
   db-data-local:
   redis-data-local:

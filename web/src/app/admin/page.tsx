@@ -52,8 +52,16 @@ export default function DashboardPage() {
                     <ul className="text-sm mt-1 space-y-1">
                         <li><a className="text-brand-600 hover:underline" href="/admin/users">Manage users →</a></li>
                         <li>
-                            <a className="text-brand-600 hover:underline" href="/api/documentation" target="_blank"
-                               rel="noreferrer">
+                            {/*
+                              Swagger UI loads its spec from an absolute URL baked into the
+                              HTML by l5-swagger. Going through the Next.js /api/* proxy
+                              would put the Swagger UI page on localhost:3000 but leave the
+                              spec URL pointing at localhost:8000 → CORS error. Linking to
+                              the backend origin directly side-steps this entirely.
+                            */}
+                            <a className="text-brand-600 hover:underline"
+                               href={`${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/documentation`}
+                               target="_blank" rel="noreferrer">
                                 Open Swagger →
                             </a>
                         </li>
