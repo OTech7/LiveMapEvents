@@ -3,6 +3,7 @@
 namespace App\Modules\Admin\Resources;
 
 use App\Http\Resources\Admin\AdminUserResource;
+use App\Models\Interest;
 use App\Models\User;
 use App\Modules\Admin\AdminResource;
 use Illuminate\Database\Eloquent\Model;
@@ -49,11 +50,19 @@ class UserResource extends AdminResource
 
     public function with(): array
     {
-        return ['roles'];
+        return ['roles', 'interests'];
     }
 
     public function fields(): array
     {
+        // Interests are dynamic — query every time so the chip picker
+        // immediately reflects edits from the /admin/interests page.
+        // The interests table is small enough that a fresh fetch per
+        // schema call is cheap.
+        $interestOptions = Interest::orderBy('name')->get()
+            ->map(fn($i) => ['value' => (string)$i->id, 'label' => $i->name])
+            ->all();
+
         return [
             ['name' => 'first_name', 'label' => 'First name', 'type' => 'text'],
             ['name' => 'last_name', 'label' => 'Last name', 'type' => 'text'],
@@ -77,6 +86,11 @@ class UserResource extends AdminResource
                 ['value' => 'editor', 'label' => 'editor'],
                 ['value' => 'viewer', 'label' => 'viewer'],
             ], 'helperText' => 'Assigning admin grants access to this panel.'],
+            ['name' => 'interests', 'label' => 'Interests', 'type' => 'tag-picker',
+                'options' => $interestOptions,
+                'helperText' => $interestOptions === []
+                    ? 'No interests in the catalog yet — add some on the Interests page first.'
+                    : 'Click × on a chip to remove. Use the dropdown to add a new one.'],
         ];
     }
 
@@ -93,6 +107,10 @@ class UserResource extends AdminResource
             'profile_complete' => 'sometimes|boolean',
             'roles' => 'sometimes|array',
             'roles.*' => 'string|exists:roles,name',
+            // Interests come back from the multi-select as string ids; Postgres
+            // coerces them on the `exists` check.
+            'interests' => 'sometimes|array',
+            'interests.*' => 'string|exists:interests,id',
         ];
     }
 
@@ -105,18 +123,30 @@ class UserResource extends AdminResource
 
     public function beforeSave(Model $model, array $data, Request $request): array
     {
-        // 'roles' is a virtual field — Spatie pivot, not a column on users.
-        unset($data['roles']);
+        // Both fields are virtual — Spatie pivot for roles, user_interests
+        // pivot for interests. Strip before fill() so they don't leak into
+        // SET on the users table.
+        unset($data['roles'], $data['interests']);
         return $data;
     }
 
     public function afterSave(Model $model, array $data, Request $request): void
     {
-        // syncRoles only when the client actually sent the field, so PATCH-y
-        // updates that omit roles don't accidentally strip them.
+        // Only sync when the client actually sent the field — PATCH-y updates
+        // that omit a relation must not silently strip it.
         if ($request->has('roles')) {
             $roles = $request->input('roles', []);
             $model->syncRoles(is_array($roles) ? $roles : []);
+        }
+
+        if ($request->has('interests')) {
+            $ids = collect($request->input('interests', []))
+                ->filter(fn($v) => $v !== '' && $v !== null)
+                ->map(fn($v) => (int)$v)
+                ->unique()
+                ->values()
+                ->all();
+            $model->interests()->sync($ids);
         }
     }
 

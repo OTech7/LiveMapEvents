@@ -24,6 +24,7 @@
 use App\Http\Controllers\Admin\V1\AuthController;
 use App\Http\Controllers\Admin\V1\HealthController;
 use App\Http\Controllers\Admin\V1\ResourceController;
+use App\Http\Controllers\Admin\V1\UserInterestsController;
 use Illuminate\Support\Facades\Route;
 
 // Note: {admin_resource} → AdminResource instance binding is registered in
@@ -38,6 +39,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Health probe — admin-only.
     Route::get('/health', [HealthController::class, 'index'])
         ->middleware('role:admin');
+
+    // User-specific nested routes — must be declared BEFORE the generic
+    // {admin_resource} catch-alls so Laravel matches these first.
+    Route::get('/users/{user}/interests', [UserInterestsController::class, 'index']);
+    Route::put('/users/{user}/interests', [UserInterestsController::class, 'sync']);
 
     // Generic resource CRUD. Each method authorises against the resource's
     // permission base internally — see ResourceController.

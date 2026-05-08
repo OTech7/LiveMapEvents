@@ -1,5 +1,6 @@
 'use client';
 
+import {X} from 'lucide-react';
 import {ResourceField} from '@/lib/admin/resource';
 
 interface AutoFormProps {
@@ -18,7 +19,10 @@ export function AutoForm({fields, values, onChange, disabled}: AutoFormProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((f) => (
-                <div key={f.name} className={f.type === 'textarea' || f.type === 'multi-select' ? 'md:col-span-2' : ''}>
+                <div key={f.name} className={
+                    f.type === 'textarea' || f.type === 'multi-select' || f.type === 'tag-picker'
+                        ? 'md:col-span-2' : ''
+                }>
                     <FieldRenderer field={f} value={values[f.name]} onChange={(v) => onChange(f.name, v)}
                                    disabled={disabled}/>
                     {f.helperText && (
@@ -151,6 +155,80 @@ function FieldRenderer({
                             </button>
                         ))}
                     </div>
+                </>
+            );
+        }
+
+        case 'tag-picker': {
+            // Pivot-style picker — only shows assigned chips with a × remove
+            // button. To add, the user picks from a dropdown of unassigned
+            // options. Same value shape as 'multi-select' (string[] of ids).
+            const selected = Array.isArray(value) ? (value as string[]) : [];
+            const selectedSet = new Set(selected);
+            const selectedOpts = options.filter((o) => selectedSet.has(o.value));
+            const availableOpts = options.filter((o) => !selectedSet.has(o.value));
+
+            const remove = (v: string) =>
+                onChange(selected.filter((x) => x !== v));
+            const add = (v: string) => {
+                if (v && !selectedSet.has(v)) onChange([...selected, v]);
+            };
+
+            return (
+                <>
+                    <label className="label">{label}{required && ' *'}</label>
+
+                    {selectedOpts.length === 0 ? (
+                        <p className="text-xs text-slate-400 italic mb-2">
+                            None assigned yet.
+                        </p>
+                    ) : (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {selectedOpts.map((o) => (
+                                <span
+                                    key={o.value}
+                                    className="inline-flex items-center gap-1 pl-3 pr-1 py-1 rounded-full text-xs bg-brand-50 text-brand-700 border border-brand-200"
+                                >
+                                    {o.label}
+                                    <button
+                                        type="button"
+                                        onClick={() => !isLocked && remove(o.value)}
+                                        disabled={isLocked}
+                                        aria-label={`Remove ${o.label}`}
+                                        title={`Remove ${o.label}`}
+                                        className="ml-1 p-0.5 rounded-full hover:bg-brand-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <X size={12}/>
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    {availableOpts.length > 0 && !isLocked && (
+                        <select
+                            className="input text-sm"
+                            value=""
+                            onChange={(e) => {
+                                if (e.target.value) {
+                                    add(e.target.value);
+                                    // reset so re-selecting the same option works
+                                    e.target.value = '';
+                                }
+                            }}
+                        >
+                            <option value="">+ Add {label.toLowerCase()}…</option>
+                            {availableOpts.map((o) => (
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                        </select>
+                    )}
+
+                    {availableOpts.length === 0 && selectedOpts.length > 0 && (
+                        <p className="text-xs text-slate-400 italic">
+                            All available {label.toLowerCase()} assigned.
+                        </p>
+                    )}
                 </>
             );
         }

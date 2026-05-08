@@ -26,6 +26,13 @@ class AdminUserResource extends JsonResource
             'user_type' => $this->user_type,
             'profile_complete' => (bool)$this->profile_complete,
             'roles' => $this->whenLoaded('roles', fn() => $this->roles->pluck('name')),
+            // Interest ids as strings — matches the AutoForm multi-select's
+            // option `value` shape (which uses string ids), so the form
+            // pre-selects the user's current interests on load.
+            'interests' => $this->whenLoaded(
+                'interests',
+                fn() => $this->interests->pluck('id')->map(fn($id) => (string)$id)
+            ),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

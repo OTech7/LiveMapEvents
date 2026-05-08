@@ -8,7 +8,9 @@ export type FieldType =
     | 'text'
     | 'textarea'
     | 'select'
-    | 'multi-select'
+    | 'multi-select'   // toggle-grid: every option visible as a chip, click to toggle
+    | 'tag-picker'     // pivot-style: shows only the currently-assigned options as
+    // removable chips, plus a dropdown of unassigned options to add
     | 'date'
     | 'checkbox';
 
