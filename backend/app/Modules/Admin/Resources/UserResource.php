@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Modules\Admin\AdminResource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class UserResource extends AdminResource
@@ -66,9 +65,13 @@ class UserResource extends AdminResource
         return [
             ['name' => 'first_name', 'label' => 'First name', 'type' => 'text'],
             ['name' => 'last_name', 'label' => 'Last name', 'type' => 'text'],
-            ['name' => 'phone', 'label' => 'Phone', 'type' => 'text'],
+            // Phone is the user's auth identity (OTP login uses it). Showing
+            // it for context, but the admin must NOT be able to change it
+            // from the panel — see rules() / beforeSave() which strip phone
+            // even if a request body tries to set it.
+            ['name' => 'phone', 'label' => 'Phone', 'type' => 'text', 'readonly' => true,
+                'helperText' => 'Read-only — phone is the user\'s auth identity. To change it, the user must re-verify via OTP.'],
             ['name' => 'gender', 'label' => 'Gender', 'type' => 'select', 'options' => [
-                ['value' => '', 'label' => '—'],
                 ['value' => 'male', 'label' => 'male'],
                 ['value' => 'female', 'label' => 'female'],
             ]],
@@ -99,8 +102,9 @@ class UserResource extends AdminResource
         return [
             'first_name' => 'sometimes|nullable|string|max:255',
             'last_name' => 'sometimes|nullable|string|max:255',
-            'phone' => ['sometimes', 'nullable', 'string', 'max:32',
-                Rule::unique('users', 'phone')->ignore($existing?->id)],
+            // 'phone' is intentionally NOT in this list — admins can't
+            // change it from the panel. beforeSave() strips it from $data
+            // as defence-in-depth in case the field appears in the body.
             'gender' => 'sometimes|nullable|in:male,female',
             'dob' => 'sometimes|nullable|date',
             'user_type' => 'sometimes|nullable|in:attendee,business,admin',
@@ -123,10 +127,11 @@ class UserResource extends AdminResource
 
     public function beforeSave(Model $model, array $data, Request $request): array
     {
-        // Both fields are virtual — Spatie pivot for roles, user_interests
-        // pivot for interests. Strip before fill() so they don't leak into
-        // SET on the users table.
-        unset($data['roles'], $data['interests']);
+        // Strip:
+        //  - roles + interests: pivot relations, handled in afterSave()
+        //  - phone: read-only on the admin panel (auth identity); even if a
+        //    request body somehow includes it, never write it via fill().
+        unset($data['roles'], $data['interests'], $data['phone']);
         return $data;
     }
 

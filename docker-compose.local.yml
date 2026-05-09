@@ -32,6 +32,18 @@ services:
       redis:
         condition: service_healthy
     volumes:
+      # Live-mount your backend source so PHP edits are reflected
+      # immediately — no `--build` needed for *.php / config / routes.
+      # `optimize:clear` after route/config edits, then refresh.
+      - ./backend:/var/www/html
+      # Keep vendor/ and bootstrap/cache *inside* the image so the host's
+      # (potentially missing) versions don't shadow what `composer install`
+      # produced during the build. These are anonymous volumes that Docker
+      # manages — they preserve the in-image directories.
+      - /var/www/html/vendor
+      - /var/www/html/bootstrap/cache
+      # Storage stays on its own named volume so uploads / generated swagger
+      # / log files survive restarts and aren't blown away by host edits.
       - app-storage-local:/var/www/html/storage
     networks:
       - livemap-local
