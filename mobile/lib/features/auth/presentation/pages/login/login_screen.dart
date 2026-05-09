@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile/features/auth/presentation/pages/login/widgets/new_user_widget.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../bloc/auth_bloc.dart';
@@ -110,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: vSpaceMd),
                   LoginWithGoogleWidget(size: size),
                   SizedBox(height: vSpaceLg),
-                  NewUserWidget(),
+                  // NewUserWidget(),
                 ],
               ),
             ),

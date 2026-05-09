@@ -7,6 +7,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../domain/payload/discovery_settings_payload.dart';
 import '../../bloc/profile_bloc.dart';
 import '../profile_setup/widgets/step_indicator_widget.dart';
+import '../../../../../core/widgets/custom_button.dart';
 
 class DiscoverySettingsScreen extends StatefulWidget {
   final String firstName;
@@ -325,36 +326,18 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                 padding: EdgeInsets.all(hPad),
                 child: BlocBuilder<ProfileBloc, ProfileState>(
                   builder: (context, state) {
-                    return ElevatedButton(
-                      onPressed: state is ProfileLoadingState
-                          ? null
-                          : () {
-                              final payload = DiscoverySettingsPayload(
-                                radius: _radius.toInt(),
-                                notify: _notifyNearby,
-                              );
-                              context
-                                  .read<ProfileBloc>()
-                                  .add(DiscoverySettingsEvent(payload));
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.kPrimaryColor,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28),
-                        ),
-                        elevation: 4,
-                      ),
-                      child: state is ProfileLoadingState
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Save Changes",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                    return CustomButton(
+                      text: "Save Changes",
+                      onPressed: () {
+                        final payload = DiscoverySettingsPayload(
+                          radius: _radius.toInt(),
+                          notify: _notifyNearby,
+                        );
+                        context
+                            .read<ProfileBloc>()
+                            .add(DiscoverySettingsEvent(payload));
+                      },
+                      isLoading: state is ProfileLoadingState,
                     );
                   },
                 ),

@@ -6,6 +6,7 @@ import '../../../../../../core/constants/colors.dart';
 import '../../../../../../core/strings/app_strings.dart';
 import '../../../../domain/payload/register_payload.dart';
 import '../../../bloc/auth_bloc.dart';
+import '../../../../../../core/widgets/custom_button.dart';
 
 Widget buildRegisterButton({
   required TextEditingController firstNameController,
@@ -28,12 +29,8 @@ Widget buildRegisterButton({
       }
     },
     builder: (context, state) {
-      if (state is AuthenticationLoadingState) {
-        return const Center(
-          child: CircularProgressIndicator(color: AppColors.kPrimaryColor),
-        );
-      }
-      return ElevatedButton(
+      return CustomButton(
+        text: AppStrings.register,
         onPressed: () {
           if (formKey.currentState!.validate()) {
             final fullPhoneNumber =
@@ -42,25 +39,9 @@ Widget buildRegisterButton({
               '/verification_screen',
               extra: {'phoneNumber': fullPhoneNumber},
             );
-            // context.read<AuthBloc>().add(RegisterEvent(RegisterPayload(
-            //       firstName: firstNameController.text,
-            //       lastName: lastNameController.text,
-            //       email: emailController.text,
-            //       phoneNumber: phoneController.text,
-            //       formatCode: codeController.text,
-            //       password: passwordController.text,
-            //     )));
           }
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.kPrimaryColor,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          elevation: 3,
-        ),
-        child: Text(AppStrings.register),
+        isLoading: state is AuthenticationLoadingState,
       );
     },
   );

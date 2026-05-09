@@ -181,9 +181,6 @@ class _VerificationScreenState extends State<VerificationScreen>
                       setState(() {
                         _canResend = false;
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(AppStrings.codeSentSuccess)),
-                      );
                     },
                     onCountdownFinished: () {
                       if (mounted) {

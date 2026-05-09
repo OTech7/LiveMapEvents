@@ -10,6 +10,7 @@ import '../../../../../core/strings/app_strings.dart';
 import '../../../../auth/presentation/pages/widgets/auth_fields.dart';
 import '../../../domain/payload/complete_setup_payload.dart';
 import '../../bloc/profile_bloc.dart';
+import '../../../../../core/widgets/custom_button.dart';
 import 'widgets/profile_photo_picker_widget.dart';
 import 'widgets/step_indicator_widget.dart';
 import 'widgets/map_picker_screen.dart';
@@ -171,9 +172,6 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
               'lng': _lng,
             },
           );
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Profile Setup Successful!")),
-          );
         } else if (state is ProfileErrorState) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -266,6 +264,7 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
+                    SizedBox(width: 12,),
                     Expanded(
                       child: RadioListTile<String>(
                         title: Text(AppStrings.female),
@@ -420,45 +419,11 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
                 // Next Button (calls Complete Setup)
                 BlocBuilder<ProfileBloc, ProfileState>(
                   builder: (context, state) {
-                    return ElevatedButton(
-                      onPressed: state is ProfileLoadingState
-                          ? null
-                          : _onComplete,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.kPrimaryColor,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                          vertical: size.height * 0.022,
-                        ),
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: state is ProfileLoadingState
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  AppStrings.next,
-                                  style: Theme.of(context).textTheme.labelLarge
-                                      ?.copyWith(fontSize: 18),
-                                ),
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 20,
-                                ),
-                              ],
-                            ),
+                    return CustomButton(
+                      text: AppStrings.next,
+                      onPressed: _onComplete,
+                      isLoading: state is ProfileLoadingState,
+                      icon: Icons.arrow_forward_rounded,
                     );
                   },
                 ),

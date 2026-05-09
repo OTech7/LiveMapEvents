@@ -123,40 +123,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInWithGoogleEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
 
-      // try {
-      final googleSignIn = GoogleSignIn.instance;
+      try {
+        final googleSignIn = GoogleSignIn.instance;
 
-      await googleSignIn.initialize(
-        serverClientId:
-            '103431306679-m3dg292f9e0a71oj4ed1ts9nljsrbt7r.apps.googleusercontent.com',
-      );
+        await googleSignIn.initialize(
+          serverClientId:
+              '103431306679-m3dg292f9e0a71oj4ed1ts9nljsrbt7r.apps.googleusercontent.com',
+        );
 
-      final account = await googleSignIn.authenticate();
+        final account = await googleSignIn.authenticate();
 
-      if (account == null) {
-        emit(AuthenticationErrorState(message: 'Google Sign In Cancelled'));
-        return;
+        if (account == null) {
+          emit(AuthenticationErrorState(message: 'Google Sign In Cancelled'));
+          return;
+        }
+
+        final auth = await account.authentication;
+        final idToken = auth.idToken;
+
+        if (idToken == null) {
+          emit(AuthenticationErrorState(message: 'Failed to retrieve ID token'));
+          return;
+        }
+
+        final response = await signInWithGoogleUseCase(idToken);
+
+        response.fold(
+          (failure) => emit(
+            AuthenticationErrorState(message: mapFailureToMessage(failure)),
+          ),
+          (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
+        );
+      } catch (e) {
+        emit(AuthenticationErrorState(message: e.toString()));
       }
-
-      final auth = await account.authentication;
-      final idToken = auth.idToken;
-
-      if (idToken == null) {
-        emit(AuthenticationErrorState(message: 'Failed to retrieve ID token'));
-        return;
-      }
-
-      final response = await signInWithGoogleUseCase(idToken);
-
-      response.fold(
-        (failure) => emit(
-          AuthenticationErrorState(message: mapFailureToMessage(failure)),
-        ),
-        (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
-      );
-      // } catch (e) {
-      //   emit(AuthenticationErrorState(message: e.toString()));
-      // }
     });
   }
 }
