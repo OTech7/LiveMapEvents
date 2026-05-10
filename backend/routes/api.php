@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\Business\PromotionController as BusinessPromotionController;
+use App\Http\Controllers\Api\V1\Business\ScannerController;
 use App\Http\Controllers\Api\V1\InterestController;
 use App\Http\Controllers\Api\V1\PinController;
 use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\PromotionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware('lang')->group(function () {
@@ -38,6 +41,23 @@ Route::prefix('v1')->middleware('lang')->group(function () {
         });
 
         Route::get('/pins/nearby', [PinController::class, 'nearby']);
+
+        // ── Business owner: manage their promotions ───────────────────────────
+        Route::prefix('business')->group(function () {
+            Route::get('promotions', [BusinessPromotionController::class, 'index']);
+            Route::post('promotions', [BusinessPromotionController::class, 'store']);
+            Route::get('promotions/{promotion}', [BusinessPromotionController::class, 'show']);
+            Route::put('promotions/{promotion}', [BusinessPromotionController::class, 'update']);
+            Route::delete('promotions/{promotion}', [BusinessPromotionController::class, 'destroy']);
+            Route::get('promotions/{promotion}/claims', [BusinessPromotionController::class, 'claims']);
+            Route::post('scanner/redeem', [ScannerController::class, 'redeem']);
+        });
+
+        // ── User: discover and claim promotions ───────────────────────────────
+        Route::get('promotions/nearby', [PromotionController::class, 'nearby']);
+        Route::get('promotions/{promotion}', [PromotionController::class, 'show']);
+        Route::post('promotions/{promotion}/claim', [PromotionController::class, 'claim']);
+        Route::get('me/claims', [PromotionController::class, 'myClaims']);
     });
 
 });

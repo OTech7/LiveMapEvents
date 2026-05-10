@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import {usePathname, useRouter} from 'next/navigation';
-import {Box, Calendar, LayoutDashboard, LogOut, MapPin, Tag, Ticket, Users,} from 'lucide-react';
+import {Box, Calendar, LayoutDashboard, LogOut, MapPin, Percent, Tag, Ticket, Users,} from 'lucide-react';
 import {clearToken} from '@/lib/auth/session';
 import clsx from 'clsx';
 import {AccessibleResource} from '@/lib/admin/resource';
@@ -19,6 +19,7 @@ const ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
     pins: MapPin,
     interests: Tag,
     vouchers: Ticket,
+    promotions: Percent,
 };
 
 const FALLBACK_ICON = Box;

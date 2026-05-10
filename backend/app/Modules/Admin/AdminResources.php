@@ -15,6 +15,7 @@ final class AdminResources
     public const RESOURCES = [
         \App\Modules\Admin\Resources\UserResource::class,
         \App\Modules\Admin\Resources\InterestResource::class,
+        \App\Modules\Admin\Resources\PromotionAdminResource::class,
     ];
 
     /** Instantiate every resource. */
