@@ -20,7 +20,7 @@ export function AutoForm({fields, values, onChange, disabled}: AutoFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map((f) => (
                 <div key={f.name} className={
-                    f.type === 'textarea' || f.type === 'multi-select' || f.type === 'tag-picker'
+                    f.type === 'textarea' || f.type === 'multi-select' || f.type === 'tag-picker' || f.fullWidth
                         ? 'md:col-span-2' : ''
                 }>
                     <FieldRenderer field={f} value={values[f.name]} onChange={(v) => onChange(f.name, v)}
@@ -96,24 +96,48 @@ function FieldRenderer({
                 </>
             );
 
-        case 'select':
+        case 'time':
+            return (
+                <>
+                    <label className="label" htmlFor={name}>{label}{required && ' *'}</label>
+                    <input
+                        id={name}
+                        className="input"
+                        type="time"
+                        // Postgres stores TIME as HH:MM:SS — slice to HH:MM so the
+                        // browser input is happy and the backend date_format:H:i passes.
+                        value={((value as string | null | undefined) ?? '').slice(0, 5)}
+                        onChange={(e) => onChange(e.target.value || null)}
+                        disabled={isLocked}
+                        required={required}
+                    />
+                </>
+            );
+
+        case 'select': {
+            const selectVal = (value as string | null | undefined) ?? '';
             return (
                 <>
                     <label className="label" htmlFor={name}>{label}{required && ' *'}</label>
                     <select
                         id={name}
                         className="input"
-                        value={(value as string | null | undefined) ?? ''}
-                        onChange={(e) => onChange(e.target.value)}
+                        value={selectVal}
+                        onChange={(e) => onChange(e.target.value || null)}
                         disabled={isLocked}
                         required={required}
                     >
+                        {/* Placeholder shown when nothing is selected yet */}
+                        {!selectVal && (
+                            <option value="" disabled>— choose —</option>
+                        )}
                         {options.map((o) => (
                             <option key={o.value} value={o.value}>{o.label}</option>
                         ))}
                     </select>
                 </>
             );
+        }
 
         case 'checkbox':
             return (

@@ -12,6 +12,7 @@ export type FieldType =
     | 'tag-picker'     // pivot-style: shows only the currently-assigned options as
     // removable chips, plus a dropdown of unassigned options to add
     | 'date'
+    | 'time'
     | 'checkbox';
 
 export interface FieldOption {
@@ -27,6 +28,7 @@ export interface ResourceField {
     helperText?: string;
     required?: boolean;
     readonly?: boolean;
+    fullWidth?: boolean;  // force md:col-span-2 even for non-textarea types
 }
 
 export interface ResourceSchema {
