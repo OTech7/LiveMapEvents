@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\InterestResource;
 use App\Http\Requests\Auth\CompleteProfileRequest;
 use App\Http\Requests\Profile\UpdateDiscoverySettingsRequest;
 use App\Http\Requests\Profile\UpdateInterestsRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Http\Requests\Profile\UploadAvatarRequest;
+use App\Http\Resources\InterestResource;
 use App\Http\Resources\UserResource;
 use App\Models\Interest;
 use App\Services\ProfileService;
@@ -18,10 +18,10 @@ class ProfileController extends Controller
 {
     public function __construct(protected ProfileService $profileService) {}
 
-    public function completeProfile(CompleteProfileRequest $request) 
+    public function completeProfile(CompleteProfileRequest $request)
     {
         $user = auth()->user();
-        
+
         $user = $this->profileService->completeProfile($user,$request->validated());
 
         return ApiResponse::success('messages.profile_completed_successfully',UserResource::make($user));
@@ -80,6 +80,7 @@ class ProfileController extends Controller
         $user->update([
             'discovery_radius' => $request->radius,
             'notify_nearby' => $request->notifications ?? $user->notify_nearby,
+            'discovery_settings_complete' => true,
         ]);
 
         return ApiResponse::success('messages.discovery_settings_updated');
