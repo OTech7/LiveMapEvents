@@ -123,12 +123,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInWithGoogleEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
 
-      try {
+      // try {
         final googleSignIn = GoogleSignIn.instance;
 
         await googleSignIn.initialize(
           serverClientId:
-              '103431306679-m3dg292f9e0a71oj4ed1ts9nljsrbt7r.apps.googleusercontent.com',
+              '103431306679-1nt2op1uln1udjdu47buf460itj8vrp5.apps.googleusercontent.com',
         );
 
         final account = await googleSignIn.authenticate();
@@ -154,9 +154,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ),
           (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
         );
-      } catch (e) {
-        emit(AuthenticationErrorState(message: e.toString()));
-      }
+      // } catch (e) {
+      //   emit(AuthenticationErrorState(message: e.toString()));
+      // }
     });
   }
 }
