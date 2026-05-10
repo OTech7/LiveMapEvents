@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Actions\GenerateToken;
-use App\Services\GoogleAuthService;
-use App\Services\OTPService;
+use App\Models\User;
 
 class AuthService
 {
@@ -23,6 +21,8 @@ class AuthService
         return [
             'token' => $token,
             'profile_complete' => $user->profile_complete,
+            'interests_complete' => $user->interests()->exists(),
+            'discovery_settings_complete' => $user->discovery_settings_complete,
             'user' => $user
         ];
     }
@@ -46,9 +46,11 @@ class AuthService
         $token = $this->generateToken->handle($user);
 
         return [
-            'token'=>$token,
-            'profile_complete'=>$user->profile_complete,
-            'user'=>$user
+            'token' => $token,
+            'profile_complete' => $user->profile_complete,
+            'interests_complete' => $user->interests()->exists(),
+            'discovery_settings_complete' => $user->discovery_settings_complete,
+            'user' => $user,
         ];
     }
 

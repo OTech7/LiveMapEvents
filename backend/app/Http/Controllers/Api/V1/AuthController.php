@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\DTOs\OtpVerificationResult;
 use App\Enums\OtpVerificationStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\GoogleLoginRequest;
 use App\Http\Requests\Auth\RequestOtpRequest;
 use App\Http\Requests\Auth\VerifyOtpRequest;
-use App\Http\Requests\Auth\GoogleLoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Services\OTPService;
@@ -50,6 +50,8 @@ class AuthController extends Controller
                     'token' => $userData['token'],
                     'user' => new UserResource($userData['user']),
                     'profile_complete' => $userData['profile_complete'],
+                    'interests_complete' => $userData['interests_complete'],
+                    'discovery_settings_complete' => $userData['discovery_settings_complete'],
                 ],
                 status: Response::HTTP_OK
             );
@@ -57,7 +59,7 @@ class AuthController extends Controller
 
         return $this->otpErrorResponse($result);
     }
-    
+
     public function googleLogin(GoogleLoginRequest $request)
     {
         $result = $this->authService->loginWithGoogle($request->id_token);
@@ -66,6 +68,8 @@ class AuthController extends Controller
             'token' => $result['token'],
             'user' => new UserResource($result['user']),
             'profile_complete' => $result['profile_complete'],
+            'interests_complete' => $result['interests_complete'],
+            'discovery_settings_complete' => $result['discovery_settings_complete'],
         ]);
     }
 
@@ -110,4 +114,4 @@ class AuthController extends Controller
             ),
         };
     }
-}   
+}

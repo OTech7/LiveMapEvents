@@ -32,6 +32,7 @@ class User extends Authenticatable
         'gender',
         'avatar_url',
         'profile_complete',
+        'discovery_settings_complete',
         'user_type',
         'location'
     ];
@@ -54,6 +55,7 @@ class User extends Authenticatable
         return [
             'dob' => 'date',
             'profile_complete' => 'boolean',
+            'discovery_settings_complete' => 'boolean',
             'location' => Point::class,
         ];
     }
