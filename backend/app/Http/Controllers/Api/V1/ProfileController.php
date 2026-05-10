@@ -51,6 +51,16 @@ class ProfileController extends Controller
         return ApiResponse::success('messages.profile_updated_successfully',UserResource::make($user));
     }
 
+    public function myInterests()
+    {
+        $user = auth()->user();
+
+        return ApiResponse::success(
+            'messages.interests_fetched_successfully',
+            InterestResource::collection($user->interests)
+        );
+    }
+
     public function updateInterests(UpdateInterestsRequest $request)
     {
         $user = auth()->user();
@@ -58,6 +68,24 @@ class ProfileController extends Controller
         $interestIds = Interest::whereIn('slug', $request->interests)->pluck('id')->toArray();
 
         $user->interests()->sync($interestIds);
+
+        return ApiResponse::success('messages.interests_updated_successfully');
+    }
+
+    public function addInterest(Interest $interest)
+    {
+        $user = auth()->user();
+
+        $user->interests()->syncWithoutDetaching([$interest->id]);
+
+        return ApiResponse::success('messages.interests_updated_successfully');
+    }
+
+    public function removeInterest(Interest $interest)
+    {
+        $user = auth()->user();
+
+        $user->interests()->detach($interest->id);
 
         return ApiResponse::success('messages.interests_updated_successfully');
     }
