@@ -123,7 +123,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInWithGoogleEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
 
-      // try {
+      try {
         final googleSignIn = GoogleSignIn.instance;
 
         await googleSignIn.initialize(
@@ -133,12 +133,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         final account = await googleSignIn.authenticate();
 
-        if (account == null) {
-          emit(AuthenticationErrorState(message: 'Google Sign In Cancelled'));
-          return;
-        }
-
-        final auth = await account.authentication;
+        final auth = account.authentication;
         final idToken = auth.idToken;
 
         if (idToken == null) {
@@ -154,9 +149,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ),
           (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
         );
-      // } catch (e) {
-      //   emit(AuthenticationErrorState(message: e.toString()));
-      // }
+      } catch (e) {
+        emit(AuthenticationErrorState(message: e.toString()));
+      }
     });
   }
 }
