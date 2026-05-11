@@ -6,6 +6,7 @@ import '../../../../../../core/constants/colors.dart';
 import '../../../../../../core/strings/app_strings.dart';
 import '../../../../domain/payload/register_payload.dart';
 import '../../../bloc/auth_bloc.dart';
+import '../../../../../../core/widgets/custom_button.dart';
 
 Widget buildRegisterButton({
   required TextEditingController firstNameController,
@@ -16,48 +17,32 @@ Widget buildRegisterButton({
   required GlobalKey<FormState> formKey,
   required TextEditingController passwordController,
 }) {
-  return BlocConsumer<AuthBloc, AuthState>(listener: (context, state) {
-    if (state is AuthenticatedState) {
-      context.go("/nav_screen");
-    }
-    if (state is AuthenticationErrorState) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(state.message),
-          backgroundColor: Colors.red,
-        ),
+  return BlocConsumer<AuthBloc, AuthState>(
+    listener: (context, state) {
+      if (state is AuthenticatedState) {
+        context.go("/nav_screen");
+      }
+      if (state is AuthenticationErrorState) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+        );
+      }
+    },
+    builder: (context, state) {
+      return CustomButton(
+        text: AppStrings.register,
+        onPressed: () {
+          if (formKey.currentState!.validate()) {
+            final fullPhoneNumber =
+                "${codeController.text}${phoneController.text}";
+            context.push(
+              '/verification_screen',
+              extra: {'phoneNumber': fullPhoneNumber},
+            );
+          }
+        },
+        isLoading: state is AuthenticationLoadingState,
       );
-    }
-  }, builder: (context, state) {
-    if (state is AuthenticationLoadingState) {
-      return const Center(
-          child: CircularProgressIndicator(
-        color: AppColors.kPrimaryColor,
-      ));
-    }
-    return ElevatedButton(
-      onPressed: () {
-        if (formKey.currentState!.validate()) {
-          context.push('/verification_screen');
-          // context.read<AuthBloc>().add(RegisterEvent(RegisterPayload(
-          //       firstName: firstNameController.text,
-          //       lastName: lastNameController.text,
-          //       email: emailController.text,
-          //       phoneNumber: phoneController.text,
-          //       formatCode: codeController.text,
-          //       password: passwordController.text,
-          //     )));
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.kPrimaryColor,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        elevation: 3,
-      ),
-      child: Text(AppStrings.register),
-    );
-  });
+    },
+  );
 }

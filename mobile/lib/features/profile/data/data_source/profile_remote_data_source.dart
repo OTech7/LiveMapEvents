@@ -1,12 +1,18 @@
 import 'package:dartz/dartz.dart';
+import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/interceptor.dart';
 import '../../domain/payload/complete_setup_payload.dart';
+import '../../domain/payload/discovery_settings_payload.dart';
 import '../model/interest_model.dart';
 
 abstract class ProfileDataSource {
   Future<List<InterestModel>> getInterests();
 
   Future<Unit> completeSetup(CompleteSetupPayload payload);
+
+  Future<Unit> discoverySettings(DiscoverySettingsPayload payload);
+
+  Future<Unit> saveInterests(List<String> interests);
 }
 
 class ProfileDataSourceImpl implements ProfileDataSource {
@@ -16,26 +22,44 @@ class ProfileDataSourceImpl implements ProfileDataSource {
 
   @override
   Future<List<InterestModel>> getInterests() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      InterestModel(id: 1, name: 'Music', icon: 'music'),
-      InterestModel(id: 2, name: 'Tech', icon: 'tech'),
-      InterestModel(id: 3, name: 'Art', icon: 'art'),
-      InterestModel(id: 4, name: 'Sports', icon: 'sports'),
-      InterestModel(id: 5, name: 'Food', icon: 'food'),
-      InterestModel(id: 6, name: 'Networking', icon: 'networking'),
-      InterestModel(id: 7, name: 'Wellness', icon: 'wellness'),
-      InterestModel(id: 8, name: 'Travel', icon: 'travel'),
-      InterestModel(id: 9, name: 'Gaming', icon: 'gaming'),
-      InterestModel(id: 10, name: 'Fashion', icon: 'fashion'),
-      InterestModel(id: 11, name: 'Business', icon: 'business'),
-      InterestModel(id: 12, name: 'Film', icon: 'film'),
-    ];
+    final response = await interceptor.get(
+      EndPoints.interests,
+      withToken: true,
+    );
+    return (response.data['data'] as List)
+        .map((e) => InterestModel.fromJson(e))
+        .toList();
   }
 
   @override
   Future<Unit> completeSetup(CompleteSetupPayload payload) async {
-    await Future.delayed(const Duration(seconds: 1));
+    await interceptor.post(
+      EndPoints.completeSetup,
+      body: payload.toJson(),
+      withToken: true,
+    );
+    return unit;
+  }
+
+  @override
+  Future<Unit> discoverySettings(DiscoverySettingsPayload payload) async {
+    await interceptor.put(
+      EndPoints.discoverySettings,
+      body: payload.toJson(),
+      withToken: true,
+    );
+    return unit;
+  }
+
+  @override
+  Future<Unit> saveInterests(List<String> interests) async {
+    await interceptor.put(
+      EndPoints.assignInterests,
+      body: {
+        'interests': interests,
+      },
+      withToken: true,
+    );
     return unit;
   }
 }

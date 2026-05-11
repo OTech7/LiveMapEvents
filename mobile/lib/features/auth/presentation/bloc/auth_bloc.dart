@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile/features/auth/domain/use_case/send_otp_usecase.dart';
 
 import '../../../../core/error_handling/failure_to_message.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,13 +10,15 @@ import '../../domain/entity/auth_entity.dart';
 import '../../domain/payload/login_payload.dart';
 import '../../domain/payload/register_payload.dart';
 import '../../domain/payload/verify_payload.dart';
-import '../../domain/use_case/checkTokenUseCase.dart';
+import '../../domain/use_case/check_token_usecase.dart';
 import '../../domain/use_case/login_usecase.dart';
 import '../../domain/use_case/logout_usecase.dart';
 import '../../domain/use_case/register_usecase.dart';
 import '../../domain/use_case/verify_usecase.dart';
+import '../../domain/use_case/sign_in_with_google_usecase.dart';
 
 part 'auth_event.dart';
+
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
@@ -24,12 +27,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   LogoutUseCase logoutUseCase;
   CheckTokenUseCase checkTokenUseCase;
   VerifyUseCase verifyUseCase;
+  SendOTPUseCase sendOTPUseCase;
+  SignInWithGoogleUseCase signInWithGoogleUseCase;
+
   AuthBloc({
     required this.loginUseCase,
     required this.registerUseCase,
     required this.checkTokenUseCase,
     required this.logoutUseCase,
     required this.verifyUseCase,
+    required this.sendOTPUseCase,
+    required this.signInWithGoogleUseCase,
   }) : super(UnAuthenticatedState()) {
     on<LoginEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
@@ -84,7 +92,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<VerifyEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
-      final payload = VerifyPayload(code: event.code);
+      final payload = VerifyPayload(
+        phoneNumber: event.phoneNumber,
+        code: event.code,
+      );
       final response = await verifyUseCase(payload);
       response.fold(
         (failure) {
@@ -96,36 +107,51 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     });
 
+    on<SendOTPEvent>((event, emit) async {
+      emit(AuthenticationLoadingState());
+      final response = await sendOTPUseCase(event.phoneNumber);
+      response.fold(
+        (failure) {
+          emit(AuthenticationErrorState(message: mapFailureToMessage(failure)));
+        },
+        (auth) {
+          emit(OTPSentSuccessfullyState(phoneNumber: event.phoneNumber));
+        },
+      );
+    });
+
     on<SignInWithGoogleEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
+
       try {
-        final GoogleSignIn signIn = GoogleSignIn.instance;
-        // unawaited(
-        //   signIn.initialize(clientId: clientId, serverClientId: serverClientId).then((
-        //       _,
-        //       ) {
-        //     signIn.authenticationEvents
-        //         .listen(_handleAuthenticationEvent)
-        //         .onError(_handleAuthenticationError);
-        /// This example always uses the stream-based approach to determining
-        /// which UI state to show, rather than using the future returned here,
-        /// if any, to conditionally skip directly to the signed-in state.
-        // signIn.attemptLightweightAuthentication();
-        // }),
-        // );
-        // final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-        // if (googleUser != null) {
-        //   final SharedPreferences sp = await SharedPreferences.getInstance();
-        //   await sp.setString('google_email', googleUser.email);
-        //   TODO: authenticate with backend
-        //   Here we just stop loading; you would emit AuthenticatedState on success
-        // } else {
-        //   emit(AuthenticationErrorState(message: 'Google Sign In Cancelled'));
-        // }
+        final googleSignIn = GoogleSignIn.instance;
+
+        await googleSignIn.initialize(
+          serverClientId:
+              '103431306679-1nt2op1uln1udjdu47buf460itj8vrp5.apps.googleusercontent.com',
+        );
+
+        final account = await googleSignIn.authenticate();
+
+        final auth = account.authentication;
+        final idToken = auth.idToken;
+
+        if (idToken == null) {
+          emit(AuthenticationErrorState(message: 'Failed to retrieve ID token'));
+          return;
+        }
+
+        final response = await signInWithGoogleUseCase(idToken);
+
+        response.fold(
+          (failure) => emit(
+            AuthenticationErrorState(message: mapFailureToMessage(failure)),
+          ),
+          (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
+        );
       } catch (e) {
         emit(AuthenticationErrorState(message: e.toString()));
       }
     });
-
   }
 }

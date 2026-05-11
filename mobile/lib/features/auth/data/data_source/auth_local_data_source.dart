@@ -16,7 +16,8 @@ abstract class AuthLocalDataSource {
 
 const String kUserKey = 'AUTH_USER';
 
-class AuthLocalDataSourceImpl implements AuthLocalDataSource , AuthTokenProvider{
+class AuthLocalDataSourceImpl
+    implements AuthLocalDataSource, AuthTokenProvider {
   final SharedPreferences sharedPreferences;
 
   AuthLocalDataSourceImpl({required this.sharedPreferences});
@@ -46,7 +47,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource , AuthTokenProvider
   }
 
   @override
-  Future<void> deleteUser()async {
+  Future<void> deleteUser() async {
     await sharedPreferences.remove(kUserKey);
   }
 

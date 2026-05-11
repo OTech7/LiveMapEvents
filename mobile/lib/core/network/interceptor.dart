@@ -29,9 +29,9 @@ class AppInterceptor extends Interceptor {
   /// ---------------- REQUEST ----------------
   @override
   void onRequest(
-      RequestOptions options,
-      RequestInterceptorHandler handler,
-      ) async {
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     if (options.extra['requiresToken'] == true) {
       final token = await authInterface.getToken();
       if (token != null) {
@@ -106,10 +106,10 @@ class AppInterceptor extends Interceptor {
   /// ---------------- HELPER METHODS ----------------
 
   Future<Response> get(
-      String url, {
-        Map<String, dynamic>? query,
-        bool withToken = false,
-      }) async {
+    String url, {
+    Map<String, dynamic>? query,
+    bool withToken = false,
+  }) async {
     final headers = await getHeaders();
     final response = await dio.get(
       BASE_URL + url,
@@ -120,10 +120,10 @@ class AppInterceptor extends Interceptor {
   }
 
   Future<Response> post(
-      String url, {
-        Map<String, dynamic>? body,
-        bool withToken = false,
-      }) async {
+    String url, {
+    Map<String, dynamic>? body,
+    bool withToken = false,
+  }) async {
     final headers = await getHeaders();
     final response = await dio.post(
       BASE_URL + url,
@@ -134,10 +134,10 @@ class AppInterceptor extends Interceptor {
   }
 
   Future<Response> put(
-      String url, {
-        Map<String, dynamic>? body,
-        bool withToken = false,
-      }) async {
+    String url, {
+    Map<String, dynamic>? body,
+    bool withToken = false,
+  }) async {
     final headers = await getHeaders();
     final response = await dio.put(
       BASE_URL + url,

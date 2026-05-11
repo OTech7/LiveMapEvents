@@ -16,11 +16,11 @@ class RegisterPayload {
   });
 
   Map<String, dynamic> toJson() => {
-        "format_code": formatCode,
-        "phone_number": phoneNumber,
-        "email": email,
-        "password": password,
-        "first_name": firstName,
-        "last_name": lastName,
-      };
+    "format_code": formatCode,
+    "phone_number": phoneNumber,
+    "email": email,
+    "password": password,
+    "first_name": firstName,
+    "last_name": lastName,
+  };
 }

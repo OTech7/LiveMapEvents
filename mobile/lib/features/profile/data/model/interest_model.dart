@@ -4,6 +4,7 @@ class InterestModel extends InterestEntity {
   InterestModel({
     required super.id,
     required super.name,
+    required super.slug,
     required super.icon,
   });
 
@@ -11,15 +12,12 @@ class InterestModel extends InterestEntity {
     return InterestModel(
       id: json['id'],
       name: json['name'],
-      icon: json['icon'],
+      slug: json['slug'],
+      icon: json['icon'] ?? "",
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'icon': icon,
-    };
+    return {'id': id, 'name': name, 'slug': slug, 'icon': icon};
   }
 }

@@ -1,26 +1,28 @@
 import 'package:equatable/equatable.dart';
 
-class AuthModel extends Equatable {
-  String token;
-  String refreshToken;
+import '../../domain/entity/auth_entity.dart';
 
+class AuthModel extends AuthEntity {
   AuthModel({
-    required this.token,
-    required this.refreshToken,
+    required super.token,
+    required super.refreshToken,
+    super.profileComplete,
   });
 
   factory AuthModel.fromJson(Map<String, dynamic> map) {
-
     return AuthModel(
-        refreshToken: map["refreshToken"],
-        token: map["token"]);
+      refreshToken: map["refreshToken"] ?? '',
+      token: map["token"] ?? '',
+      profileComplete: map["profile_complete"] ?? false,
+    );
   }
 
   Map<String, dynamic> toJson() => {
-        "token": token,
-        "refreshToken": refreshToken,
-      };
+    "token": token,
+    "refreshToken": refreshToken,
+    "profile_complete": profileComplete,
+  };
 
   @override
-  List<Object?> get props => [token, refreshToken];
+  List<Object?> get props => [token, refreshToken, profileComplete];
 }
