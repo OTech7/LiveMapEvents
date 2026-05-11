@@ -43,10 +43,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthenticationLoadingState());
       final response = await loginUseCase(event.payload);
       response.fold(
-        (failure) => {
+            (failure) =>
+        {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure))),
         },
-        (auth) {
+            (auth) {
           emit(AuthenticatedState(authEntity: auth));
         },
       );
@@ -55,10 +56,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthenticationLoadingState());
       final response = await registerUseCase(event.payload);
       response.fold(
-        (failure) => {
+            (failure) =>
+        {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure))),
         },
-        (auth) {
+            (auth) {
           emit(AuthenticatedState(authEntity: auth));
         },
       );
@@ -66,10 +68,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutEvent>((event, emit) async {
       final response = await logoutUseCase();
       response.fold(
-        (failure) => {
+            (failure) =>
+        {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure))),
         },
-        (airports) {
+            (airports) {
           emit(UnAuthenticatedState());
         },
       );
@@ -77,10 +80,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckTokenEvent>((event, emit) async {
       final response = await checkTokenUseCase();
       response.fold(
-        (failure) {
+            (failure) {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure)));
         },
-        (authEntity) {
+            (authEntity) {
           if (authEntity != null) {
             emit(AuthenticatedState(authEntity: authEntity));
           } else {
@@ -98,10 +101,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       final response = await verifyUseCase(payload);
       response.fold(
-        (failure) {
+            (failure) {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure)));
         },
-        (auth) {
+            (auth) {
           emit(AuthenticatedState(authEntity: auth));
         },
       );
@@ -111,10 +114,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthenticationLoadingState());
       final response = await sendOTPUseCase(event.phoneNumber);
       response.fold(
-        (failure) {
+            (failure) {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure)));
         },
-        (auth) {
+            (auth) {
           emit(OTPSentSuccessfullyState(phoneNumber: event.phoneNumber));
         },
       );
@@ -128,7 +131,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         await googleSignIn.initialize(
           serverClientId:
-              '103431306679-1nt2op1uln1udjdu47buf460itj8vrp5.apps.googleusercontent.com',
+          '103431306679-8c741d2ju4rgkb7fchff8brmpdsq7mci.apps.googleusercontent.com',
         );
 
         final account = await googleSignIn.authenticate();
@@ -137,17 +140,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         final idToken = auth.idToken;
 
         if (idToken == null) {
-          emit(AuthenticationErrorState(message: 'Failed to retrieve ID token'));
+          emit(
+              AuthenticationErrorState(message: 'Failed to retrieve ID token'));
           return;
         }
 
         final response = await signInWithGoogleUseCase(idToken);
 
         response.fold(
-          (failure) => emit(
-            AuthenticationErrorState(message: mapFailureToMessage(failure)),
-          ),
-          (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
+              (failure) =>
+              emit(
+                AuthenticationErrorState(message: mapFailureToMessage(failure)),
+              ),
+              (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
         );
       } catch (e) {
         emit(AuthenticationErrorState(message: e.toString()));
