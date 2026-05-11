@@ -39,5 +39,10 @@ class Venue extends Model
     {
         return $this->hasMany(Pin::class);
     }
+
+    public function promotions()
+    {
+        return $this->hasMany(Promotion::class);
+    }
 }
 

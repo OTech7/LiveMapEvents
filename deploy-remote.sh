@@ -87,7 +87,10 @@ APP_NAME=LiveMapEvents
 APP_ENV=${APP_ENV:-production}
 APP_KEY=${APP_KEY}
 APP_DEBUG=${APP_DEBUG:-false}
-APP_URL=http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}
+APP_URL=https://api.${SERVER_HOSTNAME:-$SERVER_IP}
+# APP_PORT / FRONTEND_PORT are NOT published to the host anymore —
+# Caddy fronts everything on 80/443. These are kept only for the
+# rare case you want to re-publish a container directly.
 APP_PORT=${APP_PORT:-8080}
 FRONTEND_PORT=${FRONTEND_PORT:-3000}
 
@@ -184,8 +187,11 @@ setup_server() {
             sudo ufw allow 22/tcp
             sudo ufw allow 80/tcp
             sudo ufw allow 443/tcp
-            sudo ufw allow 3000/tcp
-            sudo ufw allow 8080/tcp
+            # 3000 / 8080 are NOT publicly exposed anymore — Caddy fronts
+            # both services on 80/443. Drop any old allow rules left from
+            # earlier deploys (silently ignore if they were never added).
+            sudo ufw delete allow 3000/tcp 2>/dev/null || true
+            sudo ufw delete allow 8080/tcp 2>/dev/null || true
             sudo ufw --force enable
         fi
 
@@ -220,6 +226,11 @@ deploy() {
     $SCP_CMD "$SCRIPT_DIR/.env.docker" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
     $SCP_CMD "$SCRIPT_DIR/deploy.sh" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/"
 
+    # Caddy config (reverse proxy + auto HTTPS)
+    log "Uploading Caddyfile..."
+    $SSH_CMD "mkdir -p $SERVER_DEPLOY_PATH/caddy"
+    $SCP_CMD "$SCRIPT_DIR/caddy/Caddyfile" "$SERVER_USER@$SERVER_IP:$SERVER_DEPLOY_PATH/caddy/Caddyfile"
+
     log "Compressing and uploading backend..."
     tar czf /tmp/livemap-backend.tar.gz -C "$SCRIPT_DIR" \
         --exclude='backend/.git' \
@@ -230,7 +241,11 @@ deploy() {
         --exclude='backend/storage/framework/views' \
         backend/
     $SCP_CMD /tmp/livemap-backend.tar.gz "$SERVER_USER@$SERVER_IP:/tmp/"
-    $SSH_CMD "tar xzf /tmp/livemap-backend.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-backend.tar.gz"
+    # Wipe the previous backend tree before extracting so files deleted locally
+    # also disappear on the server. tar -xzf alone only adds/overwrites — it
+    # never removes stale files, which has bitten us in the past (e.g. an old
+    # @OA-annotated Doc class lingering and polluting Swagger).
+    $SSH_CMD "rm -rf $SERVER_DEPLOY_PATH/backend && tar xzf /tmp/livemap-backend.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-backend.tar.gz"
     rm -f /tmp/livemap-backend.tar.gz
     log "Backend uploaded successfully."
 
@@ -245,7 +260,9 @@ deploy() {
         --exclude='mobile/.flutter-plugins-dependencies' \
         mobile/
     $SCP_CMD /tmp/livemap-mobile.tar.gz "$SERVER_USER@$SERVER_IP:/tmp/"
-    $SSH_CMD "tar xzf /tmp/livemap-mobile.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-mobile.tar.gz"
+    # Same cleanup pattern as backend — remove old mobile tree before extracting
+    # so locally-deleted files also disappear on the server.
+    $SSH_CMD "rm -rf $SERVER_DEPLOY_PATH/mobile && tar xzf /tmp/livemap-mobile.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-mobile.tar.gz"
     rm -f /tmp/livemap-mobile.tar.gz
     log "Frontend uploaded successfully."
 
@@ -313,11 +330,14 @@ DEPLOY
     log "Deployment complete!"
     echo ""
     info "Your app is live at:"
-    info "  Backend API:  http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}"
-    info "  Frontend:     http://${SERVER_HOSTNAME:-$SERVER_IP}:${FRONTEND_PORT:-3000}"
-    info "  Health (API): http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}/health"
-    info "  Health (Web): http://${SERVER_HOSTNAME:-$SERVER_IP}:${FRONTEND_PORT:-3000}/health"
-    info "  API:          http://${SERVER_HOSTNAME:-$SERVER_IP}:${APP_PORT:-8080}/api/v1/auth/me"
+    info "  Frontend:     https://${SERVER_HOSTNAME:-$SERVER_IP}"
+    info "  Backend API:  https://api.${SERVER_HOSTNAME:-$SERVER_IP}"
+    info "  Swagger UI:   https://api.${SERVER_HOSTNAME:-$SERVER_IP}/api/documentation"
+    info "  Health (API): https://api.${SERVER_HOSTNAME:-$SERVER_IP}/health"
+    info "  Health (Web): https://${SERVER_HOSTNAME:-$SERVER_IP}/health"
+    echo ""
+    warn "First boot of Caddy may take 30-60s while Let's Encrypt issues the cert."
+    warn "If https:// fails, run: ./deploy-remote.sh --logs caddy"
 }
 
 # ── Stop & remove any standalone Redis container that might conflict with docker-compose's redis ──
@@ -364,10 +384,10 @@ show_status() {
     $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker ps"
     echo ""
 
-    info "Testing backend health..."
-    $SSH_CMD "curl -sf http://localhost:${APP_PORT:-8080}/health && echo ' OK' || echo 'UNREACHABLE'"
-    info "Testing frontend health..."
-    $SSH_CMD "curl -sf http://localhost:${FRONTEND_PORT:-3000}/health && echo ' OK' || echo 'UNREACHABLE'"
+    info "Testing backend health (via Caddy)..."
+    $SSH_CMD "curl -sfk https://api.${SERVER_HOSTNAME:-$SERVER_IP}/health && echo ' OK' || echo 'UNREACHABLE'"
+    info "Testing frontend health (via Caddy)..."
+    $SSH_CMD "curl -sfk https://${SERVER_HOSTNAME:-$SERVER_IP}/health && echo ' OK' || echo 'UNREACHABLE'"
     info "Testing Redis container PING..."
     $SSH_CMD "cd $SERVER_DEPLOY_PATH && docker compose --env-file .env.docker exec -T redis redis-cli -a '$REDIS_PASSWORD' --no-auth-warning ping 2>/dev/null || echo 'UNREACHABLE'"
     info "Testing Redis from inside app container (Laravel/Predis)..."

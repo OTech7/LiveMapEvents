@@ -11,12 +11,16 @@ class UserInterest extends Model
 
     protected $fillable = [
         'user_id',
-        'category',
+        'interest_id',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-}
 
+    public function interest()
+    {
+        return $this->belongsTo(Interest::class);
+    }
+}

@@ -16,20 +16,22 @@ use App\Support\ApiResponse;
 
 class ProfileController extends Controller
 {
-    public function __construct(protected ProfileService $profileService) {}
+    public function __construct(protected ProfileService $profileService)
+    {
+    }
 
     public function completeProfile(CompleteProfileRequest $request)
     {
         $user = auth()->user();
 
-        $user = $this->profileService->completeProfile($user,$request->validated());
+        $user = $this->profileService->completeProfile($user, $request->validated());
 
-        return ApiResponse::success('messages.profile_completed_successfully',UserResource::make($user));
+        return ApiResponse::success('messages.profile_completed_successfully', UserResource::make($user));
     }
 
     public function show()
     {
-        return ApiResponse::success('messages.profile_fetched_successfully',UserResource::make(auth()->user()));
+        return ApiResponse::success('messages.profile_fetched_successfully', UserResource::make(auth()->user()));
     }
 
     public function getInterests()
@@ -46,9 +48,19 @@ class ProfileController extends Controller
 
     public function update(UpdateProfileRequest $request)
     {
-        $user = $this->profileService->updateProfile(auth()->user(),$request->validated());
+        $user = $this->profileService->updateProfile(auth()->user(), $request->validated());
 
-        return ApiResponse::success('messages.profile_updated_successfully',UserResource::make($user));
+        return ApiResponse::success('messages.profile_updated_successfully', UserResource::make($user));
+    }
+
+    public function myInterests()
+    {
+        $user = auth()->user();
+
+        return ApiResponse::success(
+            'messages.interests_fetched_successfully',
+            InterestResource::collection($user->interests)
+        );
     }
 
     public function updateInterests(UpdateInterestsRequest $request)
@@ -62,6 +74,24 @@ class ProfileController extends Controller
         return ApiResponse::success('messages.interests_updated_successfully');
     }
 
+    public function addInterest(Interest $interest)
+    {
+        $user = auth()->user();
+
+        $user->interests()->syncWithoutDetaching([$interest->id]);
+
+        return ApiResponse::success('messages.interests_updated_successfully');
+    }
+
+    public function removeInterest(Interest $interest)
+    {
+        $user = auth()->user();
+
+        $user->interests()->detach($interest->id);
+
+        return ApiResponse::success('messages.interests_updated_successfully');
+    }
+
     public function uploadAvatar(UploadAvatarRequest $request)
     {
         $user = auth()->user();
@@ -70,7 +100,7 @@ class ProfileController extends Controller
 
         $user->update(['avatar_url' => $path]);
 
-        return ApiResponse::success('messages.avatar_uploaded_successfully',['avatar_url' => $path]);
+        return ApiResponse::success('messages.avatar_uploaded_successfully', ['avatar_url' => $path]);
     }
 
     public function updateDiscoverySettings(UpdateDiscoverySettingsRequest $request)

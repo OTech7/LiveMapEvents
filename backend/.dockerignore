@@ -9,6 +9,9 @@ storage/logs/*
 storage/framework/cache/data/*
 storage/framework/sessions/*
 storage/framework/views/*
+# public/storage is a symlink to an absolute Linux path — Docker on Windows
+# cannot tar absolute symlinks. The entrypoint recreates it via `artisan storage:link`.
+public/storage
 tests
 phpunit.xml
 .editorconfig
