@@ -6,10 +6,12 @@ use App\Actions\GenerateToken;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
+// Note: OTPService is injected via the controller layer (AuthController),
+// not here — AuthService only handles post-verification login logic.
+
 class AuthService
 {
     public function __construct(
-        protected OTPService    $otpService,
         protected GenerateToken $generateToken,
         protected GoogleAuthService $googleAuthService
     )
