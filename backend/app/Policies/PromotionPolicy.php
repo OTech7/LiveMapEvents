@@ -43,6 +43,12 @@ class PromotionPolicy
 
     private function owns(User $user, Promotion $promotion): bool
     {
+        // Ensure venue is loaded so we don't trigger an extra query
+        // every time this policy is checked (e.g., in a loop).
+        if (!$promotion->relationLoaded('venue')) {
+            $promotion->loadMissing('venue');
+        }
+
         return $promotion->venue->owner_id === $user->id;
     }
 }

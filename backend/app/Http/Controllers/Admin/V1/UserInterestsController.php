@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Manages a specific user's interests from the admin panel.
@@ -23,16 +22,10 @@ class UserInterestsController extends Controller
 {
     /**
      * GET /api/admin/v1/users/{user}/interests
-     *
-     * Returns the user's current interests, ordered by name.
      */
     public function index(User $user): JsonResponse
     {
-        abort_unless(
-            auth()->user()?->can('users.view'),
-            Response::HTTP_FORBIDDEN,
-            'Missing permission: users.view'
-        );
+        $this->authorize('users.view', $user);
 
         $interests = $user->interests()
             ->orderBy('name')
@@ -49,11 +42,7 @@ class UserInterestsController extends Controller
      */
     public function sync(Request $request, User $user): JsonResponse
     {
-        abort_unless(
-            auth()->user()?->can('users.update'),
-            Response::HTTP_FORBIDDEN,
-            'Missing permission: users.update'
-        );
+        $this->authorize('users.update', $user);
 
         $validated = $request->validate([
             'interest_ids' => 'present|array',

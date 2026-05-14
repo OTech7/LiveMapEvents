@@ -121,6 +121,10 @@ class PromotionService
 
     private function assertOwns(User $owner, Promotion $promotion): void
     {
+        if (!$promotion->relationLoaded('venue')) {
+            $promotion->loadMissing('venue');
+        }
+
         if ($promotion->venue->owner_id !== $owner->id) {
             abort(403, __('messages.promotion_not_owned'));
         }

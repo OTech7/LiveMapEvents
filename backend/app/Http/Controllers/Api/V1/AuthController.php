@@ -12,14 +12,20 @@ use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Services\OTPService;
 use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    public function __construct(protected OTPService $otpService,protected AuthService $authService) {}
+    public function __construct(
+        protected OTPService  $otpService,
+        protected AuthService $authService
+    )
+    {
+    }
 
-    public function requestOtp(RequestOtpRequest $request)
+    public function requestOtp(RequestOtpRequest $request): JsonResponse
     {
         try {
             $this->otpService->send($request->string('phone')->toString());
@@ -32,14 +38,17 @@ class AuthController extends Controller
             );
         }
 
-        return ApiResponse::success(message: 'messages.otp_sent',status: Response::HTTP_OK);
+        return ApiResponse::success(message: 'messages.otp_sent', status: Response::HTTP_OK);
     }
 
-    public function verifyOtp(VerifyOtpRequest $request)
+    public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
-        $result = $this->otpService->verify($request->string('phone')->toString(),$request->string('otp')->toString());
+        $result = $this->otpService->verify(
+            $request->string('phone')->toString(),
+            $request->string('otp')->toString()
+        );
 
-         if ($result->status === OtpVerificationStatus::VERIFIED) {
+        if ($result->status === OtpVerificationStatus::VERIFIED) {
             $userData = $this->authService->loginWithPhone(
                 $request->string('phone')->toString()
             );
@@ -60,31 +69,35 @@ class AuthController extends Controller
         return $this->otpErrorResponse($result);
     }
 
-    public function googleLogin(GoogleLoginRequest $request)
+    public function googleLogin(GoogleLoginRequest $request): JsonResponse
     {
         $result = $this->authService->loginWithGoogle($request->id_token);
 
-        return ApiResponse::success('', data: [
-            'token' => $result['token'],
-            'user' => new UserResource($result['user']),
-            'profile_complete' => $result['profile_complete'],
-            'interests_complete' => $result['interests_complete'],
-            'discovery_settings_complete' => $result['discovery_settings_complete'],
-        ]);
+        return ApiResponse::success(
+            message: 'messages.login_success',
+            data: [
+                'token' => $result['token'],
+                'user' => new UserResource($result['user']),
+                'profile_complete' => $result['profile_complete'],
+                'interests_complete' => $result['interests_complete'],
+                'discovery_settings_complete' => $result['discovery_settings_complete'],
+            ]
+        );
     }
 
-    public function me()
+    public function me(): JsonResponse
     {
         return ApiResponse::success(data: UserResource::make(auth()->user()));
     }
 
-    public function logout()
+    public function logout(): JsonResponse
     {
         auth()->user()?->currentAccessToken()?->delete();
+
         return ApiResponse::success('messages.logout_success');
     }
 
-    private function otpErrorResponse(OtpVerificationResult $result)
+    private function otpErrorResponse(OtpVerificationResult $result): JsonResponse
     {
         return match ($result->status) {
             OtpVerificationStatus::INVALID => ApiResponse::error(

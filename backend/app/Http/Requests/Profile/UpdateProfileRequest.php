@@ -15,8 +15,8 @@ class UpdateProfileRequest extends FormRequest
             'dob'        => 'sometimes|date',
             'phone'      => 'sometimes|string',
             'avatar_url' => 'sometimes|string',
-            'lat'        => 'sometimes|numeric',
-            'lng'        => 'sometimes|numeric',
+            'lat' => 'sometimes|numeric|between:-90,90',
+            'lng' => 'sometimes|numeric|between:-180,180',
         ];
     }
 }

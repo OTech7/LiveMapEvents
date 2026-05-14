@@ -10,6 +10,7 @@ use App\Http\Resources\PromotionResource;
 use App\Models\Promotion;
 use App\Services\PromotionService;
 use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PromotionController extends Controller
@@ -18,7 +19,7 @@ class PromotionController extends Controller
     {
     }
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $promotions = $this->promotionService->getForOwner(
             auth()->user(),
@@ -31,7 +32,7 @@ class PromotionController extends Controller
         );
     }
 
-    public function store(StorePromotionRequest $request)
+    public function store(StorePromotionRequest $request): JsonResponse
     {
         $promotion = $this->promotionService->create(auth()->user(), $request->validated());
 
@@ -42,7 +43,7 @@ class PromotionController extends Controller
         );
     }
 
-    public function show(Promotion $promotion)
+    public function show(Promotion $promotion): JsonResponse
     {
         return ApiResponse::success(
             'messages.promotion_fetched_successfully',
@@ -50,7 +51,7 @@ class PromotionController extends Controller
         );
     }
 
-    public function update(UpdatePromotionRequest $request, Promotion $promotion)
+    public function update(UpdatePromotionRequest $request, Promotion $promotion): JsonResponse
     {
         $this->authorize('update', $promotion);
 
@@ -62,7 +63,7 @@ class PromotionController extends Controller
         );
     }
 
-    public function destroy(Promotion $promotion)
+    public function destroy(Promotion $promotion): JsonResponse
     {
         $this->authorize('delete', $promotion);
 
@@ -71,7 +72,7 @@ class PromotionController extends Controller
         return ApiResponse::success('messages.promotion_deleted_successfully');
     }
 
-    public function claims(Promotion $promotion)
+    public function claims(Promotion $promotion): JsonResponse
     {
         $this->authorize('viewClaims', $promotion);
 

@@ -7,6 +7,7 @@ use App\Http\Requests\Promotions\RedeemVoucherRequest;
 use App\Http\Resources\PromotionClaimResource;
 use App\Services\PromotionClaimService;
 use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class ScannerController extends Controller
 {
@@ -14,7 +15,7 @@ class ScannerController extends Controller
     {
     }
 
-    public function redeem(RedeemVoucherRequest $request)
+    public function redeem(RedeemVoucherRequest $request): JsonResponse
     {
         $claim = $this->claimService->redeem(
             $request->validated('voucher_code'),

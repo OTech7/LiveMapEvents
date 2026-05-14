@@ -33,7 +33,7 @@ class PromotionResource extends JsonResource
             'is_active' => $this->is_active,
             // 'status' is a runtime-computed field, only present on nearby results
             'status' => $this->when(isset($this->resource->status), $this->resource->status ?? null),
-            'created_at' => $this->created_at,
+            'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
 }

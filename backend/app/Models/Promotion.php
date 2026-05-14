@@ -62,29 +62,11 @@ class Promotion extends Model
      */
     public function isActiveNow(): bool
     {
-        if (!$this->is_active) {
+        if (!$this->isValidToday()) {
             return false;
         }
 
-        $now = now();
-        $todayDate = $now->toDateString();
-
-        if ($todayDate < $this->valid_from->toDateString()) {
-            return false;
-        }
-
-        if ($this->valid_to && $todayDate > $this->valid_to->toDateString()) {
-            return false;
-        }
-
-        if ($this->recurrence_type === RecurrenceType::RECURRING->value) {
-            // dayOfWeekIso: 1 = Monday … 7 = Sunday
-            if (!in_array($now->dayOfWeekIso, $this->days_of_week ?? [])) {
-                return false;
-            }
-        }
-
-        $currentTime = $now->format('H:i:s');
+        $currentTime = now()->format('H:i:s');
 
         return $currentTime >= $this->start_time && $currentTime <= $this->end_time;
     }
@@ -94,28 +76,11 @@ class Promotion extends Model
      */
     public function isUpcomingToday(): bool
     {
-        if (!$this->is_active) {
+        if (!$this->isValidToday()) {
             return false;
         }
 
-        $now = now();
-        $todayDate = $now->toDateString();
-
-        if ($todayDate < $this->valid_from->toDateString()) {
-            return false;
-        }
-
-        if ($this->valid_to && $todayDate > $this->valid_to->toDateString()) {
-            return false;
-        }
-
-        if ($this->recurrence_type === RecurrenceType::RECURRING->value) {
-            if (!in_array($now->dayOfWeekIso, $this->days_of_week ?? [])) {
-                return false;
-            }
-        }
-
-        return $now->format('H:i:s') < $this->start_time;
+        return now()->format('H:i:s') < $this->start_time;
     }
 
     /**
@@ -144,5 +109,41 @@ class Promotion extends Model
             ->count();
 
         return $redeemed < $this->max_total_redemptions;
+    }
+
+    // ─── Private ──────────────────────────────────────────────────────────────
+
+    /**
+     * Shared guard used by isActiveNow() and isUpcomingToday().
+     * Returns true when:
+     *   - promotion is active
+     *   - today falls within valid_from / valid_to window
+     *   - today is a scheduled day (for recurring promotions)
+     */
+    private function isValidToday(): bool
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        $now = now();
+        $todayDate = $now->toDateString();
+
+        if ($todayDate < $this->valid_from->toDateString()) {
+            return false;
+        }
+
+        if ($this->valid_to && $todayDate > $this->valid_to->toDateString()) {
+            return false;
+        }
+
+        if ($this->recurrence_type === RecurrenceType::RECURRING->value) {
+            // dayOfWeekIso: 1 = Monday … 7 = Sunday
+            if (!in_array($now->dayOfWeekIso, $this->days_of_week ?? [])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -4,11 +4,12 @@ namespace App\Services;
 
 use App\Models\Pin;
 use Clickbar\Magellan\Data\Geometries\Point;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 
 class PinService
 {
-    public function getNearby(array $data)
+    public function getNearby(array $data): LengthAwarePaginator
     {
         $cacheKey = $this->makeCacheKey($data);
 

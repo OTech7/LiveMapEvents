@@ -7,10 +7,10 @@ use App\Http\Requests\Promotions\NearbyPromotionsRequest;
 use App\Http\Resources\PromotionClaimResource;
 use App\Http\Resources\PromotionResource;
 use App\Models\Promotion;
-use App\Models\PromotionClaim;
 use App\Services\PromotionClaimService;
 use App\Services\PromotionService;
 use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class PromotionController extends Controller
 {
@@ -21,7 +21,7 @@ class PromotionController extends Controller
     {
     }
 
-    public function nearby(NearbyPromotionsRequest $request)
+    public function nearby(NearbyPromotionsRequest $request): JsonResponse
     {
         $promotions = $this->promotionService->getNearby($request->validated());
 
@@ -31,14 +31,11 @@ class PromotionController extends Controller
         );
     }
 
-    public function show(Promotion $promotion)
+    public function show(Promotion $promotion): JsonResponse
     {
         $promotion->load('venue');
 
-        $myClaim = PromotionClaim::where('promotion_id', $promotion->id)
-            ->where('user_id', auth()->id())
-            ->latest()
-            ->first();
+        $myClaim = $this->claimService->getActiveClaimForUser($promotion, auth()->user());
 
         return ApiResponse::success(
             'messages.promotion_fetched_successfully',
@@ -51,7 +48,7 @@ class PromotionController extends Controller
         );
     }
 
-    public function claim(Promotion $promotion)
+    public function claim(Promotion $promotion): JsonResponse
     {
         $claim = $this->claimService->claim($promotion, auth()->user());
 
@@ -65,7 +62,7 @@ class PromotionController extends Controller
         );
     }
 
-    public function myClaims()
+    public function myClaims(): JsonResponse
     {
         $claims = $this->claimService->getMyClaims(auth()->user());
 

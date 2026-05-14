@@ -86,6 +86,18 @@ class PromotionClaimService
     }
 
     /**
+     * Return the most recent claim a user has for a given promotion, or null.
+     * Used by the public promotion detail endpoint to show the user their voucher.
+     */
+    public function getActiveClaimForUser(Promotion $promotion, User $user): ?PromotionClaim
+    {
+        return PromotionClaim::where('promotion_id', $promotion->id)
+            ->where('user_id', $user->id)
+            ->latest()
+            ->first();
+    }
+
+    /**
      * Redeem a voucher by code — called by the business owner via the scanner.
      */
     public function redeem(string $code, User $owner): PromotionClaim

@@ -127,7 +127,7 @@ class OTPService
 
         Redis::del($otpKey);
 
-        return new OtpVerificationResult(OtpVerificationStatus::VERIFIED,$this->maxAttempts);
+        return new OtpVerificationResult(OtpVerificationStatus::VERIFIED, $this->maxAttempts);
     }
 
     private function otpKey(string $phone): string

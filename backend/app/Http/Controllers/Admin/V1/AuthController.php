@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Modules\Admin\AdminResources;
 use App\Support\ApiResponse;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
@@ -21,7 +22,7 @@ class AuthController extends Controller
      *
      * Reachable by any authenticated user — does NOT require an admin role.
      */
-    public function me()
+    public function me(): JsonResponse
     {
         $user = auth()->user();
 
@@ -39,7 +40,7 @@ class AuthController extends Controller
         );
     }
 
-    public function logout()
+    public function logout(): JsonResponse
     {
         auth()->user()?->currentAccessToken()?->delete();
 
