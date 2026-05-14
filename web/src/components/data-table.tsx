@@ -23,11 +23,18 @@ interface DataTableProps<T extends Record<string, unknown>> {
     onQ: (q: string) => void;
     page: number;
     onPage: (p: number) => void;
+    /**
+     * Columns that should render as a live toggle switch instead of text.
+     * Clicking the switch calls onToggle without navigating to the edit form.
+     */
+    toggleColumns?: string[];
+    onToggle?: (key: string | number, column: string, value: boolean) => void;
 }
 
 export function DataTable<T extends Record<string, unknown>>({
                                                                  columns, rows, meta, resource, routeKey, labels = {},
                                                                  isLoading, isFetching, q, onQ, page, onPage,
+                                                                 toggleColumns = [], onToggle,
                                                              }: DataTableProps<T>) {
     const router = useRouter();
     return (
@@ -94,6 +101,32 @@ export function DataTable<T extends Record<string, unknown>>({
                                 className="hover:bg-slate-50 cursor-pointer focus:outline-none focus:bg-slate-50"
                             >
                                 {columns.map((c, idx) => {
+                                    // Toggle switch — rendered for any column in toggleColumns.
+                                    // Clicking it fires onToggle and stops row navigation.
+                                    if (toggleColumns.includes(c)) {
+                                        const isOn = !!row[c];
+                                        return (
+                                            <td key={c} className="px-4 py-3">
+                                                <button
+                                                    type="button"
+                                                    aria-label={isOn ? 'Deactivate' : 'Activate'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onToggle?.(key, c, !isOn);
+                                                    }}
+                                                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+                                                        isOn ? 'bg-green-500' : 'bg-slate-300'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${
+                                                            isOn ? 'translate-x-5' : 'translate-x-1'
+                                                        }`}/>
+                                                </button>
+                                            </td>
+                                        );
+                                    }
+
                                     const cell = formatCellValue(row[c], c);
                                     // Style the first column distinctly so it still reads as
                                     // the row's identifier, but the click handler is on the

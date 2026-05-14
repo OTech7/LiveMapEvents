@@ -86,6 +86,15 @@ class PromotionAdminResource extends AdminResource
                 ['value' => 'recurring', 'label' => 'Recurring (weekly)'],
                 ['value' => 'one_time', 'label' => 'One-time'],
             ]],
+            ['name' => 'days_of_week', 'label' => 'Days of week', 'type' => 'multi-select', 'helperText' => 'Required for recurring promotions (1 = Mon … 7 = Sun)', 'options' => [
+                ['value' => '1', 'label' => 'Mon'],
+                ['value' => '2', 'label' => 'Tue'],
+                ['value' => '3', 'label' => 'Wed'],
+                ['value' => '4', 'label' => 'Thu'],
+                ['value' => '5', 'label' => 'Fri'],
+                ['value' => '6', 'label' => 'Sat'],
+                ['value' => '7', 'label' => 'Sun'],
+            ]],
             ['name' => 'start_time', 'label' => 'Start time', 'type' => 'time'],
             ['name' => 'end_time', 'label' => 'End time', 'type' => 'time'],
             ['name' => 'valid_from', 'label' => 'Valid from', 'type' => 'date'],
@@ -93,6 +102,24 @@ class PromotionAdminResource extends AdminResource
             ['name' => 'terms', 'label' => 'Terms', 'type' => 'textarea'],
             ['name' => 'is_active', 'label' => 'Active', 'type' => 'checkbox'],
         ];
+    }
+
+    public function beforeSave(Model $model, array $data, Request $request): array
+    {
+        // AutoForm sends days_of_week as string[] ("1","2"…); cast to int[] for the JSON column.
+        if (isset($data['days_of_week']) && is_array($data['days_of_week'])) {
+            $data['days_of_week'] = array_map('intval', $data['days_of_week']);
+        }
+
+        // If an admin explicitly toggles is_active, record their intent so the
+        // scheduler knows not to override them.
+        //   is_active → false : admin killed it manually → manually_deactivated = true
+        //   is_active → true  : admin turned it back on  → manually_deactivated = false
+        if (array_key_exists('is_active', $data)) {
+            $data['manually_deactivated'] = !$data['is_active'];
+        }
+
+        return $data;
     }
 
     public function query(Request $request): Builder
@@ -116,6 +143,8 @@ class PromotionAdminResource extends AdminResource
             'discount_type' => 'sometimes|in:percentage,fixed',
             'discount_value' => 'sometimes|numeric|min:0.01',
             'recurrence_type' => 'sometimes|in:one_time,recurring',
+            'days_of_week' => 'nullable|array',
+            'days_of_week.*' => 'integer|between:1,7',
             'start_time' => 'sometimes|nullable|date_format:H:i,H:i:s',
             'end_time' => 'sometimes|nullable|date_format:H:i,H:i:s|after:start_time',
             'valid_from' => 'sometimes|date',

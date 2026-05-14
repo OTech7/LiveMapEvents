@@ -49,6 +49,14 @@ class PromotionService
     {
         $this->assertOwns($owner, $promotion);
 
+        // If the owner is explicitly toggling is_active, record intent so the
+        // scheduler knows whether to auto-manage this promotion or leave it alone.
+        //   is_active → false : owner wants it off  → manually_deactivated = true
+        //   is_active → true  : owner wants it back → manually_deactivated = false
+        if (array_key_exists('is_active', $data)) {
+            $data['manually_deactivated'] = !$data['is_active'];
+        }
+
         $promotion->update($data);
 
         return $promotion->fresh()->load('venue:id,name');

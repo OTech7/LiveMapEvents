@@ -3,9 +3,9 @@
 import {useEffect, useState} from 'react';
 import Link from 'next/link';
 import {useParams} from 'next/navigation';
-import {keepPreviousData, useQuery} from '@tanstack/react-query';
+import {keepPreviousData, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {Plus} from 'lucide-react';
-import {fetchList, fetchSchema} from '@/lib/admin/resource';
+import {fetchList, fetchSchema, saveOne} from '@/lib/admin/resource';
 import {useResourcePerms} from '@/lib/admin/use-me';
 import {DataTable} from '@/components/data-table';
 
@@ -19,10 +19,21 @@ export default function ResourceListPage() {
     const params = useParams<{ resource: string }>();
     const resource = params?.resource ?? '';
     const perms = useResourcePerms(resource);
+    const queryClient = useQueryClient();
 
     const [q, setQ] = useState('');
     const [debouncedQ, setDebouncedQ] = useState('');
     const [page, setPage] = useState(1);
+
+    // One-field PATCH — fires when a toggle switch is clicked in the table.
+    const toggleMutation = useMutation({
+        mutationFn: ({key, column, value}: { key: string | number; column: string; value: boolean }) =>
+            saveOne(resource, key, {[column]: value}),
+        onSuccess: () => {
+            // Refresh the current list page so the switch reflects the saved state.
+            queryClient.invalidateQueries({queryKey: ['admin', 'list', resource]});
+        },
+    });
 
     // Debounce typing so each keystroke doesn't fire a network call.
     useEffect(() => {
@@ -92,6 +103,10 @@ export default function ResourceListPage() {
                     onQ={setQ}
                     page={page}
                     onPage={setPage}
+                    toggleColumns={['is_active']}
+                    onToggle={(key, column, value) =>
+                        toggleMutation.mutate({key, column, value})
+                    }
                 />
             )}
         </div>

@@ -27,6 +27,7 @@ class Promotion extends Model
         'max_per_user_redemptions',
         'terms',
         'is_active',
+        'manually_deactivated',
     ];
 
     protected $casts = [
@@ -34,6 +35,7 @@ class Promotion extends Model
         'valid_from' => 'date',
         'valid_to' => 'date',
         'is_active' => 'boolean',
+        'manually_deactivated' => 'boolean',
         'discount_value' => 'decimal:2',
         'max_total_redemptions' => 'integer',
         'max_per_user_redemptions' => 'integer',
