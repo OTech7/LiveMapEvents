@@ -16,6 +16,7 @@ import '../../domain/use_case/logout_usecase.dart';
 import '../../domain/use_case/register_usecase.dart';
 import '../../domain/use_case/verify_usecase.dart';
 import '../../domain/use_case/sign_in_with_google_usecase.dart';
+import '../../../../core/config/env_vars.dart';
 
 part 'auth_event.dart';
 
@@ -127,8 +128,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final googleSignIn = GoogleSignIn.instance;
 
       await googleSignIn.initialize(
-        serverClientId:
-            '103431306679-8c741d2ju4rgkb7fchff8brmpdsq7mci.apps.googleusercontent.com',
+        serverClientId: EnvVars.googleServerClientId,
       );
 
       final account = await googleSignIn.authenticate();
