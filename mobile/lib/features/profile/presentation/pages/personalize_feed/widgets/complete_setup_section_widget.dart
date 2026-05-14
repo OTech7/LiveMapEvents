@@ -37,7 +37,7 @@ class CompleteSetupSectionWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           CustomButton(
-            text: "Complete Setup",
+            text: AppStrings.completeSetup,
             onPressed: onComplete,
             isLoading: isLoading,
             isDisabled: onComplete == null,
@@ -52,12 +52,13 @@ class CompleteSetupSectionWidget extends StatelessWidget {
               selectedCount.toString(),
             ),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: selectedCount >= 3
-                      ? AppColors.kPrimaryColor
-                      : AppColors.kTextSecondaryColor,
-                  fontWeight:
-                      selectedCount >= 3 ? FontWeight.bold : FontWeight.normal,
-                ),
+              color: selectedCount >= 3
+                  ? AppColors.kPrimaryColor
+                  : AppColors.kTextSecondaryColor,
+              fontWeight: selectedCount >= 3
+                  ? FontWeight.bold
+                  : FontWeight.normal,
+            ),
           ),
         ],
       ),

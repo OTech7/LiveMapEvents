@@ -32,9 +32,7 @@ class CustomButton extends StatelessWidget {
         disabledForegroundColor: Colors.white,
         minimumSize: Size(width!, height),
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: isLoading
           ? const SizedBox(

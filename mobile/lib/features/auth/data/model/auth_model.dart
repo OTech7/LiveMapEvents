@@ -35,10 +35,10 @@ class AuthModel extends AuthEntity {
 
   @override
   List<Object?> get props => [
-        token,
-        refreshToken,
-        profileComplete,
-        interestsComplete,
-        discoverySettingsComplete,
-      ];
+    token,
+    refreshToken,
+    profileComplete,
+    interestsComplete,
+    discoverySettingsComplete,
+  ];
 }

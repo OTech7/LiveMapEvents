@@ -163,9 +163,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                                 color: AppColors.kTextPrimaryColor,
                               ),
                             ),
-                            const Text(
-                              "Tap on the map to change location",
-                              style: TextStyle(
+                            Text(
+                              AppStrings.tapOnMapToChangeLocation,
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey,
                               ),

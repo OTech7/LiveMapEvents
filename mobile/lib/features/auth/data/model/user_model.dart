@@ -16,17 +16,21 @@ class UserModel extends UserEntity {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     final location = json['location'] as Map<String, dynamic>?;
     final coordinates = location?['coordinates'] as List<dynamic>?;
-    
+
     return UserModel(
       id: json['id'],
-      phone: json['phone'],
+      phone: json['phone'] ?? '',
       firstName: json['first_name'] ?? '',
       lastName: json['last_name'] ?? '',
       dob: json['dob'] ?? '',
       gender: json['gender'] ?? '',
       userType: json['user_type'] ?? '',
-      lat: coordinates != null && coordinates.length > 0 ? coordinates[0].toDouble() : null,
-      lng: coordinates != null && coordinates.length > 1 ? coordinates[1].toDouble() : null,
+      lat: coordinates != null && coordinates.isNotEmpty
+          ? coordinates[0].toDouble()
+          : null,
+      lng: coordinates != null && coordinates.length > 1
+          ? coordinates[1].toDouble()
+          : null,
     );
   }
 }
