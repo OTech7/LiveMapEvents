@@ -31,7 +31,7 @@ class CompleteProfileRequest extends FormRequest
             // (e.g. Google sign-in). Phone-OTP users already have it persisted
             // at OTP verification time, so we don't ask again.
             'phone' => [
-                $hasPhone ? 'prohibited' : 'required',
+                $hasPhone ? 'prohibited' : 'nullable',
                 'string',
                 'max:20',
                 Rule::unique('users', 'phone')->ignore($user?->id),

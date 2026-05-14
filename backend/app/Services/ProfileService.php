@@ -113,7 +113,6 @@ class ProfileService
             !empty($user->last_name) &&
             !empty($user->gender) &&
             !empty($user->dob) &&
-            !empty($user->phone) &&
             !empty($user->location);
     }
 
