@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Log;
 class AuthService
 {
     public function __construct(
-        protected OTPService $otpService,
+        protected OTPService    $otpService,
         protected GenerateToken $generateToken,
         protected GoogleAuthService $googleAuthService
-    ) {}
+    )
+    {
+    }
 
     public function loginWithPhone(string $phone): array
     {
