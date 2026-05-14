@@ -7,6 +7,7 @@ use App\Modules\Admin\AdminResource;
 use App\Support\ApiResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -116,6 +117,12 @@ class ResourceController extends Controller
         $model->fill($data)->save();
         $admin_resource->afterSave($model, $data, $request);
 
+        Log::info('admin_resource_created', [
+            'resource' => $admin_resource->permission(),
+            'id' => $model->getKey(),
+            'admin_id' => auth()->id(),
+        ]);
+
         if (!empty($admin_resource->with())) {
             $model->load($admin_resource->with());
         }
@@ -139,6 +146,12 @@ class ResourceController extends Controller
         $model->fill($data)->save();
         $admin_resource->afterSave($model, $data, $request);
 
+        Log::info('admin_resource_updated', [
+            'resource' => $admin_resource->permission(),
+            'id' => $model->getKey(),
+            'admin_id' => auth()->id(),
+        ]);
+
         if (!empty($admin_resource->with())) {
             $model->load($admin_resource->with());
         }
@@ -158,6 +171,12 @@ class ResourceController extends Controller
         $model = $this->find($admin_resource, $key);
         $admin_resource->beforeDelete($model, $request);
         $model->delete();
+
+        Log::info('admin_resource_deleted', [
+            'resource' => $admin_resource->permission(),
+            'id' => $model->getKey(),
+            'admin_id' => auth()->id(),
+        ]);
 
         return ApiResponse::success('messages.deleted');
     }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\PromotionClaimStatus;
+use App\Enums\RecurrenceType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -75,8 +77,8 @@ class Promotion extends Model
             return false;
         }
 
-        if ($this->recurrence_type === 'recurring') {
-            // dayOfWeekIso: 1=Monday … 7=Sunday
+        if ($this->recurrence_type === RecurrenceType::RECURRING->value) {
+            // dayOfWeekIso: 1 = Monday … 7 = Sunday
             if (!in_array($now->dayOfWeekIso, $this->days_of_week ?? [])) {
                 return false;
             }
@@ -107,7 +109,7 @@ class Promotion extends Model
             return false;
         }
 
-        if ($this->recurrence_type === 'recurring') {
+        if ($this->recurrence_type === RecurrenceType::RECURRING->value) {
             if (!in_array($now->dayOfWeekIso, $this->days_of_week ?? [])) {
                 return false;
             }
@@ -137,7 +139,9 @@ class Promotion extends Model
             return true;
         }
 
-        $redeemed = $this->claims()->where('status', 'redeemed')->count();
+        $redeemed = $this->claims()
+            ->where('status', PromotionClaimStatus::REDEEMED->value)
+            ->count();
 
         return $redeemed < $this->max_total_redemptions;
     }

@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\DiscountType;
+use App\Enums\RecurrenceType;
 use App\Models\Promotion;
 use App\Models\User;
 use App\Models\Venue;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PromotionService
 {
@@ -35,7 +36,10 @@ class PromotionService
             ->where('owner_id', $owner->id)
             ->firstOrFail();
 
-        if (($data['discount_type'] ?? null) === 'percentage' && $data['discount_value'] > 100) {
+        if (
+            ($data['discount_type'] ?? null) === DiscountType::PERCENTAGE->value
+            && $data['discount_value'] > 100
+        ) {
             abort(422, __('messages.discount_percentage_exceeded'));
         }
 
@@ -91,9 +95,9 @@ class PromotionService
                 $q->whereNull('valid_to')->orWhere('valid_to', '>=', $today);
             })
             ->where(function ($q) use ($todayIso) {
-                $q->where('recurrence_type', 'one_time')
+                $q->where('recurrence_type', RecurrenceType::ONE_TIME->value)
                     ->orWhere(function ($q2) use ($todayIso) {
-                        $q2->where('recurrence_type', 'recurring')
+                        $q2->where('recurrence_type', RecurrenceType::RECURRING->value)
                             ->whereJsonContains('days_of_week', $todayIso);
                     });
             })

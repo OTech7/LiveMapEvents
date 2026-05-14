@@ -4,10 +4,13 @@ namespace App\Providers;
 
 use App\Contracts\OtpSenderInterface;
 use App\Integrations\UltraMsgOtpSender;
+use App\Models\Promotion;
 use App\Modules\Admin\AdminResources;
+use App\Policies\PromotionPolicy;
 use App\Support\CustomPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // ─── Policies ─────────────────────────────────────────────────────────
+        Gate::policy(Promotion::class, PromotionPolicy::class);
+
         Paginator::useBootstrapFive();
         $this->app->alias(CustomPaginator::class, LengthAwarePaginator::class);
 

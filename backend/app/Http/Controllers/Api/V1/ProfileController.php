@@ -11,20 +11,22 @@ use App\Http\Requests\Profile\UploadAvatarRequest;
 use App\Http\Resources\InterestResource;
 use App\Http\Resources\UserResource;
 use App\Models\Interest;
+use App\Services\InterestService;
 use App\Services\ProfileService;
 use App\Support\ApiResponse;
 
 class ProfileController extends Controller
 {
-    public function __construct(protected ProfileService $profileService)
+    public function __construct(
+        protected ProfileService  $profileService,
+        protected InterestService $interestService,
+    )
     {
     }
 
     public function completeProfile(CompleteProfileRequest $request)
     {
-        $user = auth()->user();
-
-        $user = $this->profileService->completeProfile($user, $request->validated());
+        $user = $this->profileService->completeProfile(auth()->user(), $request->validated());
 
         return ApiResponse::success('messages.profile_completed_successfully', UserResource::make($user));
     }
@@ -34,18 +36,6 @@ class ProfileController extends Controller
         return ApiResponse::success('messages.profile_fetched_successfully', UserResource::make(auth()->user()));
     }
 
-    public function getInterests()
-    {
-        $interests = Interest::query()
-            ->orderBy('name')
-            ->get();
-
-        return ApiResponse::success(
-            'messages.interests_fetched_successfully',
-            InterestResource::collection($interests)
-        );
-    }
-
     public function update(UpdateProfileRequest $request)
     {
         $user = $this->profileService->updateProfile(auth()->user(), $request->validated());
@@ -53,66 +43,47 @@ class ProfileController extends Controller
         return ApiResponse::success('messages.profile_updated_successfully', UserResource::make($user));
     }
 
+    public function uploadAvatar(UploadAvatarRequest $request)
+    {
+        $avatarUrl = $this->profileService->uploadAvatar(auth()->user(), $request->file('avatar'));
+
+        return ApiResponse::success('messages.avatar_uploaded_successfully', ['avatar_url' => $avatarUrl]);
+    }
+
+    public function updateDiscoverySettings(UpdateDiscoverySettingsRequest $request)
+    {
+        $this->profileService->updateDiscoverySettings(auth()->user(), $request->validated());
+
+        return ApiResponse::success('messages.discovery_settings_updated');
+    }
+
+    // ─── Interests ────────────────────────────────────────────────────────────
+
     public function myInterests()
     {
-        $user = auth()->user();
+        $interests = $this->interestService->getForUser(auth()->user());
 
-        return ApiResponse::success(
-            'messages.interests_fetched_successfully',
-            InterestResource::collection($user->interests)
-        );
+        return ApiResponse::success('messages.interests_fetched_successfully', InterestResource::collection($interests));
     }
 
     public function updateInterests(UpdateInterestsRequest $request)
     {
-        $user = auth()->user();
-
-        $interestIds = Interest::whereIn('slug', $request->interests)->pluck('id')->toArray();
-
-        $user->interests()->sync($interestIds);
+        $this->interestService->syncBySlug(auth()->user(), $request->interests);
 
         return ApiResponse::success('messages.interests_updated_successfully');
     }
 
     public function addInterest(Interest $interest)
     {
-        $user = auth()->user();
-
-        $user->interests()->syncWithoutDetaching([$interest->id]);
+        $this->interestService->attach(auth()->user(), $interest);
 
         return ApiResponse::success('messages.interests_updated_successfully');
     }
 
     public function removeInterest(Interest $interest)
     {
-        $user = auth()->user();
-
-        $user->interests()->detach($interest->id);
+        $this->interestService->detach(auth()->user(), $interest);
 
         return ApiResponse::success('messages.interests_updated_successfully');
-    }
-
-    public function uploadAvatar(UploadAvatarRequest $request)
-    {
-        $user = auth()->user();
-
-        $path = $request->file('avatar')->store('avatars', 'public');
-
-        $user->update(['avatar_url' => $path]);
-
-        return ApiResponse::success('messages.avatar_uploaded_successfully', ['avatar_url' => $path]);
-    }
-
-    public function updateDiscoverySettings(UpdateDiscoverySettingsRequest $request)
-    {
-        $user = auth()->user();
-
-        $user->update([
-            'discovery_radius' => $request->radius,
-            'notify_nearby' => $request->notifications ?? $user->notify_nearby,
-            'discovery_settings_complete' => true,
-        ]);
-
-        return ApiResponse::success('messages.discovery_settings_updated');
     }
 }

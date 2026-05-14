@@ -52,6 +52,8 @@ class PromotionController extends Controller
 
     public function update(UpdatePromotionRequest $request, Promotion $promotion)
     {
+        $this->authorize('update', $promotion);
+
         $promotion = $this->promotionService->update(auth()->user(), $promotion, $request->validated());
 
         return ApiResponse::success(
@@ -62,6 +64,8 @@ class PromotionController extends Controller
 
     public function destroy(Promotion $promotion)
     {
+        $this->authorize('delete', $promotion);
+
         $this->promotionService->delete(auth()->user(), $promotion);
 
         return ApiResponse::success('messages.promotion_deleted_successfully');
@@ -69,12 +73,7 @@ class PromotionController extends Controller
 
     public function claims(Promotion $promotion)
     {
-        // Ownership check delegated to service implicitly — only owner sees claims
-        abort_if(
-            $promotion->venue->owner_id !== auth()->id(),
-            403,
-            __('messages.promotion_not_owned')
-        );
+        $this->authorize('viewClaims', $promotion);
 
         $claims = $promotion->claims()
             ->with('user')

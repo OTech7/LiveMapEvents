@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Pin;
-use Illuminate\Support\Facades\Cache;
 use Clickbar\Magellan\Data\Geometries\Point;
+use Illuminate\Support\Facades\Cache;
 
 class PinService
 {
@@ -13,7 +13,6 @@ class PinService
         $cacheKey = $this->makeCacheKey($data);
 
         return Cache::remember($cacheKey, 30, function () use ($data) {
-
             $point = Point::makeGeodetic($data['lng'], $data['lat']);
 
             $query = Pin::query()
@@ -32,8 +31,15 @@ class PinService
         });
     }
 
+    /**
+     * Build a stable cache key that includes all query parameters including
+     * the current page, so each page has its own cached result set.
+     */
     private function makeCacheKey(array $data): string
     {
+        // Normalise to a sorted array so key order never causes cache misses.
+        ksort($data);
+
         return 'pins:' . md5(json_encode($data));
     }
 }

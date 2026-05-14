@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PromotionClaimStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -41,6 +42,7 @@ class PromotionClaim extends Model
 
     public function isExpired(): bool
     {
-        return $this->status === 'expired' || now()->gt($this->expires_at);
+        return $this->status === PromotionClaimStatus::EXPIRED->value
+            || now()->gt($this->expires_at);
     }
 }

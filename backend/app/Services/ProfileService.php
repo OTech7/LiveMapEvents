@@ -6,12 +6,14 @@ use App\Exceptions\ProfileAlreadyCompletedException;
 use App\Exceptions\ProfileCompletionException;
 use App\Models\User;
 use Clickbar\Magellan\Data\Geometries\Point;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ProfileService
 {
     /**
-     * Complete user profile
+     * Complete user profile for the first time.
      */
     public function completeProfile(User $user, array $data): User
     {
@@ -44,48 +46,29 @@ class ProfileService
 
             $user->update($update);
 
+            Log::info('profile_completed', ['user_id' => $user->id]);
+
             return $user->fresh();
         });
     }
 
     /**
-     * Update profile after completion
+     * Update profile fields after initial completion.
      */
     public function updateProfile(User $user, array $data): User
     {
         return DB::transaction(function () use ($user, $data) {
+            $updateData = array_filter([
+                'first_name' => $data['first_name'] ?? null,
+                'last_name' => $data['last_name'] ?? null,
+                'gender' => $data['gender'] ?? null,
+                'dob' => $data['dob'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'avatar_url' => $data['avatar_url'] ?? null,
+            ], fn($v) => $v !== null);
 
-            $updateData = [];
-
-            if (isset($data['first_name'])) {
-                $updateData['first_name'] = $data['first_name'];
-            }
-
-            if (isset($data['last_name'])) {
-                $updateData['last_name'] = $data['last_name'];
-            }
-
-            if (isset($data['gender'])) {
-                $updateData['gender'] = $data['gender'];
-            }
-
-            if (isset($data['dob'])) {
-                $updateData['dob'] = $data['dob'];
-            }
-
-            if (isset($data['phone'])) {
-                $updateData['phone'] = $data['phone'];
-            }
-
-            if (isset($data['avatar_url'])) {
-                $updateData['avatar_url'] = $data['avatar_url'];
-            }
-
-            if (isset($data['lat']) && isset($data['lng'])) {
-                $updateData['location'] = $this->makePoint(
-                    $data['lat'],
-                    $data['lng']
-                );
+            if (isset($data['lat'], $data['lng'])) {
+                $updateData['location'] = $this->makePoint($data['lat'], $data['lng']);
             }
 
             $user->update($updateData);
@@ -95,7 +78,33 @@ class ProfileService
     }
 
     /**
-     * Check if profile is complete
+     * Store the uploaded avatar file and persist the URL on the user.
+     */
+    public function uploadAvatar(User $user, UploadedFile $file): string
+    {
+        $path = $file->store('avatars', 'public');
+
+        $user->update(['avatar_url' => $path]);
+
+        Log::info('avatar_uploaded', ['user_id' => $user->id, 'path' => $path]);
+
+        return $path;
+    }
+
+    /**
+     * Persist the user's discovery radius and notification preference.
+     */
+    public function updateDiscoverySettings(User $user, array $data): void
+    {
+        $user->update([
+            'discovery_radius' => $data['radius'],
+            'notify_nearby' => $data['notifications'] ?? $user->notify_nearby,
+            'discovery_settings_complete' => true,
+        ]);
+    }
+
+    /**
+     * Check if profile is complete.
      */
     public function isProfileComplete(User $user): bool
     {
@@ -108,9 +117,8 @@ class ProfileService
             !empty($user->location);
     }
 
-    /**
-     * Create spatial POINT
-     */
+    // ─── Private ──────────────────────────────────────────────────────────────
+
     private function makePoint(float $lat, float $lng): Point
     {
         if ($lat < -90 || $lat > 90) {
@@ -121,7 +129,6 @@ class ProfileService
             throw new ProfileCompletionException('Invalid longitude');
         }
 
-         return Point::makeGeodetic($lng,$lat);
+        return Point::makeGeodetic($lng, $lat);
     }
-
 }

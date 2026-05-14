@@ -23,8 +23,8 @@ class UserResource extends JsonResource
             // Only include interests when the relation is loaded — avoids
             // an N+1 surprise on endpoints that don't eager-load it.
             'interests' => $this->whenLoaded('interests', fn() => InterestResource::collection($this->interests)),
-            'created_at' => $this->created_at?->format('Y-m-d H:m') ?? null,
-            'updated_at' => $this->updated_at?->format('Y-m-d H:m') ?? null,
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s') ?? null,
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s') ?? null,
         ], fn($v) => $v !== null);
     }
 }
