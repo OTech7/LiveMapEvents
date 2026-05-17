@@ -64,7 +64,7 @@ class ProfileController extends Controller
     {
         $interests = $this->interestService->getForUser(auth()->user());
 
-        return ApiResponse::success('messages.interests_fetched_successfully', InterestResource::collection($interests));
+        return ApiResponse::success('messages.my_interests_fetched_successfully', InterestResource::collection($interests));
     }
 
     public function updateInterests(UpdateInterestsRequest $request): JsonResponse

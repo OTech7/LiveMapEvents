@@ -19,7 +19,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: production
+      target: local
     container_name: livemap-local-app
     restart: unless-stopped
     ports:

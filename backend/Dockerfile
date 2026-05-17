@@ -3,7 +3,7 @@
 # PHP 8.3 + Nginx + PostgreSQL/PostGIS drivers
 # ============================================================
 
-# ---- Stage 1: Composer dependencies ----
+# ---- Stage 1a: Composer dependencies (production — no dev) ----
 FROM composer:2 AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
@@ -13,6 +13,16 @@ RUN composer install \
     --no-interaction \
     --prefer-dist \
     --optimize-autoloader \
+    --ignore-platform-reqs
+
+# ---- Stage 1b: Composer dependencies (local/testing — includes dev) ----
+FROM composer:2 AS vendor-dev
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install \
+    --no-scripts \
+    --no-interaction \
+    --prefer-dist \
     --ignore-platform-reqs
 
 # ---- Stage 2: Node / Vite build ----
@@ -94,3 +104,20 @@ EXPOSE 80
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+# ---- Stage 4: Local / testing image ----
+# Extends production but swaps in the dev vendor dir, adds composer,
+# and uses the development php.ini so errors are visible in tests.
+FROM production AS local
+
+# Switch to development PHP config (shows errors, relaxed limits)
+RUN cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+# Copy composer binary so `composer` is available inside the container
+COPY --from=vendor-dev /usr/bin/composer /usr/local/bin/composer
+
+# Replace the production vendor dir with the one that includes dev deps
+COPY --from=vendor-dev /app/vendor ./vendor
+
+# Re-own the newly copied vendor
+RUN chown -R www-data:www-data vendor

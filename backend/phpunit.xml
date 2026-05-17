@@ -3,6 +3,12 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          colors="true"
+         displayDetailsOnTestsThatTriggerWarnings="true"
+         displayDetailsOnTestsThatTriggerDeprecations="true"
+         displayDetailsOnTestsThatTriggerErrors="true"
+         displayDetailsOnTestsThatTriggerNotices="true"
+         failOnWarning="false"
+         failOnRisky="false"
 >
     <testsuites>
         <testsuite name="Unit">
@@ -17,6 +23,12 @@
             <directory>app</directory>
         </include>
     </source>
+    <logging>
+        <!-- Plain-text log — open storage/logs/phpunit.log after a run to see
+             every test name, status, and the full stack trace on failures. -->
+        <junit outputFile="storage/logs/phpunit-junit.xml"/>
+    </logging>
+
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
