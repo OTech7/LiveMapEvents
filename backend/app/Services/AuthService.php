@@ -20,7 +20,10 @@ class AuthService
 
     public function loginWithPhone(string $phone): array
     {
-        $user = User::firstOrCreate(['phone' => $phone]);
+        $user = User::firstOrCreate(
+            ['phone' => $phone],
+            ['profile_complete' => false],
+        );
 
         $token = $this->generateToken->handle($user);
 

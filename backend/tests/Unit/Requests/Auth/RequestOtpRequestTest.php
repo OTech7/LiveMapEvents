@@ -32,8 +32,8 @@ class RequestOtpRequestTest extends TestCase
     {
         $v = $this->validate(['phone' => 12345678]);
 
-        // numeric values coerce to string in Laravel — passes string rule
-        $this->assertFalse($v->fails());
+        $this->assertTrue($v->fails());
+        $this->assertArrayHasKey('phone', $v->errors()->toArray());
     }
 
     public function test_phone_cannot_exceed_20_characters(): void
