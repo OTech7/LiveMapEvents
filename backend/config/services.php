@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID')
+    ],
+
+    'ultramsg' => [
+        'url' => env('ULTRAMSG_URL'),
+        'instanceId'=> env('ULTRAMSG_INSTANCE_ID'),
+        'token' => env('ULTRAMSG_TOKEN'),
+    ],
+
 ];
