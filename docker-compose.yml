@@ -120,6 +120,8 @@ services:
       dockerfile: Dockerfile.web
       args:
         BASE_HREF: /
+        FLUTTER_BASE_URL: ${FLUTTER_BASE_URL}
+        FLUTTER_GOOGLE_SERVER_CLIENT_ID: ${FLUTTER_GOOGLE_SERVER_CLIENT_ID}
     container_name: livemap-frontend
     restart: unless-stopped
     # No host port published: Caddy reaches us at frontend:80 over the

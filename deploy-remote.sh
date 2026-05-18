@@ -136,6 +136,10 @@ ULTRAMSG_INSTANCE_ID=${ULTRAMSG_INSTANCE_ID:-your-instance-id}
 ULTRAMSG_TOKEN=${ULTRAMSG_TOKEN:-your-ultramsg-token}
 
 MAIL_MAILER=log
+
+# Flutter web build-time values (passed as --dart-define, never served as files)
+FLUTTER_BASE_URL=https://api.${SERVER_HOSTNAME:-$SERVER_IP}/api/v1/
+FLUTTER_GOOGLE_SERVER_CLIENT_ID=${GOOGLE_CLIENT_ID}
 ENVEOF
     log "Generated .env.docker from server.conf"
 }
