@@ -22,6 +22,11 @@ RUN flutter pub get
 # Copy the rest of the source code
 COPY . .
 
+# .env is gitignored but listed as a Flutter asset — create an empty one
+# if it wasn't supplied so the asset bundler doesn't abort the build.
+# Real runtime values should be baked in via --dart-define or a build arg.
+RUN test -f .env || touch .env
+
 # Build for web with release optimizations
 # --base-href ensures assets load correctly behind a reverse proxy
 # --pwa-strategy=none disables the offline service worker so users always
