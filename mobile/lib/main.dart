@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ void main() async {
     mapsImplementation.useAndroidViewSurface = true;
   }
   await EasyLocalization.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  if (!kIsWeb) await dotenv.load(fileName: ".env");
   await di.init();
   Bloc.observer = MyBlocObserver();
   SystemChrome.setPreferredOrientations([
