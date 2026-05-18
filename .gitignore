@@ -23,6 +23,8 @@ backend/public/storage
 backend/storage/*.key
 backend/storage/pail
 backend/vendor
+backend/bootstrap/cache/packages.php
+backend/bootstrap/cache/services.php
 backend/Homestead.json
 backend/Homestead.yaml
 backend/Thumbs.db

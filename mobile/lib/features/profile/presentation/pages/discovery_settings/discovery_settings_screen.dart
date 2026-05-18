@@ -85,9 +85,9 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
             ),
             onPressed: () => context.pop(),
           ),
-          title: const Text(
-            "Discovery Settings",
-            style: TextStyle(
+          title: Text(
+            AppStrings.discoverySettings,
+            style: const TextStyle(
               color: AppColors.kTextPrimaryColor,
               fontWeight: FontWeight.bold,
             ),
@@ -143,8 +143,9 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                                 circleId: const CircleId('radius'),
                                 center: LatLng(widget.lat, widget.lng),
                                 radius: _radius,
-                                fillColor:
-                                    AppColors.kPrimaryColor.withOpacity(0.2),
+                                fillColor: AppColors.kPrimaryColor.withOpacity(
+                                  0.2,
+                                ),
                                 strokeColor: AppColors.kPrimaryColor,
                                 strokeWidth: 2,
                               ),
@@ -160,18 +161,18 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Discovery Radius",
-                              style: TextStyle(
+                            Text(
+                              AppStrings.discoveryRadius,
+                              style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.kTextPrimaryColor,
                               ),
                             ),
                             SizedBox(height: vSpaceSm),
-                            const Text(
-                              "Set the distance for finding events around you.",
-                              style: TextStyle(
+                            Text(
+                              AppStrings.discoveryRadiusDesc,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 color: AppColors.kTextSecondaryColor,
                               ),
@@ -198,9 +199,9 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text(
-                                        "Radius Distance",
-                                        style: TextStyle(
+                                      Text(
+                                        AppStrings.radiusDistance,
+                                        style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -212,8 +213,9 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: AppColors.kSelectedColor,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: Text(
                                           _radius >= 1000
@@ -231,8 +233,8 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                                   SliderTheme(
                                     data: SliderTheme.of(context).copyWith(
                                       activeTrackColor: AppColors.kPrimaryColor,
-                                      inactiveTrackColor:
-                                          Colors.grey.withOpacity(0.2),
+                                      inactiveTrackColor: Colors.grey
+                                          .withOpacity(0.2),
                                       thumbColor: Colors.white,
                                       overlayColor: AppColors.kPrimaryColor
                                           .withOpacity(0.1),
@@ -253,19 +255,26 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                                       },
                                     ),
                                   ),
-                                  const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 10),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                    ),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text("200m",
-                                            style:
-                                                TextStyle(color: Colors.grey)),
-                                        Text("5km",
-                                            style:
-                                                TextStyle(color: Colors.grey)),
+                                        Text(
+                                          AppStrings.m200,
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Text(
+                                          AppStrings.km5,
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -289,13 +298,15 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.notifications_outlined,
-                                      color: Colors.grey),
+                                  const Icon(
+                                    Icons.notifications_outlined,
+                                    color: Colors.grey,
+                                  ),
                                   const SizedBox(width: 12),
-                                  const Expanded(
+                                  Expanded(
                                     child: Text(
-                                      "Notify for nearby events",
-                                      style: TextStyle(
+                                      AppStrings.notifyNearby,
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -327,15 +338,15 @@ class _DiscoverySettingsScreenState extends State<DiscoverySettingsScreen> {
                 child: BlocBuilder<ProfileBloc, ProfileState>(
                   builder: (context, state) {
                     return CustomButton(
-                      text: "Save Changes",
+                      text: AppStrings.saveChanges,
                       onPressed: () {
                         final payload = DiscoverySettingsPayload(
                           radius: _radius.toInt(),
                           notify: _notifyNearby,
                         );
-                        context
-                            .read<ProfileBloc>()
-                            .add(DiscoverySettingsEvent(payload));
+                        context.read<ProfileBloc>().add(
+                          DiscoverySettingsEvent(payload),
+                        );
                       },
                       isLoading: state is ProfileLoadingState,
                     );

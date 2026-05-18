@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/utils/navigation_helper.dart';
 import '../../bloc/auth_bloc.dart';
 import 'widgets/divider_widget.dart';
 import 'widgets/login_button_widget.dart';
@@ -62,11 +63,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   extra: {'phoneNumber': state.phoneNumber},
                 );
               } else if (state is AuthenticatedState) {
-                if (state.authEntity.profileComplete) {
-                  context.go('/nav_screen');
-                } else {
-                  context.push('/set_up_profile');
-                }
+                NavigationHelper.handleAuthNavigation(
+                  context,
+                  state.authEntity,
+                );
               }
             },
             child: Form(

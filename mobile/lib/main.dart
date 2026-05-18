@@ -11,14 +11,17 @@ import 'core/app_router/app_router.dart';
 import 'core/helper/app_bloc_observer.dart';
 import 'core/theme/theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final GoogleMapsFlutterPlatform mapsImplementation = GoogleMapsFlutterPlatform.instance;
+  final GoogleMapsFlutterPlatform mapsImplementation =
+      GoogleMapsFlutterPlatform.instance;
   if (mapsImplementation is GoogleMapsFlutterAndroid) {
     mapsImplementation.useAndroidViewSurface = true;
   }
   await EasyLocalization.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await di.init();
   Bloc.observer = MyBlocObserver();
   SystemChrome.setPreferredOrientations([

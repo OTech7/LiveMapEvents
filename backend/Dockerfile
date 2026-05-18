@@ -85,6 +85,12 @@ COPY --chown=www-data:www-data . .
 COPY --from=vendor /app/vendor ./vendor
 COPY --from=assets /app/public/build ./public/build
 
+# Wipe any committed bootstrap cache files. They were generated locally with
+# dev packages (e.g. laravel/pail) that aren't installed here (--no-dev).
+# Laravel will auto-discover the correct production-only package list on the
+# first artisan call in the entrypoint.
+RUN rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
+
 # --- Storage & cache directories ---
 RUN mkdir -p \
     storage/framework/sessions \

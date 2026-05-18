@@ -140,6 +140,15 @@ ENVEOF
     log "Generated .env.docker from server.conf"
 }
 
+# ── Generate mobile/.env for the Flutter web build ──
+generate_flutter_env() {
+    cat > "$SCRIPT_DIR/mobile/.env" << FLUTTERENV
+BASE_URL=https://api.${SERVER_HOSTNAME:-$SERVER_IP}/api/v1/
+GOOGLE_SERVER_CLIENT_ID=${GOOGLE_CLIENT_ID}
+FLUTTERENV
+    log "Generated mobile/.env for Flutter web build"
+}
+
 # ── First-time server setup ──
 setup_server() {
     log "Setting up server at $SERVER_IP..."
@@ -217,8 +226,9 @@ deploy() {
     info "Frontend:  port ${FRONTEND_PORT:-3000}"
     echo ""
 
-    # Generate .env.docker
+    # Generate .env.docker (backend) and mobile/.env (Flutter web)
     generate_env
+    generate_flutter_env
 
     # Upload files
     log "Uploading project files..."
@@ -264,6 +274,7 @@ deploy() {
     # so locally-deleted files also disappear on the server.
     $SSH_CMD "rm -rf $SERVER_DEPLOY_PATH/mobile && tar xzf /tmp/livemap-mobile.tar.gz -C $SERVER_DEPLOY_PATH/ && rm /tmp/livemap-mobile.tar.gz"
     rm -f /tmp/livemap-mobile.tar.gz
+    rm -f "$SCRIPT_DIR/mobile/.env"   # remove the generated .env so it doesn't linger locally
     log "Frontend uploaded successfully."
 
     # Deploy on server

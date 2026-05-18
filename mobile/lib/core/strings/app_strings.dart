@@ -250,7 +250,36 @@ class AppStrings {
 
   static String get phone => "Phone".tr();
 
-  static String get noInterestsFound => "No interests found. Please try again.".tr();
+  static String get noInterestsFound =>
+      "No interests found. Please try again.".tr();
 
   static String get retry => "Retry".tr();
+
+  static String get discoverySettings => "Discovery Settings".tr();
+
+  static String get discoveryRadius => "Discovery Radius".tr();
+
+  static String get discoveryRadiusDesc =>
+      "Set the distance for finding events around you.".tr();
+
+  static String get radiusDistance => "Radius Distance".tr();
+
+  static String get notifyNearby => "Notify for nearby events".tr();
+
+  static String get saveChanges => "Save Changes".tr();
+
+  static String get completeSetup => "Complete Setup".tr();
+
+  static String get pleaseSelectLocation => "Please select your location".tr();
+
+  static String get noLocationSelected => "No location selected".tr();
+
+  static String get locationSelected => "Location selected".tr();
+
+  static String get m200 => "200m".tr();
+
+  static String get km5 => "5km".tr();
+
+  static String get tapOnMapToChangeLocation =>
+      "Tap on the map to change location".tr();
 }

@@ -1,5 +1,7 @@
+import '../config/env_vars.dart';
+
 class EndPoints {
-  static const String BASE_URL = "https://api.live-events-map.tech/api/v1/";
+  static String BASE_URL = EnvVars.baseUrl;
   static const String login = "auth/login";
   static const String sendOTP = "auth/phone/request-otp";
   static const String register = "auth/register";
