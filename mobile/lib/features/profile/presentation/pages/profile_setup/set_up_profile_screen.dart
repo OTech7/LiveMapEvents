@@ -139,7 +139,7 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
     } else {
       String message = AppStrings.requiredField;
       if (_lat == 0.0 || _lng == 0.0) {
-        message = "Please select your location";
+        message = AppStrings.pleaseSelectLocation;
       }
       ScaffoldMessenger.of(
         context,
@@ -264,7 +264,7 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
-                    SizedBox(width: 12,),
+                    SizedBox(width: 12),
                     Expanded(
                       child: RadioListTile<String>(
                         title: Text(AppStrings.female),
@@ -351,8 +351,8 @@ class _SetUpProfileScreenState extends State<SetUpProfileScreen> {
                               children: [
                                 Text(
                                   _lat == 0.0 && _lng == 0.0
-                                      ? "No location selected"
-                                      : "Location selected",
+                                      ? AppStrings.noLocationSelected
+                                      : AppStrings.locationSelected,
                                   style: TextStyle(
                                     color: _lat == 0.0
                                         ? Colors.grey

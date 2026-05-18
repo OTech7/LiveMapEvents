@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/colors.dart';
 import '../../../../../core/strings/app_strings.dart';
+import '../../../../../core/utils/navigation_helper.dart';
 import '../../bloc/auth_bloc.dart';
 import 'widgets/otp_input_row_widget.dart';
 import 'widgets/phone_number_display_widget.dart';
@@ -134,11 +135,7 @@ class _VerificationScreenState extends State<VerificationScreen>
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthenticatedState) {
-            if (state.authEntity.profileComplete) {
-              context.go('/nav_screen');
-            } else {
-              context.push('/set_up_profile');
-            }
+            NavigationHelper.handleAuthNavigation(context, state.authEntity);
           }
           if (state is AuthenticationErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -147,7 +144,6 @@ class _VerificationScreenState extends State<VerificationScreen>
                 backgroundColor: AppColors.kRedColor,
               ),
             );
-            // context.push('/set_up_profile');
           }
         },
         child: SafeArea(

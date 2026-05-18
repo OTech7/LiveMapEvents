@@ -16,6 +16,7 @@ import '../../domain/use_case/logout_usecase.dart';
 import '../../domain/use_case/register_usecase.dart';
 import '../../domain/use_case/verify_usecase.dart';
 import '../../domain/use_case/sign_in_with_google_usecase.dart';
+import '../../../../core/config/env_vars.dart';
 
 part 'auth_event.dart';
 
@@ -43,11 +44,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthenticationLoadingState());
       final response = await loginUseCase(event.payload);
       response.fold(
-            (failure) =>
-        {
+        (failure) => {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure))),
         },
-            (auth) {
+        (auth) {
           emit(AuthenticatedState(authEntity: auth));
         },
       );
@@ -56,11 +56,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthenticationLoadingState());
       final response = await registerUseCase(event.payload);
       response.fold(
-            (failure) =>
-        {
+        (failure) => {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure))),
         },
-            (auth) {
+        (auth) {
           emit(AuthenticatedState(authEntity: auth));
         },
       );
@@ -68,11 +67,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutEvent>((event, emit) async {
       final response = await logoutUseCase();
       response.fold(
-            (failure) =>
-        {
+        (failure) => {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure))),
         },
-            (airports) {
+        (airports) {
           emit(UnAuthenticatedState());
         },
       );
@@ -80,10 +78,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckTokenEvent>((event, emit) async {
       final response = await checkTokenUseCase();
       response.fold(
-            (failure) {
+        (failure) {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure)));
         },
-            (authEntity) {
+        (authEntity) {
           if (authEntity != null) {
             emit(AuthenticatedState(authEntity: authEntity));
           } else {
@@ -101,10 +99,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       final response = await verifyUseCase(payload);
       response.fold(
-            (failure) {
+        (failure) {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure)));
         },
-            (auth) {
+        (auth) {
           emit(AuthenticatedState(authEntity: auth));
         },
       );
@@ -114,10 +112,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthenticationLoadingState());
       final response = await sendOTPUseCase(event.phoneNumber);
       response.fold(
-            (failure) {
+        (failure) {
           emit(AuthenticationErrorState(message: mapFailureToMessage(failure)));
         },
-            (auth) {
+        (auth) {
           emit(OTPSentSuccessfullyState(phoneNumber: event.phoneNumber));
         },
       );
@@ -126,37 +124,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInWithGoogleEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
 
-      try {
-        final googleSignIn = GoogleSignIn.instance;
+      // try {
+      final googleSignIn = GoogleSignIn.instance;
 
-        await googleSignIn.initialize(
-          serverClientId:
-          '103431306679-8c741d2ju4rgkb7fchff8brmpdsq7mci.apps.googleusercontent.com',
-        );
+      await googleSignIn.initialize(
+        serverClientId: EnvVars.googleServerClientId,
+      );
 
-        final account = await googleSignIn.authenticate();
+      final account = await googleSignIn.authenticate();
 
-        final auth = account.authentication;
-        final idToken = auth.idToken;
+      final auth = account.authentication;
+      final idToken = auth.idToken;
 
-        if (idToken == null) {
-          emit(
-              AuthenticationErrorState(message: 'Failed to retrieve ID token'));
-          return;
-        }
-
-        final response = await signInWithGoogleUseCase(idToken);
-
-        response.fold(
-              (failure) =>
-              emit(
-                AuthenticationErrorState(message: mapFailureToMessage(failure)),
-              ),
-              (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
-        );
-      } catch (e) {
-        emit(AuthenticationErrorState(message: e.toString()));
+      if (idToken == null) {
+        emit(AuthenticationErrorState(message: 'Failed to retrieve ID token'));
+        return;
       }
+
+      final response = await signInWithGoogleUseCase(idToken);
+
+      response.fold(
+        (failure) => emit(
+          AuthenticationErrorState(message: mapFailureToMessage(failure)),
+        ),
+        (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
+      );
+      // } catch (e) {
+      //   emit(AuthenticationErrorState(message: e.toString()));
+      // }
     });
   }
 }

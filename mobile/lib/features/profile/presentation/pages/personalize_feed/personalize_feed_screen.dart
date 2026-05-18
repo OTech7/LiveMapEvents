@@ -190,9 +190,7 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
                                     state is ProfileErrorState
                                         ? state.message
                                         : AppStrings.noInterestsFound,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
+                                    style: Theme.of(context).textTheme.bodyLarge
                                         ?.copyWith(
                                           color: AppColors.kTextSecondaryColor,
                                         ),
@@ -232,7 +230,9 @@ class _PersonalizeFeedScreenState extends State<PersonalizeFeedScreen> {
               BlocBuilder<ProfileBloc, ProfileState>(
                 builder: (context, state) {
                   return CompleteSetupSectionWidget(
-                    isLoading: state is ProfileLoadingState && _availableInterests.isNotEmpty,
+                    isLoading:
+                        state is ProfileLoadingState &&
+                        _availableInterests.isNotEmpty,
                     selectedCount: _selectedSlugs.length,
                     onComplete: _selectedSlugs.length >= 3 ? _onComplete : null,
                   );
