@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'core/config/env_vars.dart';
 import 'core/dependency_injection/injection.dart' as di;
 import 'core/app_router/app_router.dart';
 import 'core/helper/app_bloc_observer.dart';
@@ -23,6 +25,28 @@ void main() async {
   }
   await EasyLocalization.ensureInitialized();
   if (!kIsWeb) await dotenv.load(fileName: ".env");
+
+  // ── Initialize Google Sign-In once for the whole app lifetime. ──
+  // v7 requires this before authenticate() / renderButton() can be used.
+  // On Web, `clientId` is the Web OAuth client ID used by GIS in the
+  // browser (the ID token's `aud` will equal this value, which is what
+  // the Laravel backend verifies against GOOGLE_CLIENT_ID).
+  // On Android/iOS, `serverClientId` asks Google to issue an ID token
+  // whose `aud` is the *Web* client ID so the same backend verification
+  // works. The native client_id is picked up automatically from
+  // google-services.json / Info.plist on those platforms.
+  if (EnvVars.hasGoogleServerClientId) {
+    if (kIsWeb) {
+      await GoogleSignIn.instance.initialize(
+        clientId: EnvVars.googleServerClientId,
+      );
+    } else {
+      await GoogleSignIn.instance.initialize(
+        serverClientId: EnvVars.googleServerClientId,
+      );
+    }
+  }
+
   await di.init();
   Bloc.observer = MyBlocObserver();
   SystemChrome.setPreferredOrientations([

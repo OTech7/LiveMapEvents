@@ -33,3 +33,23 @@ class SendOTPEvent extends AuthEvent {
 }
 
 class SignInWithGoogleEvent extends AuthEvent {}
+
+/// Internal event dispatched by the bloc itself when the
+/// `GoogleSignIn.authenticationEvents` stream emits a successful sign-in.
+/// This is the single entry point for finishing the Google flow on every
+/// platform: the rendered Google button on web and `authenticate()` on
+/// Android/iOS both surface here.
+class GoogleIdTokenReceivedEvent extends AuthEvent {
+  final String idToken;
+
+  GoogleIdTokenReceivedEvent(this.idToken);
+}
+
+/// Internal event for surfacing errors raised by the Google Sign-In SDK
+/// (cancelled popups, network errors, missing ID token, etc.) into the
+/// normal AuthState error pipeline.
+class GoogleSignInFailedEvent extends AuthEvent {
+  final String message;
+
+  GoogleSignInFailedEvent(this.message);
+}

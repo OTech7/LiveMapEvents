@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/features/auth/domain/use_case/send_otp_usecase.dart';
 
@@ -16,7 +17,6 @@ import '../../domain/use_case/logout_usecase.dart';
 import '../../domain/use_case/register_usecase.dart';
 import '../../domain/use_case/verify_usecase.dart';
 import '../../domain/use_case/sign_in_with_google_usecase.dart';
-import '../../../../core/config/env_vars.dart';
 
 part 'auth_event.dart';
 
@@ -31,6 +31,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   SendOTPUseCase sendOTPUseCase;
   SignInWithGoogleUseCase signInWithGoogleUseCase;
 
+  /// Subscription to the unified Google Sign-In event stream. Both the
+  /// rendered Google button on web and `authenticate()` on Android/iOS
+  /// surface their results here, so this is the single funnel that turns
+  /// a Google account into an `ID token -> backend exchange -> AuthState`.
+  StreamSubscription<GoogleSignInAuthenticationEvent>?
+  _googleAuthEventsSubscription;
+
   AuthBloc({
     required this.loginUseCase,
     required this.registerUseCase,
@@ -40,6 +47,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.sendOTPUseCase,
     required this.signInWithGoogleUseCase,
   }) : super(UnAuthenticatedState()) {
+    // Subscribe to GoogleSignIn events. `initialize()` is called once in
+    // main.dart before runApp(); the stream is a broadcast stream so it's
+    // safe to listen at any time after.
+    _googleAuthEventsSubscription =
+        GoogleSignIn.instance.authenticationEvents.listen(
+              (event) {
+            if (event is GoogleSignInAuthenticationEventSignIn) {
+              final idToken = event.user.authentication.idToken;
+              if (idToken == null || idToken.isEmpty) {
+                add(GoogleSignInFailedEvent('Failed to retrieve ID token'));
+              } else {
+                add(GoogleIdTokenReceivedEvent(idToken));
+              }
+            }
+            // SignOut events are emitted on disconnect / logout — handled
+            // elsewhere via LogoutEvent, so nothing to do here.
+          },
+          onError: (Object error) {
+            add(GoogleSignInFailedEvent(error.toString()));
+          },
+        );
     on<LoginEvent>((event, emit) async {
       emit(AuthenticationLoadingState());
       final response = await loginUseCase(event.payload);
@@ -121,37 +149,59 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     });
 
+    // Triggered by the user tapping the custom "Sign in with Google" button
+    // on Android/iOS. On the web the official Google-rendered button drives
+    // sign-in directly through GIS (v7's authenticate() is unsupported on
+    // web), so this handler is a no-op there.
     on<SignInWithGoogleEvent>((event, emit) async {
-      emit(AuthenticationLoadingState());
-
-      // try {
-      final googleSignIn = GoogleSignIn.instance;
-
-      await googleSignIn.initialize(
-        serverClientId: EnvVars.googleServerClientId,
-      );
-
-      final account = await googleSignIn.authenticate();
-
-      final auth = account.authentication;
-      final idToken = auth.idToken;
-
-      if (idToken == null) {
-        emit(AuthenticationErrorState(message: 'Failed to retrieve ID token'));
+      if (kIsWeb) {
+        // The rendered Google button handles interactive sign-in on web.
+        // If we somehow reach here, just surface a friendly error instead
+        // of throwing UnsupportedError.
+        emit(AuthenticationErrorState(
+          message: 'Use the Google button to sign in.',
+        ));
         return;
       }
 
-      final response = await signInWithGoogleUseCase(idToken);
+      emit(AuthenticationLoadingState());
+      try {
+        // The result is also pushed to `authenticationEvents`, which the
+        // stream subscription above forwards as a `GoogleIdTokenReceivedEvent`.
+        // We just need to kick off the native flow here.
+        await GoogleSignIn.instance.authenticate();
+      } on GoogleSignInException catch (e) {
+        // User cancellation, network error, plugin misconfig, etc.
+        emit(AuthenticationErrorState(
+          message: e.description ?? 'Google sign-in failed',
+        ));
+      } catch (e) {
+        emit(AuthenticationErrorState(message: e.toString()));
+      }
+    });
 
+    // Fired by the authenticationEvents listener for both web (rendered
+    // button) and mobile (authenticate()) flows. This is where the ID token
+    // actually reaches the backend.
+    on<GoogleIdTokenReceivedEvent>((event, emit) async {
+      emit(AuthenticationLoadingState());
+      final response = await signInWithGoogleUseCase(event.idToken);
       response.fold(
         (failure) => emit(
           AuthenticationErrorState(message: mapFailureToMessage(failure)),
         ),
         (authEntity) => emit(AuthenticatedState(authEntity: authEntity)),
       );
-      // } catch (e) {
-      //   emit(AuthenticationErrorState(message: e.toString()));
-      // }
     });
+
+    on<GoogleSignInFailedEvent>((event, emit) {
+      emit(AuthenticationErrorState(message: event.message));
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _googleAuthEventsSubscription?.cancel();
+    return super.close();
   }
 }

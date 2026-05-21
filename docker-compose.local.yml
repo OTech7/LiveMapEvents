@@ -94,15 +94,27 @@ services:
   # locally without an emulator. Use Chrome DevTools "device mode"
   # (Ctrl+Shift+M) once it's open to view it at phone dimensions.
   #
-  # Note: the Flutter app's BASE_URL in
-  # mobile/lib/core/network/api_endpoints.dart still needs to point at
-  # http://localhost:8000/api/ for API calls to work locally.
+  # NOTE: This serves a *release* build through nginx, so any change to
+  # Flutter source requires `docker compose -f docker-compose.local.yml
+  # build frontend && ... up -d frontend`. For day-to-day frontend work
+  # you almost certainly want `flutter run -d chrome` on the host instead
+  # (hot reload, in-IDE logs, DevTools). This container is here for
+  # smoke-testing the production-style bundle before deploy.
+  #
+  # Build args are baked into main.dart.js at build time via --dart-define
+  # in Dockerfile.web. FLUTTER_BASE_URL points the bundle at the local
+  # Laravel container (http://localhost:8000 from the browser, not from
+  # inside the container). FLUTTER_GOOGLE_SERVER_CLIENT_ID is the Web
+  # OAuth client ID GIS expects — the Web origin http://localhost:8081
+  # must be listed under "Authorized JavaScript origins" on that client.
   frontend:
     build:
       context: ./mobile
       dockerfile: Dockerfile.web
       args:
         BASE_HREF: /
+        FLUTTER_BASE_URL: http://localhost:8000/api/v1/
+        FLUTTER_GOOGLE_SERVER_CLIENT_ID: ${FLUTTER_GOOGLE_SERVER_CLIENT_ID:-}
     container_name: livemap-local-frontend
     restart: unless-stopped
     ports:

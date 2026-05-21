@@ -92,6 +92,69 @@ php artisan test --filter TestName                 # Single test
 ./vendor/bin/pint    # PSR-12 formatter
 ```
 
+## Mobile App (Flutter)
+
+The Flutter app lives in `mobile/` and builds for Android, iOS, and Web. Most setup is the standard Flutter flow (
+`flutter pub get`, `flutter run`, `flutter build apk --release`), with one per-developer step for Google Sign-In on
+Android.
+
+### Google Sign-In on Android — register your SHA-1
+
+Each developer's machine has its own auto-generated `~/.android/debug.keystore` with a unique SHA-1 fingerprint, and
+Google's Android OAuth client UI now allows only **one SHA-1 per client**. So every developer needs their **own**
+Android OAuth client in Cloud Console, all sharing the same package name (`com.omar.mobile`). Existing clients are left
+untouched — never overwrite another dev's SHA-1, or their builds stop signing in.
+
+**1. Get your debug-keystore SHA-1:**
+
+```bash
+cd mobile/android
+./gradlew signingReport
+```
+
+Look for `:app` → `Variant: debug` → the `SHA1:` line and copy that value.
+
+**2. Create an Android OAuth client in Google Cloud Console:**
+
+Open [APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials), click *+ Create credentials →
+OAuth client ID*, and fill in:
+
+| Field                         | Value                                                             |
+|-------------------------------|-------------------------------------------------------------------|
+| Application type              | Android                                                           |
+| Name                          | `LiveMapEventsAuthAndroid - <your name>` (anything descriptive)   |
+| Package name                  | `com.omar.mobile` (matches `mobile/android/app/build.gradle.kts`) |
+| SHA-1 certificate fingerprint | the value from step 1                                             |
+
+Click *Create*. Wait ~30 seconds for Google's edge to propagate, then close and reopen the app on your phone.
+
+> The Web OAuth client (used by the Laravel backend and the Flutter web build) is shared across the team and doesn't
+> change. The Android client only gates which APKs are allowed to ask for sign-in — the ID token Google issues still has
+> its `aud` set to the Web client ID, so backend verification works identically regardless of which developer's APK
+> triggered it.
+
+**3. (First time only) Create `mobile/.env`:**
+
+```bash
+cp mobile/.env.example mobile/.env
+```
+
+The Flutter app reads `GOOGLE_SERVER_CLIENT_ID` (the Web OAuth client ID) and `BASE_URL` from this file at runtime via
+`flutter_dotenv` on Android/iOS. The Web build doesn't read it — those values are baked in at build time via
+`--dart-define` in `mobile/Dockerfile.web`.
+
+### Building an APK
+
+```bash
+cd mobile
+flutter pub get
+flutter build apk --release
+```
+
+The APK lands at `mobile/build/app/outputs/flutter-apk/app-release.apk`. Note that "release" here uses the debug signing
+config (see `mobile/android/app/build.gradle.kts`) — for an actual Play Store release you'd configure a separate release
+keystore and register its SHA-1 alongside the per-dev debug ones.
+
 ## Database Schema
 
 The schema is organized into five domain groups. Open `docs/LiveEventsMap_ERD.html` in a browser for an interactive
