@@ -5,6 +5,10 @@ return [
     'ttl' => env('OTP_TTL', 300),
     'max_attempts' => env('OTP_MAX_ATTEMPTS', 3),
     'resend_cooldown' => env('OTP_RESEND_COOLDOWN', 60),
+    // Window during which OTP_MAX_ATTEMPTS requests are counted (seconds).
+    'rate_limit_window' => env('OTP_RATE_LIMIT_WINDOW', 3600),
+    // How long the phone is locked out after exceeding verify attempts (seconds).
+    'lock_duration' => env('OTP_LOCK_DURATION', 900),
 
     /*
     |--------------------------------------------------------------------------

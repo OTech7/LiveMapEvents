@@ -16,11 +16,35 @@
 # Internal routing happens over the docker bridge network using
 # the compose service names `app` and `frontend` (each listens
 # on container port 80).
+#
+# ── Required env vars (passed in via docker-compose) ─────────
+#   ACME_EMAIL   — email Let's Encrypt uses for cert expiry notices.
+#                  Configured in .env.docker (see .env.docker.example).
+#
+# ── Optional CADDY_MODULES (require a custom image build) ────
+# The `rate_limit` directive used below is provided by the third-party
+# module `caddy-ratelimit` (https://github.com/mholt/caddy-ratelimit)
+# and is NOT compiled into the official `caddy:*-alpine` image. To
+# enable it you must build a custom Caddy image with xcaddy, e.g.:
+#
+#   FROM caddy:2.8.4-builder-alpine AS builder
+#   RUN xcaddy build \
+#       --with github.com/mholt/caddy-ratelimit
+#   FROM caddy:2.8.4-alpine
+#   COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+#
+# Until that custom image is in place, the rate-limit blocks at the
+# bottom of each site config are left commented out. The actual
+# protection on /api/v1/auth/* in the meantime comes from Laravel's
+# `throttle:5,1` middleware (5 requests/minute) attached to the auth
+# routes by the backend agent — that runs in-process and needs no
+# Caddy plugins.
 # ============================================================
 
 {
 # Email Let's Encrypt uses for cert expiry notices.
-    email omarallouni@gmail.com
+# Sourced from $ACME_EMAIL — see .env.docker.example.
+    email {$ACME_EMAIL}
 
 # Uncomment for first-time testing — uses LE staging so you
 # don't burn through the real-cert rate limit if DNS is wrong:
@@ -56,6 +80,21 @@ live-events-map.tech {
 
 api.live-events-map.tech {
     encode zstd gzip
+
+# ── Rate limit on auth endpoints (requires caddy-ratelimit module) ──
+# Uncomment once the custom Caddy image with github.com/mholt/caddy-ratelimit
+# is in place (see CADDY_MODULES note at top of file).
+#
+# @auth path /api/v1/auth/*
+# rate_limit @auth {
+#     zone auth_per_ip {
+#         key    {remote_host}
+#         events 5
+#         window 1m
+#     }
+#     # 429 with Retry-After. Tweak `events` and `window` once you have
+#     # real traffic data — these match Laravel's `throttle:5,1`.
+# }
 
     reverse_proxy app:80 {
                              header_up X-Real-IP {remote_host}

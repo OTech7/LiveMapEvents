@@ -144,16 +144,13 @@ class PromotionClaimService
     }
 
     /**
-     * Return the authenticated user's voucher wallet, auto-expiring stale claims.
+     * Return the authenticated user's voucher wallet.
+     *
+     * Stale claims are expired in the background by the `claims:expire-stale`
+     * scheduled command (hourly), not lazily on every wallet view.
      */
     public function getMyClaims(User $user): LengthAwarePaginator
     {
-        // Lazily expire stale vouchers before returning.
-        PromotionClaim::where('user_id', $user->id)
-            ->where('status', PromotionClaimStatus::CLAIMED->value)
-            ->where('expires_at', '<', now())
-            ->update(['status' => PromotionClaimStatus::EXPIRED->value]);
-
         return PromotionClaim::where('user_id', $user->id)
             ->with('promotion.venue:id,name,type,address')
             ->latest('claimed_at')

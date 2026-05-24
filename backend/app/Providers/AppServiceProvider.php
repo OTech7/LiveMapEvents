@@ -4,9 +4,15 @@ namespace App\Providers;
 
 use App\Contracts\OtpSenderInterface;
 use App\Integrations\UltraMsgOtpSender;
+use App\Models\Event;
 use App\Models\Promotion;
+use App\Models\Venue;
+use App\Models\VibeStory;
 use App\Modules\Admin\AdminResources;
+use App\Policies\EventPolicy;
 use App\Policies\PromotionPolicy;
+use App\Policies\VenuePolicy;
+use App\Policies\VibeStoryPolicy;
 use App\Support\CustomPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
@@ -38,6 +44,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // ─── Policies ─────────────────────────────────────────────────────────
         Gate::policy(Promotion::class, PromotionPolicy::class);
+        Gate::policy(Venue::class, VenuePolicy::class);
+        Gate::policy(Event::class, EventPolicy::class);
+        Gate::policy(VibeStory::class, VibeStoryPolicy::class);
 
         Paginator::useBootstrapFive();
         $this->app->alias(CustomPaginator::class, LengthAwarePaginator::class);

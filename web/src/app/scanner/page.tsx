@@ -30,11 +30,23 @@ export default function ScannerPage() {
     const [state, setState] = useState<ScanState>({phase: 'idle'});
     const [manualCode, setManualCode] = useState('');
     const [cameraSupported, setCameraSupported] = useState(true);
+    const [barcodeDetectorSupported, setBarcodeDetectorSupported] = useState(true);
     const [authed, setAuthed] = useState(true);
 
     // Check auth on mount
     useEffect(() => {
         if (!getToken()) setAuthed(false);
+    }, []);
+
+    // BarcodeDetector is Chromium-only (desktop Chrome, Edge, Android Chrome
+    // as of 2026). Surface a clear hint so staff on Safari/Firefox know to
+    // fall back to manual entry instead of staring at a dead viewfinder.
+    useEffect(() => {
+        if (typeof window !== 'undefined' && typeof (window as unknown as {
+            BarcodeDetector?: unknown;
+        }).BarcodeDetector === 'undefined') {
+            setBarcodeDetectorSupported(false);
+        }
     }, []);
 
     // Auto-start camera on mount
@@ -188,6 +200,15 @@ export default function ScannerPage() {
     // ── Scanner / idle ───────────────────────────────────────────────────────
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col">
+
+            {/* Browser-support hint — shown when BarcodeDetector is missing.
+                Manual entry below still works, so this is informational. */}
+            {!barcodeDetectorSupported && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded p-3 mb-4 mx-4 mt-4 text-sm">
+                    Your browser doesn&apos;t support live barcode scanning. Please use Chrome on
+                    desktop or Android. You can still enter codes manually below.
+                </div>
+            )}
 
             {/* Header */}
             <div className="px-5 py-4 flex items-center gap-3 border-b border-slate-700">

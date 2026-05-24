@@ -215,6 +215,69 @@ class ProtectedRoutesTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_non_owner_cannot_view_another_users_promotion_via_api(): void
+    {
+        // Proves S-5 fix: Business show() now calls $this->authorize('view',$promotion).
+        $owner = $this->makeAuthenticatedUser();
+        $stranger = $this->makeAuthenticatedUser();
+
+        $venue = Venue::create(['owner_id' => $owner->id, 'name' => 'V', 'type' => 'bar']);
+        $promo = Promotion::create([
+            'venue_id' => $venue->id,
+            'title' => 'Private Promo',
+            'discount_type' => 'percentage',
+            'discount_value' => 10,
+            'recurrence_type' => 'one_time',
+            'start_time' => '00:00:00',
+            'end_time' => '23:59:59',
+            'valid_from' => now()->toDateString(),
+            'is_active' => true,
+            'max_per_user_redemptions' => 1,
+        ]);
+
+        // Also create a second user with their own venue+promo to make the
+        // scenario realistic (both are business owners, A asks for B's promo).
+        $strangerVenue = Venue::create(['owner_id' => $stranger->id, 'name' => 'V2', 'type' => 'bar']);
+        Promotion::create([
+            'venue_id' => $strangerVenue->id,
+            'title' => 'Strangers Promo',
+            'discount_type' => 'percentage',
+            'discount_value' => 5,
+            'recurrence_type' => 'one_time',
+            'start_time' => '00:00:00',
+            'end_time' => '23:59:59',
+            'valid_from' => now()->toDateString(),
+            'is_active' => true,
+            'max_per_user_redemptions' => 1,
+        ]);
+
+        $this->actingAs($stranger, 'sanctum')
+            ->getJson("/api/v1/business/promotions/{$promo->id}")
+            ->assertForbidden();
+    }
+
+    public function test_owner_can_view_their_own_promotion_via_api(): void
+    {
+        $owner = $this->makeAuthenticatedUser();
+        $venue = Venue::create(['owner_id' => $owner->id, 'name' => 'V', 'type' => 'bar']);
+        $promo = Promotion::create([
+            'venue_id' => $venue->id,
+            'title' => 'My Promo',
+            'discount_type' => 'percentage',
+            'discount_value' => 10,
+            'recurrence_type' => 'one_time',
+            'start_time' => '00:00:00',
+            'end_time' => '23:59:59',
+            'valid_from' => now()->toDateString(),
+            'is_active' => true,
+            'max_per_user_redemptions' => 1,
+        ]);
+
+        $this->actingAs($owner, 'sanctum')
+            ->getJson("/api/v1/business/promotions/{$promo->id}")
+            ->assertOk();
+    }
+
     public function test_owner_can_update_their_own_promotion_via_api(): void
     {
         $owner = $this->makeAuthenticatedUser();

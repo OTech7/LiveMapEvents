@@ -7,11 +7,14 @@ use App\Enums\RecurrenceType;
 use App\Models\Promotion;
 use App\Models\User;
 use App\Models\Venue;
+use App\Support\Concerns\EnsuresRelationLoaded;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class PromotionService
 {
+    use EnsuresRelationLoaded;
+
     /**
      * List all promotions for venues owned by the given user.
      */
@@ -121,9 +124,7 @@ class PromotionService
 
     private function assertOwns(User $owner, Promotion $promotion): void
     {
-        if (!$promotion->relationLoaded('venue')) {
-            $promotion->loadMissing('venue');
-        }
+        $this->ensureLoaded($promotion, 'venue');
 
         if ($promotion->venue->owner_id !== $owner->id) {
             abort(403, __('messages.promotion_not_owned'));

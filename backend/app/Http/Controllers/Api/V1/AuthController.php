@@ -49,18 +49,18 @@ class AuthController extends Controller
         );
 
         if ($result->status === OtpVerificationStatus::VERIFIED) {
-            $userData = $this->authService->loginWithPhone(
+            $auth = $this->authService->loginWithPhone(
                 $request->string('phone')->toString()
             );
 
             return ApiResponse::success(
                 message: 'messages.otp_verified',
                 data: [
-                    'token' => $userData['token'],
-                    'user' => new UserResource($userData['user']),
-                    'profile_complete' => $userData['profile_complete'],
-                    'interests_complete' => $userData['interests_complete'],
-                    'discovery_settings_complete' => $userData['discovery_settings_complete'],
+                    'token' => $auth->token,
+                    'user' => new UserResource($auth->user),
+                    'profile_complete' => $auth->profileComplete,
+                    'interests_complete' => $auth->interestsComplete,
+                    'discovery_settings_complete' => $auth->discoverySettingsComplete,
                 ],
                 status: Response::HTTP_OK
             );
@@ -71,16 +71,16 @@ class AuthController extends Controller
 
     public function googleLogin(GoogleLoginRequest $request): JsonResponse
     {
-        $result = $this->authService->loginWithGoogle($request->id_token);
+        $auth = $this->authService->loginWithGoogle($request->id_token);
 
         return ApiResponse::success(
             message: 'messages.login_success',
             data: [
-                'token' => $result['token'],
-                'user' => new UserResource($result['user']),
-                'profile_complete' => $result['profile_complete'],
-                'interests_complete' => $result['interests_complete'],
-                'discovery_settings_complete' => $result['discovery_settings_complete'],
+                'token' => $auth->token,
+                'user' => new UserResource($auth->user),
+                'profile_complete' => $auth->profileComplete,
+                'interests_complete' => $auth->interestsComplete,
+                'discovery_settings_complete' => $auth->discoverySettingsComplete,
             ]
         );
     }

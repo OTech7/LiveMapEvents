@@ -14,7 +14,7 @@
 #   9. ./deploy-remote.sh --ssh         (open SSH session)
 # ============================================================
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONF_FILE="$SCRIPT_DIR/server.local.conf"
@@ -44,7 +44,7 @@ fi
 source "$CONF_FILE"
 
 # ── Auto-generate REDIS_PASSWORD if empty, then write it back to server.local.conf ──
-if [ -z "$REDIS_PASSWORD" ] || [ "$REDIS_PASSWORD" = "null" ]; then
+if [ -z "${REDIS_PASSWORD:-}" ] || [ "${REDIS_PASSWORD:-}" = "null" ]; then
     GENERATED_REDIS_PASSWORD="$(openssl rand -base64 32 | tr -d '/+=' | cut -c1-32)"
     if grep -qE '^REDIS_PASSWORD=' "$CONF_FILE"; then
         # Use a temp file because sed -i differs between GNU and BSD/macOS
@@ -57,15 +57,18 @@ if [ -z "$REDIS_PASSWORD" ] || [ "$REDIS_PASSWORD" = "null" ]; then
 fi
 
 # ── Validate required fields ──
+# Using if/then instead of `[ ... ] && ARR+=(...)` because the latter
+# returns the exit status of the `[` test — under `set -e` a successful
+# test (i.e. NOT-missing) would propagate as failure and abort the script.
 MISSING=()
-[ "$SERVER_IP" = "0.0.0.0" ] || [ -z "$SERVER_IP" ] && MISSING+=("SERVER_IP")
-[ -z "$SERVER_USER" ] && MISSING+=("SERVER_USER")
-[ -z "$SERVER_SSH_KEY" ] && MISSING+=("SERVER_SSH_KEY")
-[ -z "$SERVER_DEPLOY_PATH" ] && MISSING+=("SERVER_DEPLOY_PATH")
-[ "$DB_PASSWORD" = "CHANGE_ME_TO_A_STRONG_PASSWORD" ] && MISSING+=("DB_PASSWORD")
-[ -z "$REDIS_HOST" ] && MISSING+=("REDIS_HOST")
-[ -z "$REDIS_PORT" ] && MISSING+=("REDIS_PORT")
-[ -z "$REDIS_PASSWORD" ] && MISSING+=("REDIS_PASSWORD")
+if [ -z "${SERVER_IP:-}" ] || [ "${SERVER_IP:-}" = "0.0.0.0" ]; then MISSING+=("SERVER_IP"); fi
+if [ -z "${SERVER_USER:-}" ];        then MISSING+=("SERVER_USER"); fi
+if [ -z "${SERVER_SSH_KEY:-}" ];     then MISSING+=("SERVER_SSH_KEY"); fi
+if [ -z "${SERVER_DEPLOY_PATH:-}" ]; then MISSING+=("SERVER_DEPLOY_PATH"); fi
+if [ "${DB_PASSWORD:-}" = "CHANGE_ME_TO_A_STRONG_PASSWORD" ] || [ -z "${DB_PASSWORD:-}" ]; then MISSING+=("DB_PASSWORD"); fi
+if [ -z "${REDIS_HOST:-}" ];     then MISSING+=("REDIS_HOST"); fi
+if [ -z "${REDIS_PORT:-}" ];     then MISSING+=("REDIS_PORT"); fi
+if [ -z "${REDIS_PASSWORD:-}" ]; then MISSING+=("REDIS_PASSWORD"); fi
 
 if [ ${#MISSING[@]} -gt 0 ]; then
     error "Missing or default values in server.conf:"
@@ -85,7 +88,7 @@ generate_env() {
     cat > "$SCRIPT_DIR/.env.docker" << ENVEOF
 APP_NAME=LiveMapEvents
 APP_ENV=${APP_ENV:-production}
-APP_KEY=${APP_KEY}
+APP_KEY=${APP_KEY:-}
 APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=https://api.${SERVER_HOSTNAME:-$SERVER_IP}
 # APP_PORT / FRONTEND_PORT are NOT published to the host anymore —
@@ -104,17 +107,17 @@ LOG_STACK=single
 LOG_LEVEL=warning
 
 DB_CONNECTION=pgsql
-DB_HOST=${DB_HOST}
-DB_PORT=${DB_PORT}
-DB_DATABASE=${DB_DATABASE}
-DB_USERNAME=${DB_USERNAME}
-DB_PASSWORD=${DB_PASSWORD}
+DB_HOST=${DB_HOST:-}
+DB_PORT=${DB_PORT:-5432}
+DB_DATABASE=${DB_DATABASE:-livemap}
+DB_USERNAME=${DB_USERNAME:-livemap}
+DB_PASSWORD=${DB_PASSWORD:-}
 DB_SSLMODE=${DB_SSLMODE:-require}
 
 REDIS_CLIENT=${REDIS_CLIENT:-predis}
-REDIS_HOST=${REDIS_HOST}
+REDIS_HOST=${REDIS_HOST:-redis}
 REDIS_PORT=${REDIS_PORT:-6379}
-REDIS_PASSWORD=${REDIS_PASSWORD}
+REDIS_PASSWORD=${REDIS_PASSWORD:-}
 REDIS_DB=${REDIS_DB:-0}
 REDIS_CACHE_DB=${REDIS_CACHE_DB:-1}
 
@@ -139,7 +142,10 @@ MAIL_MAILER=log
 
 # Flutter web build-time values (passed as --dart-define, never served as files)
 FLUTTER_BASE_URL=https://api.${SERVER_HOSTNAME:-$SERVER_IP}/api/v1/
-FLUTTER_GOOGLE_SERVER_CLIENT_ID=${GOOGLE_CLIENT_ID}
+FLUTTER_GOOGLE_SERVER_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+
+# Caddy / ACME — email Let's Encrypt uses for cert-expiry notices.
+ACME_EMAIL=${ACME_EMAIL:-admin@example.com}
 ENVEOF
     log "Generated .env.docker from server.conf"
 }
@@ -148,7 +154,7 @@ ENVEOF
 generate_flutter_env() {
     cat > "$SCRIPT_DIR/mobile/.env" << FLUTTERENV
 BASE_URL=https://api.${SERVER_HOSTNAME:-$SERVER_IP}/api/v1/
-GOOGLE_SERVER_CLIENT_ID=${GOOGLE_CLIENT_ID}
+GOOGLE_SERVER_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
 FLUTTERENV
     log "Generated mobile/.env for Flutter web build"
 }
@@ -200,6 +206,7 @@ setup_server() {
             sudo ufw allow 22/tcp
             sudo ufw allow 80/tcp
             sudo ufw allow 443/tcp
+            sudo ufw allow 443/udp   # HTTP/3 QUIC
             # 3000 / 8080 are NOT publicly exposed anymore — Caddy fronts
             # both services on 80/443. Drop any old allow rules left from
             # earlier deploys (silently ignore if they were never added).
@@ -298,11 +305,25 @@ deploy() {
             docker ps -a --format '{{.ID}} {{.Image}}' | awk '/redis/ && \$0 !~ /livemap-redis/ {print \$1}' | xargs -r docker rm
         fi
 
+        echo "[LiveMap] Validating compose file..."
+        docker compose --env-file .env.docker config > /dev/null || { echo "compose file invalid"; exit 1; }
+
         echo "[LiveMap] Building Docker images (backend + frontend)..."
         docker compose --env-file .env.docker build app frontend
 
+        echo "[LiveMap] Tagging built images with git SHA for rollback..."
+        GIT_SHA="\$(git -C $SERVER_DEPLOY_PATH rev-parse --short HEAD 2>/dev/null || echo unknown)"
+        for img in livemap-app livemap-frontend; do
+            if docker image inspect "\$img:latest" > /dev/null 2>&1; then
+                docker tag "\$img:latest" "\$img:\$GIT_SHA" || true
+            fi
+        done
+
         echo "[LiveMap] Stopping existing containers..."
         docker compose --env-file .env.docker down --timeout 30 2>/dev/null || true
+
+        echo "[LiveMap] Validating compose file..."
+        docker compose --env-file .env.docker config > /dev/null || { echo "compose file invalid"; exit 1; }
 
         echo "[LiveMap] Starting all containers..."
         docker compose --env-file .env.docker up -d

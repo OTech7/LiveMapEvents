@@ -8,9 +8,14 @@ class UserResource extends JsonResource
 {
     public function toArray($request): array
     {
+        // Only expose `phone` when the authenticated user is requesting
+        // their own record — phone is PII and must not leak via endpoints
+        // that surface other users (e.g. claim lists, vibe story authors).
+        $isSelf = $request->user()?->id === $this->id;
+
         return array_filter([
             'id' => $this->id,
-            'phone' => $this->phone ?? null,
+            'phone' => $isSelf ? ($this->phone ?? null) : null,
             'google_id' => $this->google_id ?? null,
             'first_name' => $this->first_name ?? null,
             'last_name' => $this->last_name ?? null,

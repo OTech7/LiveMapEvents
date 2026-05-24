@@ -5,7 +5,15 @@ import Link from 'next/link';
 import {useParams, useRouter} from 'next/navigation';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {ArrowLeft, Save, Trash2} from 'lucide-react';
-import {createOne, defaultValueFor, deleteOne, fetchOne, fetchSchema, saveOne,} from '@/lib/admin/resource';
+import {
+    createOne,
+    defaultValueFor,
+    deleteOne,
+    fetchOne,
+    fetchSchema,
+    ResourceRecord,
+    saveOne,
+} from '@/lib/admin/resource';
 import {useResourcePerms} from '@/lib/admin/use-me';
 import {ApiError} from '@/lib/api/client';
 import {AutoForm} from '@/components/auto-form';
@@ -68,7 +76,7 @@ export default function ResourceDetailPage() {
             isNew
                 ? createOne(resource, form)
                 : saveOne(resource, id, form),
-        onSuccess: (data: any) => {
+        onSuccess: (data: ResourceRecord) => {
             setFlash(isNew ? 'Created.' : 'Saved.');
             qc.invalidateQueries({queryKey: ['admin', 'list', resource]});
             qc.invalidateQueries({queryKey: ['admin', 'one', resource]});

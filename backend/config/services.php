@@ -45,4 +45,9 @@ return [
         'token' => env('ULTRAMSG_TOKEN'),
     ],
 
+    'pins' => [
+        // Cache TTL (seconds) for the /pins/nearby endpoint result set.
+        'cache_ttl' => env('PINS_CACHE_TTL', 30),
+    ],
+
 ];

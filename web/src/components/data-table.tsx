@@ -78,10 +78,15 @@ export function DataTable<T extends Record<string, unknown>>({
                         const key = (row[routeKey] ?? row['id'] ?? i) as string | number;
                         const href = `/admin/${resource}/${key}`;
                         return (
+                            // TODO: Refactor to use real <a>/Link element when re-doing the table.
+                            // Today the whole row is the click target so we can preserve text-selection
+                            // and modifier-click → new tab. role="button" + aria-label is the a11y
+                            // compromise until each row's first cell becomes a real <Link>.
                             <tr
                                 key={String(key)}
-                                role="link"
+                                role="button"
                                 tabIndex={0}
+                                aria-label="Open row"
                                 onClick={(e) => {
                                     // Don't hijack the click if the user is selecting text
                                     // or interacting with a button/link inside the row.
@@ -98,7 +103,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') router.push(href);
                                 }}
-                                className="hover:bg-slate-50 cursor-pointer focus:outline-none focus:bg-slate-50"
+                                className="hover:bg-slate-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-slate-50"
                             >
                                 {columns.map((c, idx) => {
                                     // Toggle switch — rendered for any column in toggleColumns.

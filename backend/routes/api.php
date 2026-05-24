@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware('lang')->group(function () {
 
     Route::prefix('auth')->group(function () {
-        Route::post('/phone/request-otp', [AuthController::class, 'requestOtp']);
+        Route::post('/phone/request-otp', [AuthController::class, 'requestOtp'])
+            ->middleware('throttle:5,1'); // 5 req/min per IP (in addition to per-phone limit inside OTPService)
         Route::post('/phone/verify-otp', [AuthController::class, 'verifyOtp']);
         Route::post('/google', [AuthController::class, 'googleLogin']);
         Route::middleware('auth:sanctum')->group(function () {

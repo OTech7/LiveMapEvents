@@ -13,7 +13,7 @@ class PinService
     {
         $cacheKey = $this->makeCacheKey($data);
 
-        return Cache::remember($cacheKey, 30, function () use ($data) {
+        return Cache::remember($cacheKey, (int)config('services.pins.cache_ttl', 30), function () use ($data) {
             $point = Point::makeGeodetic($data['lng'], $data['lat']);
 
             $query = Pin::query()

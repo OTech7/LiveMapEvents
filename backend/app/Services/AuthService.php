@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Actions\GenerateToken;
+use App\DTOs\AuthTokenResponse;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
@@ -18,7 +19,7 @@ class AuthService
     {
     }
 
-    public function loginWithPhone(string $phone): array
+    public function loginWithPhone(string $phone): AuthTokenResponse
     {
         $user = User::firstOrCreate(
             ['phone' => $phone],
@@ -32,16 +33,16 @@ class AuthService
             'is_new' => $user->wasRecentlyCreated,
         ]);
 
-        return [
-            'token' => $token,
-            'profile_complete' => $user->profile_complete,
-            'interests_complete' => $user->interests()->exists(),
-            'discovery_settings_complete' => $user->discovery_settings_complete,
-            'user' => $user,
-        ];
+        return new AuthTokenResponse(
+            token: $token,
+            user: $user,
+            profileComplete: (bool)$user->profile_complete,
+            interestsComplete: $user->interests()->exists(),
+            discoverySettingsComplete: (bool)$user->discovery_settings_complete,
+        );
     }
 
-    public function loginWithGoogle(string $idToken): array
+    public function loginWithGoogle(string $idToken): AuthTokenResponse
     {
         $googleUser = $this->googleAuthService->verify($idToken);
 
@@ -63,12 +64,12 @@ class AuthService
             'is_new' => $user->wasRecentlyCreated,
         ]);
 
-        return [
-            'token' => $token,
-            'profile_complete' => $user->profile_complete,
-            'interests_complete' => $user->interests()->exists(),
-            'discovery_settings_complete' => $user->discovery_settings_complete,
-            'user' => $user,
-        ];
+        return new AuthTokenResponse(
+            token: $token,
+            user: $user,
+            profileComplete: (bool)$user->profile_complete,
+            interestsComplete: $user->interests()->exists(),
+            discoverySettingsComplete: (bool)$user->discovery_settings_complete,
+        );
     }
 }

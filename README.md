@@ -208,3 +208,24 @@ view.
 - **Figma**: https://www.figma.com/design/DivTMjMNiUzpTt8voDG1Jd/Event-Map
 - **ERD**: `docs/LiveEventsMap_ERD.html`
 - **SRS**: `docs/Shu_fi_SRS.pdf`
+
+## Rollback Procedure
+
+If a deploy goes bad, roll back to the previous git revision (and its
+matching tagged Docker image) on the server:
+
+1. SSH to the server: `ssh <user>@<host>`
+2. `cd` to the deploy path (e.g. `cd /opt/livemap`)
+3. Identify the previous git SHA from the deploy history: `git log --oneline -5`
+4. Check out the previous SHA: `git checkout <previous-sha>`
+5. Re-run the deploy: `./deploy.sh` (or `./deploy.sh --rebuild` if you need
+   a fresh image build)
+6. Verify the stack is healthy:
+    - `docker compose --env-file .env.docker ps` — every service should be `Up`
+    - `curl -fk https://api.live-events-map.tech/api/v1/health` — should return 200
+7. If the new (rolled-back) build fails to start, fall back to the previously
+   tagged image: edit `docker-compose.yml` and pin `image: livemap-app:<old-sha>`
+   on the `app` service (and same for `frontend` if needed), then
+   `docker compose --env-file .env.docker up -d`. The deploy scripts tag every
+   built image with the short git SHA, so previous images stay locally
+   available until `docker image prune -a`.

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Services;
 
+use App\DTOs\AuthTokenResponse;
 use App\Models\User;
 use App\Services\AuthService;
 use App\Services\GoogleAuthService;
@@ -21,7 +22,8 @@ class AuthServiceTest extends TestCase
         $result = $service->loginWithPhone('+963911000001');
 
         $this->assertDatabaseHas('users', ['phone' => '+963911000001']);
-        $this->assertNotEmpty($result['token']);
+        $this->assertInstanceOf(AuthTokenResponse::class, $result);
+        $this->assertNotEmpty($result->token);
     }
 
     public function test_login_with_phone_returns_existing_user_without_creating_duplicate(): void
@@ -34,17 +36,26 @@ class AuthServiceTest extends TestCase
         $this->assertSame(1, User::where('phone', '+963911000002')->count());
     }
 
-    public function test_login_with_phone_result_includes_all_required_keys(): void
+    public function test_login_with_phone_result_includes_all_required_fields(): void
     {
         $service = app(AuthService::class);
 
         $result = $service->loginWithPhone('+963911000003');
 
-        $this->assertArrayHasKey('token', $result);
-        $this->assertArrayHasKey('profile_complete', $result);
-        $this->assertArrayHasKey('interests_complete', $result);
-        $this->assertArrayHasKey('discovery_settings_complete', $result);
-        $this->assertArrayHasKey('user', $result);
+        $this->assertInstanceOf(AuthTokenResponse::class, $result);
+        $this->assertNotEmpty($result->token);
+        $this->assertInstanceOf(User::class, $result->user);
+        $this->assertIsBool($result->profileComplete);
+        $this->assertIsBool($result->interestsComplete);
+        $this->assertIsBool($result->discoverySettingsComplete);
+
+        // toArray() must preserve the legacy snake_case shape used by the API.
+        $array = $result->toArray();
+        $this->assertArrayHasKey('token', $array);
+        $this->assertArrayHasKey('profile_complete', $array);
+        $this->assertArrayHasKey('interests_complete', $array);
+        $this->assertArrayHasKey('discovery_settings_complete', $array);
+        $this->assertArrayHasKey('user', $array);
     }
 
     public function test_login_with_phone_sets_profile_complete_false_for_new_user(): void
@@ -53,7 +64,7 @@ class AuthServiceTest extends TestCase
 
         $result = $service->loginWithPhone('+963911000004');
 
-        $this->assertFalse($result['profile_complete']);
+        $this->assertFalse($result->profileComplete);
     }
 
     // ─── loginWithGoogle() ────────────────────────────────────────────────────
@@ -76,7 +87,8 @@ class AuthServiceTest extends TestCase
         $result = $service->loginWithGoogle('fake-id-token');
 
         $this->assertDatabaseHas('users', ['google_id' => 'google-uid-001']);
-        $this->assertNotEmpty($result['token']);
+        $this->assertInstanceOf(AuthTokenResponse::class, $result);
+        $this->assertNotEmpty($result->token);
     }
 
     public function test_login_with_google_returns_existing_user_matched_by_google_id(): void
@@ -105,7 +117,7 @@ class AuthServiceTest extends TestCase
         $this->assertSame(1, User::where('google_id', 'google-uid-002')->count());
     }
 
-    public function test_login_with_google_result_includes_all_required_keys(): void
+    public function test_login_with_google_result_includes_all_required_fields(): void
     {
         $mock = $this->createMock(GoogleAuthService::class);
         $mock->method('verify')->willReturn([
@@ -121,11 +133,12 @@ class AuthServiceTest extends TestCase
         $service = app(AuthService::class);
         $result = $service->loginWithGoogle('fake-id-token');
 
-        $this->assertArrayHasKey('token', $result);
-        $this->assertArrayHasKey('profile_complete', $result);
-        $this->assertArrayHasKey('interests_complete', $result);
-        $this->assertArrayHasKey('discovery_settings_complete', $result);
-        $this->assertArrayHasKey('user', $result);
+        $this->assertInstanceOf(AuthTokenResponse::class, $result);
+        $this->assertNotEmpty($result->token);
+        $this->assertInstanceOf(User::class, $result->user);
+        $this->assertIsBool($result->profileComplete);
+        $this->assertIsBool($result->interestsComplete);
+        $this->assertIsBool($result->discoverySettingsComplete);
     }
 
     public function test_login_with_google_populates_name_from_google_payload(): void

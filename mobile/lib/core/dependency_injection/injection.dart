@@ -25,29 +25,32 @@ import '../../features/profile/domain/use_case/get_interests_usecase.dart';
 import '../network/api_endpoints.dart';
 import '../network/interceptor.dart';
 import '../network/token_provider.dart';
+import '../storage/secure_token_storage.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
   ///         Bloc's
   sl.registerFactory(
-    () => AuthBloc(
-      loginUseCase: sl(),
-      sendOTPUseCase: sl(),
-      registerUseCase: sl(),
-      checkTokenUseCase: sl(),
-      logoutUseCase: sl(),
-      verifyUseCase: sl(),
-      signInWithGoogleUseCase: sl(),
-    ),
+        () =>
+        AuthBloc(
+          loginUseCase: sl(),
+          sendOTPUseCase: sl(),
+          registerUseCase: sl(),
+          checkTokenUseCase: sl(),
+          logoutUseCase: sl(),
+          verifyUseCase: sl(),
+          signInWithGoogleUseCase: sl(),
+        ),
   );
   sl.registerFactory(
-    () => ProfileBloc(
-      completeSetupUseCase: sl(),
-      getInterestsUseCase: sl(),
-      discoverySettingsUseCase: sl(),
-      saveInterestsUseCase: sl(),
-    ),
+        () =>
+        ProfileBloc(
+          completeSetupUseCase: sl(),
+          getInterestsUseCase: sl(),
+          discoverySettingsUseCase: sl(),
+          saveInterestsUseCase: sl(),
+        ),
   );
 
   ///         UseCases
@@ -66,36 +69,47 @@ Future<void> init() async {
   ///     Repositories
 
   sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(localDataSource: sl(), remoteDataSource: sl()),
+        () => AuthRepositoryImpl(localDataSource: sl(), remoteDataSource: sl()),
   );
   sl.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(remoteDataSource: sl()),
+        () => ProfileRepositoryImpl(remoteDataSource: sl()),
   );
 
   ///     DataSources
   sl.registerLazySingleton<ProfileDataSource>(
-    () => ProfileDataSourceImpl(interceptor: sl()),
+        () => ProfileDataSourceImpl(interceptor: sl()),
   );
   sl.registerLazySingleton<AuthDataSource>(
-    () => AuthDataSourceImpl(interceptor: sl()),
+        () => AuthDataSourceImpl(interceptor: sl()),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+        () =>
+        AuthLocalDataSourceImpl(
+          sharedPreferences: sl(),
+          tokenStorage: sl(),
+        ),
   );
 
   sl.registerLazySingleton<AuthTokenProvider>(
-    () => AuthLocalDataSourceImpl(sharedPreferences: sl()),
+        () =>
+        AuthLocalDataSourceImpl(
+          sharedPreferences: sl(),
+          tokenStorage: sl(),
+        ),
   );
+
+  sl.registerLazySingleton<TokenStorage>(() => SecureTokenStorage());
 
   ///     External
   sl.registerLazySingleton(
-    () => dio.Dio(
-      dio.BaseOptions(
-        baseUrl: EndPoints.BASE_URL,
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
-      ),
-    ),
+        () =>
+        dio.Dio(
+          dio.BaseOptions(
+            baseUrl: EndPoints.BASE_URL,
+            connectTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
+          ),
+        ),
   );
 
   final sharedPrefs = await SharedPreferences.getInstance();
@@ -103,13 +117,14 @@ Future<void> init() async {
 
   ///     Core
   sl.registerLazySingleton(
-    () => AppInterceptor(
-      dio: sl(),
-      authInterface: sl(),
-      BASE_URL: EndPoints.BASE_URL,
-      loginEndpoint: EndPoints.login,
-      navigatorKey: navigatorKey,
-    ),
+        () =>
+        AppInterceptor(
+          dio: sl(),
+          authInterface: sl(),
+          BASE_URL: EndPoints.BASE_URL,
+          loginEndpoint: EndPoints.login,
+          navigatorKey: navigatorKey,
+        ),
   );
   sl<dio.Dio>().interceptors.add(sl<AppInterceptor>());
 }

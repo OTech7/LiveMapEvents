@@ -17,9 +17,9 @@ class OTPService
 
     public function __construct()
     {
-        $this->ttl = (int) config('otp.ttl', 300); // 5 min
-        $this->maxAttempts = (int) config('otp.max_attempts', 3);
-        $this->resendCooldown = (int) config('otp.resend_cooldown', 60);
+        $this->ttl = (int)config('otp.ttl', 300); // 5 min
+        $this->maxAttempts = (int)config('otp.max_attempts', 3);
+        $this->resendCooldown = (int)config('otp.resend_cooldown', 60);
     }
 
     public function send(string $phone): void
@@ -29,8 +29,7 @@ class OTPService
 
         $requests = Redis::get($rateKey);
 
-        if ($requests && $requests >= $this->maxAttempts)
-        {
+        if ($requests && $requests >= $this->maxAttempts) {
             throw ValidationException::withMessages([
                 'otp' => [__('messages.too_many_otp_requests')]
             ]);
@@ -62,8 +61,8 @@ class OTPService
 
         Redis::setex($cooldownKey, $this->resendCooldown, 1);
 
-        if (! $requests) {
-            Redis::setex($rateKey, 3600, 1);
+        if (!$requests) {
+            Redis::setex($rateKey, (int)config('otp.rate_limit_window'), 1);
         } else {
             Redis::incr($rateKey);
         }
@@ -87,7 +86,7 @@ class OTPService
 
         $rawData = Redis::get($otpKey);
 
-        if (! $rawData) {
+        if (!$rawData) {
             return new OtpVerificationResult(
                 OtpVerificationStatus::EXPIRED
             );
@@ -103,11 +102,11 @@ class OTPService
             );
         }
 
-        if (! Hash::check($otp, $data['code'])) {
+        if (!Hash::check($otp, $data['code'])) {
             $data['attempts']++;
 
             if ($data['attempts'] >= $this->maxAttempts) {
-                Redis::setex($lockKey, 900, 1); // 15 min lock
+                Redis::setex($lockKey, (int)config('otp.lock_duration'), 1);
             }
 
             $remainingTtl = Redis::ttl($otpKey);

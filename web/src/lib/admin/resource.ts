@@ -90,7 +90,15 @@ export async function fetchOne<T = Record<string, unknown>>(
     return api<T>(`/admin/v1/${route}/${key}`);
 }
 
-export async function saveOne<T = Record<string, unknown>>(
+/**
+ * Resource record returned by the API after a write. We keep this loose
+ * (Record<string, unknown>) because the engine is schema-driven and field
+ * shape is only known at runtime. Call sites should cast to a concrete
+ * interface when they have one.
+ */
+export type ResourceRecord = Record<string, unknown>;
+
+export async function saveOne<T extends ResourceRecord = ResourceRecord>(
     route: string,
     key: string | number,
     body: Record<string, unknown>,
@@ -98,7 +106,7 @@ export async function saveOne<T = Record<string, unknown>>(
     return api<T>(`/admin/v1/${route}/${key}`, {method: 'PUT', body});
 }
 
-export async function createOne<T = Record<string, unknown>>(
+export async function createOne<T extends ResourceRecord = ResourceRecord>(
     route: string,
     body: Record<string, unknown>,
 ): Promise<T> {

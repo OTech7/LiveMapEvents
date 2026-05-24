@@ -7,12 +7,20 @@
 #   docker compose logs -f app
 # ============================================================
 
+# Common logging policy reused by every service to cap container log
+# growth on disk. JSON file driver with 3 rotated files of 10MB each.
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   # ── Caddy reverse proxy (HTTPS termination + subdomain routing) ──
   # Public entrypoint. Listens on 80/443 and routes to internal services
   # over the docker network. Auto-issues Let's Encrypt certs on first boot.
   caddy:
-    image: caddy:2-alpine
+    image: caddy:2.8.4-alpine
     container_name: livemap-caddy
     restart: unless-stopped
     ports:
@@ -23,11 +31,25 @@ services:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
+    environment:
+      # Email Let's Encrypt uses for cert-expiry notices. Set in .env.docker.
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
     networks:
       - livemap
     depends_on:
       - app
       - frontend
+    # Resource caps. mem_limit / cpus are the Compose-native (v2) keys
+    # that actually enforce limits outside of Swarm; deploy.resources.limits
+    # is kept for Swarm-compat / documentation.
+    mem_limit: 128m
+    cpus: 0.25
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+    logging: *default-logging
     healthcheck:
       test: [ "CMD", "wget", "--spider", "-q", "http://localhost:80" ]
       interval: 30s
@@ -59,6 +81,14 @@ services:
       - app-storage:/var/www/html/storage
     networks:
       - livemap
+    mem_limit: 1g
+    cpus: 1.0
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    logging: *default-logging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -81,6 +111,14 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - livemap
+    mem_limit: 1g
+    cpus: 1.0
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    logging: *default-logging
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-livemap} -d ${DB_DATABASE:-livemap}"]
       interval: 10s
@@ -90,7 +128,7 @@ services:
 
   # ── Redis (Cache + Queue + Sessions + OTP storage) ──
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.1-alpine
     container_name: livemap-redis
     restart: unless-stopped
     command: >
@@ -107,6 +145,14 @@ services:
       - redis-data:/data
     networks:
       - livemap
+    mem_limit: 256m
+    cpus: 0.5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+    logging: *default-logging
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "ping" ]
       interval: 10s
@@ -130,6 +176,14 @@ services:
       - "80"
     networks:
       - livemap
+    mem_limit: 1g
+    cpus: 1.0
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    logging: *default-logging
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s

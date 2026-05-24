@@ -18,6 +18,26 @@ export class ApiError extends Error {
     }
 }
 
+/**
+ * Shape of a successful Laravel ApiResponse envelope.
+ * The `api()` helper unwraps it and returns the inner `data` payload directly,
+ * but mutation call sites that want the wrapper (e.g. to read `message`) can
+ * call api<ApiSuccessResponse<T>>(...) and opt out of unwrapping by reading
+ * payload off the body themselves.
+ */
+export interface ApiSuccessResponse<T> {
+    message: string;
+    data: T;
+}
+
+/** Internal — raw envelope shape returned by the Laravel backend. */
+interface ApiEnvelope<T> {
+    success?: boolean;
+    message?: string;
+    data?: T;
+    errors?: unknown;
+}
+
 type Options = Omit<RequestInit, 'body'> & {
     body?: unknown;
     query?: Record<string, string | number | boolean | undefined | null>;
@@ -57,10 +77,10 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
         clearToken();
     }
 
-    let payload: any = null;
+    let payload: ApiEnvelope<T> | null = null;
     const text = await res.text();
     try {
-        payload = text ? JSON.parse(text) : null;
+        payload = text ? (JSON.parse(text) as ApiEnvelope<T>) : null;
     } catch {
         /* non-JSON response — leave payload null */
     }

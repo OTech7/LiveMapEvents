@@ -55,17 +55,21 @@ class PromotionPolicyTest extends TestCase
     }
 
     // ─── view() ───────────────────────────────────────────────────────────────
+    //
+    // view() now performs an ownership check — it's only consulted by the
+    // business `show()` endpoint (the public discovery endpoint does not
+    // call authorize() so it remains open to any authenticated user).
 
-    public function test_any_authenticated_user_can_view_a_promotion(): void
+    public function test_non_owner_cannot_view_another_owners_promotion(): void
     {
         $owner = $this->makeUser();
         $visitor = $this->makeUser();
         $promo = $this->makePromotion($owner);
 
-        $this->assertTrue($this->policy->view($visitor, $promo));
+        $this->assertFalse($this->policy->view($visitor, $promo));
     }
 
-    public function test_owner_can_also_view_their_own_promotion(): void
+    public function test_owner_can_view_their_own_promotion(): void
     {
         $owner = $this->makeUser();
         $promo = $this->makePromotion($owner);

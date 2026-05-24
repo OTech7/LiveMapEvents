@@ -48,6 +48,14 @@ backend/Thumbs.db
 
 # Docker & Deployment
 .env.docker
+.env.local.docker
 server.conf
 server.local.conf
 *.tar.gz
+
+# Generated env files
+mobile/.env
+
+# IDE / OS noise
+.DS_Store
+Thumbs.db

@@ -12,10 +12,11 @@
 #   ./deploy.sh --setup      # First-time server setup
 # ============================================================
 
-set -e
+set -euo pipefail
 
 DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
 COMPOSE_FILE="$DEPLOY_DIR/docker-compose.yml"
+ENV_FILE="$DEPLOY_DIR/.env.docker"
 
 # Colors
 RED='\033[0;31m'
@@ -44,7 +45,7 @@ setup_server() {
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
         sudo apt-get update
         sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-        sudo usermod -aG docker $USER
+        sudo usermod -aG docker "${USER:-$(id -un)}"
         log "Docker installed. You may need to log out and back in for group changes."
     else
         log "Docker already installed: $(docker --version)"
@@ -67,7 +68,8 @@ setup_server() {
         log "Configuring UFW firewall..."
         sudo ufw allow 22/tcp    # SSH
         sudo ufw allow 80/tcp    # HTTP
-        sudo ufw allow 443/tcp   # HTTPS (future)
+        sudo ufw allow 443/tcp   # HTTPS
+        sudo ufw allow 443/udp   # HTTP/3 QUIC
         sudo ufw --force enable
         log "Firewall configured."
     fi
@@ -78,25 +80,29 @@ setup_server() {
 # ── Build and Deploy ──
 deploy() {
     local no_cache=""
-    if [ "$1" == "--rebuild" ]; then
+    if [ "${1:-}" == "--rebuild" ]; then
         no_cache="--no-cache"
         log "Force rebuilding without cache..."
     fi
 
     # Check .env.docker exists
-    if [ ! -f "$DEPLOY_DIR/.env.docker" ]; then
+    if [ ! -f "$ENV_FILE" ]; then
         error ".env.docker not found! Run: ./deploy.sh --setup"
         exit 1
     fi
 
+    log "Validating compose file..."
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" config > /dev/null \
+        || { error "compose file invalid"; exit 1; }
+
     log "Building Docker image..."
-    docker compose -f "$COMPOSE_FILE" build $no_cache app
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" build $no_cache app
 
     log "Stopping old containers..."
-    docker compose -f "$COMPOSE_FILE" down --timeout 30
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down --timeout 30
 
     log "Starting containers..."
-    docker compose -f "$COMPOSE_FILE" up -d
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d
 
     log "Waiting for application to be healthy..."
     for i in $(seq 1 30); do
@@ -124,7 +130,7 @@ deploy() {
 # ── Show Status ──
 show_status() {
     log "Container status:"
-    docker compose -f "$COMPOSE_FILE" ps
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps
     echo ""
     info "App URL: http://$(hostname -I | awk '{print $1}'):${APP_PORT:-8080}"
     info "Health:  http://$(hostname -I | awk '{print $1}'):${APP_PORT:-8080}/health"
@@ -138,11 +144,11 @@ case "${1:-}" in
         ;;
     --down)
         log "Stopping all containers..."
-        docker compose -f "$COMPOSE_FILE" down
+        docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down
         log "All containers stopped."
         ;;
     --logs)
-        docker compose -f "$COMPOSE_FILE" logs -f --tail=100 ${2:-app}
+        docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" logs -f --tail=100 "${2:-app}"
         ;;
     --status)
         show_status

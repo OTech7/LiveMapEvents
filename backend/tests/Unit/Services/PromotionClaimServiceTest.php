@@ -329,8 +329,11 @@ class PromotionClaimServiceTest extends TestCase
         $this->assertSame(2, $result->total());
     }
 
-    public function test_get_my_claims_auto_expires_stale_claimed_vouchers(): void
+    public function test_get_my_claims_no_longer_lazily_expires_stale_vouchers(): void
     {
+        // Stale-claim expiry was moved out of this hot path into the
+        // `claims:expire-stale` scheduled command (hourly). Verify the
+        // status is NOT mutated as a side effect of the wallet view.
         $promo = $this->makeActivePromotion();
         $user = $this->makeUser();
 
@@ -344,7 +347,7 @@ class PromotionClaimServiceTest extends TestCase
 
         $this->assertDatabaseHas('promotion_claims', [
             'id' => $staleClaim->id,
-            'status' => PromotionClaimStatus::EXPIRED->value,
+            'status' => PromotionClaimStatus::CLAIMED->value, // still CLAIMED until the scheduler runs
         ]);
     }
 

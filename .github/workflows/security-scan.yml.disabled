@@ -1,0 +1,33 @@
+# ============================================================
+# LiveMapEvents — Security scan (Trivy)
+# ============================================================
+# Runs Aqua Security's Trivy filesystem scanner against the backend
+# build context on every pull request. Surfaces CRITICAL and HIGH
+# CVEs in OS packages, Composer deps, Dockerfile config, etc., so
+# they can be reviewed before merging.
+# ============================================================
+
+name: Security scan
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  trivy-fs:
+    name: Trivy filesystem scan (backend)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: backend
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
+          format: table

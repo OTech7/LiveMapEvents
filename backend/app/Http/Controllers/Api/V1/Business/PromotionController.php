@@ -45,6 +45,8 @@ class PromotionController extends Controller
 
     public function show(Promotion $promotion): JsonResponse
     {
+        $this->authorize('view', $promotion);
+
         return ApiResponse::success(
             'messages.promotion_fetched_successfully',
             PromotionResource::make($promotion->load('venue'))

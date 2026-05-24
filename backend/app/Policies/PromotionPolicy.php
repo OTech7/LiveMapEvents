@@ -4,15 +4,24 @@ namespace App\Policies;
 
 use App\Models\Promotion;
 use App\Models\User;
+use App\Support\Concerns\EnsuresRelationLoaded;
 
 class PromotionPolicy
 {
+    use EnsuresRelationLoaded;
+
     /**
-     * Any authenticated user can view a single promotion (for the public API).
+     * Only the venue owner can view a promotion *through the business API*.
+     *
+     * NOTE: This policy method is only consulted when a controller explicitly
+     * calls `$this->authorize('view', $promotion)` — e.g. the business
+     * `show()` endpoint. The PUBLIC PromotionController does not call
+     * authorize() and therefore remains open to any authenticated user,
+     * which is the intended discovery behaviour.
      */
     public function view(User $user, Promotion $promotion): bool
     {
-        return true;
+        return $this->owns($user, $promotion);
     }
 
     /**
@@ -45,9 +54,7 @@ class PromotionPolicy
     {
         // Ensure venue is loaded so we don't trigger an extra query
         // every time this policy is checked (e.g., in a loop).
-        if (!$promotion->relationLoaded('venue')) {
-            $promotion->loadMissing('venue');
-        }
+        $this->ensureLoaded($promotion, 'venue');
 
         return $promotion->venue->owner_id === $user->id;
     }
