@@ -21,7 +21,10 @@ class InterestService
      */
     public function getForUser(User $user): Collection
     {
-        return $user->interests;
+        // Use a fresh query instead of the cached relationship property so that
+        // interests added or removed within the same request lifecycle are always
+        // reflected (Sanctum caches the User model across requests in tests).
+        return $user->interests()->get();
     }
 
     /**

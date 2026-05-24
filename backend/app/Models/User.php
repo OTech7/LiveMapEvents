@@ -23,6 +23,16 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    /**
+     * Default attribute values — mirrors DB column defaults so that a freshly
+     * created model instance reflects the correct state without needing a
+     * round-trip to the database.
+     */
+    protected $attributes = [
+        'profile_complete' => false,
+        'discovery_settings_complete' => false,
+    ];
+
     protected $fillable = [
         'phone',
         'google_id',
@@ -33,6 +43,7 @@ class User extends Authenticatable
         'avatar_url',
         'profile_complete',
         'discovery_settings_complete',
+        'discovery_radius',
         'user_type',
         'location'
     ];

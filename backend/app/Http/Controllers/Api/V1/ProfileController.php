@@ -78,13 +78,13 @@ class ProfileController extends Controller
     {
         $this->interestService->attach(auth()->user(), $interest);
 
-        return ApiResponse::success('messages.interests_updated_successfully');
+        return ApiResponse::success('messages.interest_added_successfully', InterestResource::make($interest));
     }
 
     public function removeInterest(Interest $interest): JsonResponse
     {
         $this->interestService->detach(auth()->user(), $interest);
 
-        return ApiResponse::success('messages.interests_updated_successfully');
+        return ApiResponse::success('messages.interest_removed_successfully');
     }
 }

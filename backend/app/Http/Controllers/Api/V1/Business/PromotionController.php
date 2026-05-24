@@ -28,7 +28,7 @@ class PromotionController extends Controller
 
         return ApiResponse::success(
             'messages.promotions_fetched_successfully',
-            PromotionResource::collection($promotions)
+            PromotionResource::collection($promotions)->response(request())->getData(true)
         );
     }
 
@@ -83,7 +83,7 @@ class PromotionController extends Controller
 
         return ApiResponse::success(
             'messages.promotion_claims_fetched_successfully',
-            PromotionClaimResource::collection($claims)
+            PromotionClaimResource::collection($claims)->response(request())->getData(true)
         );
     }
 }

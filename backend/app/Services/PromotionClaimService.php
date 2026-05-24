@@ -93,7 +93,7 @@ class PromotionClaimService
     {
         return PromotionClaim::where('promotion_id', $promotion->id)
             ->where('user_id', $user->id)
-            ->latest()
+            ->latest('id')
             ->first();
     }
 
