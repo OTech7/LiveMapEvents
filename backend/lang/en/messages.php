@@ -18,7 +18,7 @@ return [
     'otp_cooldown' => 'Please wait before requesting another OTP.',
     'otp_provider_unreachable' => 'OTP service is currently unavailable. Please try again later.',
 
-    'profile_completed_successfully' =>  'Profile completed successfully.',
+    'profile_completed_successfully' => 'Profile completed successfully.',
     'profile_already_completed' => 'Profile already completed.',
     'phone_already_set' => 'Phone number is already on file and cannot be changed here.',
     'profile_fetched_successfully' => 'Profile fetched successfully',
