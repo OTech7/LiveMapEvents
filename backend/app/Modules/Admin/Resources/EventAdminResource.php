@@ -118,6 +118,12 @@ class EventAdminResource extends AdminResource
             $data['ends_at'] = \Carbon\Carbon::parse($data['starts_at'])->addHours(3)->toIso8601String();
         }
 
+        // guest_limit has a NOT NULL constraint with a DB default of 0 — ensure
+        // it's always set so inserts never hit the not-null violation.
+        if (!array_key_exists('guest_limit', $data) || $data['guest_limit'] === null) {
+            $data['guest_limit'] = 0;
+        }
+
         // Events are always free for now
         $data['is_free'] = true;
 

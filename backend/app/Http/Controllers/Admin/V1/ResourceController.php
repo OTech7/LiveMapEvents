@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Admin\AdminResource;
 use App\Support\ApiResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
@@ -114,7 +115,17 @@ class ResourceController extends Controller
         $data = $request->validate($admin_resource->rules($request, null));
         $data = $admin_resource->beforeSave($model, $data, $request);
 
-        $model->fill($data)->save();
+        try {
+            $model->fill($data)->save();
+        } catch (QueryException $e) {
+            Log::error('admin_resource_create_db_error', [
+                'resource' => $admin_resource->permission(),
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id(),
+            ]);
+            return ApiResponse::error($this->friendlyDbError($e), null, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $admin_resource->afterSave($model, $data, $request);
 
         Log::info('admin_resource_created', [
@@ -143,7 +154,18 @@ class ResourceController extends Controller
         $data = $request->validate($admin_resource->rules($request, $model));
         $data = $admin_resource->beforeSave($model, $data, $request);
 
-        $model->fill($data)->save();
+        try {
+            $model->fill($data)->save();
+        } catch (QueryException $e) {
+            Log::error('admin_resource_update_db_error', [
+                'resource' => $admin_resource->permission(),
+                'id' => $model->getKey(),
+                'error' => $e->getMessage(),
+                'admin_id' => auth()->id(),
+            ]);
+            return ApiResponse::error($this->friendlyDbError($e), null, Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $admin_resource->afterSave($model, $data, $request);
 
         Log::info('admin_resource_updated', [
@@ -207,5 +229,39 @@ class ResourceController extends Controller
         $u = auth()->user();
         $perm = $admin_resource->permission() . '.' . $action;
         abort_unless($u && $u->can($perm), Response::HTTP_FORBIDDEN, "Missing permission: {$perm}");
+    }
+
+    /**
+     * Convert a raw QueryException into a human-readable message.
+     * Avoids leaking SQLSTATE details to the API consumer while still giving
+     * admins enough context to understand what went wrong.
+     */
+    protected function friendlyDbError(QueryException $e): string
+    {
+        $msg = $e->getMessage();
+
+        // PostgreSQL / MySQL not-null violation
+        if (str_contains($msg, 'null value in column') || str_contains($msg, 'cannot be null')) {
+            if (preg_match('/null value in column "([^"]+)"/', $msg, $m)) {
+                return "The field \"{$m[1]}\" is required and cannot be empty.";
+            }
+            return 'A required field is missing. Please fill in all required fields.';
+        }
+
+        // Unique constraint violation
+        if (str_contains($msg, 'unique constraint') || str_contains($msg, 'Duplicate entry')) {
+            if (preg_match('/unique constraint "([^"]+)"/', $msg, $m)) {
+                return "A record with this value already exists (constraint: {$m[1]}).";
+            }
+            return 'A record with this value already exists.';
+        }
+
+        // Foreign key violation
+        if (str_contains($msg, 'foreign key constraint') || str_contains($msg, 'a foreign key constraint fails')) {
+            return 'The referenced record does not exist. Please check the selected values.';
+        }
+
+        // Generic fallback — log has the full detail, user gets a safe message
+        return 'A database error occurred. Please check your input and try again.';
     }
 }
