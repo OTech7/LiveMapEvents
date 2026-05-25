@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\Business\EventController as BusinessEventController;
 use App\Http\Controllers\Api\V1\Business\PromotionController as BusinessPromotionController;
 use App\Http\Controllers\Api\V1\Business\ScannerController;
 use App\Http\Controllers\Api\V1\InterestController;
@@ -52,6 +53,16 @@ Route::prefix('v1')->middleware('lang')->group(function () {
             Route::delete('promotions/{promotion}', [BusinessPromotionController::class, 'destroy']);
             Route::get('promotions/{promotion}/claims', [BusinessPromotionController::class, 'claims']);
             Route::post('scanner/redeem', [ScannerController::class, 'redeem']);
+
+            // ── Business owner: manage their events ───────────────────────────────
+            Route::prefix('events')->group(function () {
+                Route::get('/', [BusinessEventController::class, 'index']);
+                Route::post('/', [BusinessEventController::class, 'store']);
+                Route::get('{event}', [BusinessEventController::class, 'show']);
+                Route::put('{event}', [BusinessEventController::class, 'update']);
+                Route::delete('{event}', [BusinessEventController::class, 'destroy']);
+                Route::post('{event}/cancel', [BusinessEventController::class, 'cancel']);
+            });
         });
 
         // ── User: discover and claim promotions ───────────────────────────────

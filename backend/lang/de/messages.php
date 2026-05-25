@@ -16,7 +16,7 @@ return [
     'too_many_otp_requests' => 'Zu viele OTP-Anfragen. Bitte versuchen Sie es später erneut.',
     'otp_cooldown' => 'Bitte warten Sie, bevor Sie einen neuen Code anfordern.',
     'otp_provider_unreachable' => 'OTP-Dienst ist derzeit nicht erreichbar. Bitte versuchen Sie es später erneut.',
-    
+
     'profile_already_completed' => 'Profil wurde bereits vervollständigt.',
     'profile_completed_successfully' => 'Profil erfolgreich abgeschlossen',
     'phone_already_set' => 'Die Telefonnummer ist bereits hinterlegt und kann hier nicht geändert werden.',
@@ -30,4 +30,15 @@ return [
     'avatar_uploaded_successfully' => 'Profilbild erfolgreich hochgeladen',
     'nearby_pins_fetched_successfully' => 'Nahegelegene Punkte erfolgreich abgerufen',
     'discovery_settings_updated' => 'Erkundungseinstellungen wurden erfolgreich aktualisiert.',
+
+    // Events
+    'events_fetched_successfully' => 'Veranstaltungen erfolgreich abgerufen.',
+    'event_fetched_successfully' => 'Veranstaltung erfolgreich abgerufen.',
+    'event_created_successfully' => 'Veranstaltung erfolgreich erstellt.',
+    'event_updated_successfully' => 'Veranstaltung erfolgreich aktualisiert.',
+    'event_deleted_successfully' => 'Veranstaltung erfolgreich gelöscht.',
+    'event_cancelled_successfully' => 'Veranstaltung erfolgreich abgesagt.',
+    'event_already_cancelled' => 'Diese Veranstaltung wurde bereits abgesagt.',
+    'event_not_found' => 'Veranstaltung nicht gefunden.',
+    'venue_not_found_or_unauthorized' => 'Veranstaltungsort nicht gefunden oder keine Berechtigung.',
 ];

@@ -46,7 +46,15 @@ php artisan migrate --force || {
     }
 }
 
-# ── Step 5: Generate Swagger API docs ──
+# ── Step 5: Swagger UI assets ──
+# The public/ directory is live-mounted from the host, so swagger-ui assets
+# copied into the image at build time are overwritten by the host mount.
+# We copy them from vendor/ (protected by an anonymous volume) every startup.
+echo "[entrypoint] Copying Swagger UI assets to public/..."
+mkdir -p public/vendor/swagger-api/swagger-ui
+cp -r vendor/swagger-api/swagger-ui/dist public/vendor/swagger-api/swagger-ui/dist
+
+# ── Step 6: Generate Swagger API docs ──
 echo "[entrypoint] Generating Swagger API docs..."
 php artisan l5-swagger:generate || echo "[entrypoint] WARNING: Swagger generation failed (non-fatal)"
 

@@ -55,6 +55,17 @@ return [
     'voucher_expired' => 'This voucher has expired.',
     'discount_percentage_exceeded' => 'Percentage discount cannot exceed 100.',
 
+    // Events
+    'events_fetched_successfully' => 'Events fetched successfully.',
+    'event_fetched_successfully' => 'Event fetched successfully.',
+    'event_created_successfully' => 'Event created successfully.',
+    'event_updated_successfully' => 'Event updated successfully.',
+    'event_deleted_successfully' => 'Event deleted successfully.',
+    'event_cancelled_successfully' => 'Event cancelled successfully.',
+    'event_already_cancelled' => 'This event has already been cancelled.',
+    'event_not_found' => 'Event not found.',
+    'venue_not_found_or_unauthorized' => 'Venue not found or you do not have permission to use it.',
+
     // Admin panel
     'success' => 'Success',
     'forbidden' => 'You do not have permission to perform this action.',
