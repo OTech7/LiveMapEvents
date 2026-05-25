@@ -12,6 +12,7 @@ export type FieldType =
     | 'tag-picker'     // pivot-style: shows only the currently-assigned options as
     // removable chips, plus a dropdown of unassigned options to add
     | 'date'
+    | 'datetime'
     | 'time'
     | 'checkbox';
 

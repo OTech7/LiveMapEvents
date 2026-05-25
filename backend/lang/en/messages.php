@@ -18,7 +18,7 @@ return [
     'otp_cooldown' => 'Please wait before requesting another OTP.',
     'otp_provider_unreachable' => 'OTP service is currently unavailable. Please try again later.',
 
-    'profile_completed_successfully' =>  'Profile completed successfully.',
+    'profile_completed_successfully' => 'Profile completed successfully.',
     'profile_already_completed' => 'Profile already completed.',
     'phone_already_set' => 'Phone number is already on file and cannot be changed here.',
     'profile_fetched_successfully' => 'Profile fetched successfully',
@@ -54,6 +54,17 @@ return [
     'voucher_already_redeemed' => 'This voucher has already been redeemed.',
     'voucher_expired' => 'This voucher has expired.',
     'discount_percentage_exceeded' => 'Percentage discount cannot exceed 100.',
+
+    // Events
+    'events_fetched_successfully' => 'Events fetched successfully.',
+    'event_fetched_successfully' => 'Event fetched successfully.',
+    'event_created_successfully' => 'Event created successfully.',
+    'event_updated_successfully' => 'Event updated successfully.',
+    'event_deleted_successfully' => 'Event deleted successfully.',
+    'event_cancelled_successfully' => 'Event cancelled successfully.',
+    'event_already_cancelled' => 'This event has already been cancelled.',
+    'event_not_found' => 'Event not found.',
+    'venue_not_found_or_unauthorized' => 'Venue not found or you do not have permission to use it.',
 
     // Admin panel
     'success' => 'Success',

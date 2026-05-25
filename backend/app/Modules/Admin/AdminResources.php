@@ -16,6 +16,7 @@ final class AdminResources
         \App\Modules\Admin\Resources\UserResource::class,
         \App\Modules\Admin\Resources\InterestResource::class,
         \App\Modules\Admin\Resources\PromotionAdminResource::class,
+        \App\Modules\Admin\Resources\EventAdminResource::class,
     ];
 
     /** Instantiate every resource. */

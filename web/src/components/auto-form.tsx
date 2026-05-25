@@ -21,7 +21,7 @@ export function AutoForm({fields, values, onChange, disabled}: AutoFormProps) {
             {fields.map((f) => (
                 <div key={f.name} className={
                     f.type === 'textarea' || f.type === 'multi-select' || f.type === 'tag-picker' || f.fullWidth
-                        ? 'md:col-span-2' : ''
+                        ? 'md:col-span-2' : 'md:col-span-1'
                 }>
                     <FieldRenderer field={f} value={values[f.name]} onChange={(v) => onChange(f.name, v)}
                                    disabled={disabled}/>
@@ -95,6 +95,26 @@ function FieldRenderer({
                     />
                 </>
             );
+
+        case 'datetime': {
+            // Browser datetime-local expects "YYYY-MM-DDTHH:MM" (16 chars).
+            // The API returns full ISO strings like "2026-06-15T18:00:00.000Z" — slice to 16.
+            const dtVal = ((value as string | null | undefined) ?? '').slice(0, 16);
+            return (
+                <>
+                    <label className="label" htmlFor={name}>{label}{required && ' *'}</label>
+                    <input
+                        id={name}
+                        className="input"
+                        type="datetime-local"
+                        value={dtVal}
+                        onChange={(e) => onChange(e.target.value ? e.target.value + ':00Z' : null)}
+                        disabled={isLocked}
+                        required={required}
+                    />
+                </>
+            );
+        }
 
         case 'time':
             return (

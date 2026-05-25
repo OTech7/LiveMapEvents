@@ -20,6 +20,7 @@ backend/node_modules
 backend/public/build
 backend/public/hot
 backend/public/storage
+backend/public/vendor
 backend/storage/*.key
 backend/storage/pail
 backend/vendor

@@ -17,7 +17,7 @@ return [
     'too_many_otp_requests' => 'عدد طلبات رمز التحقق كبير جدًا. حاول لاحقًا.',
     'otp_cooldown' => 'يرجى الانتظار قبل طلب رمز تحقق جديد.',
     'otp_provider_unreachable' => 'خدمة رمز التحقق غير متاحة حالياً. يرجى المحاولة لاحقاً.',
-    
+
     'profile_already_completed' => 'تم إكمال الملف الشخصي مسبقاً.',
     'profile_completed_successfully' => 'تم إكمال الملف الشخصي بنجاح.',
     'phone_already_set' => 'رقم الهاتف مسجّل مسبقاً ولا يمكن تعديله من هنا.',
@@ -31,4 +31,15 @@ return [
     'avatar_uploaded_successfully' => 'تم رفع الصورة الشخصية بنجاح',
     'nearby_pins_fetched_successfully' => 'تم جلب النقاط القريبة بنجاح',
     'discovery_settings_updated' => 'تم تحديث إعدادات الاستكشاف بنجاح.',
+
+    // Events
+    'events_fetched_successfully' => 'تم جلب الفعاليات بنجاح.',
+    'event_fetched_successfully' => 'تم جلب الفعالية بنجاح.',
+    'event_created_successfully' => 'تم إنشاء الفعالية بنجاح.',
+    'event_updated_successfully' => 'تم تحديث الفعالية بنجاح.',
+    'event_deleted_successfully' => 'تم حذف الفعالية بنجاح.',
+    'event_cancelled_successfully' => 'تم إلغاء الفعالية بنجاح.',
+    'event_already_cancelled' => 'هذه الفعالية ملغاة بالفعل.',
+    'event_not_found' => 'الفعالية غير موجودة.',
+    'venue_not_found_or_unauthorized' => 'المكان غير موجود أو ليس لديك صلاحية استخدامه.',
 ];
