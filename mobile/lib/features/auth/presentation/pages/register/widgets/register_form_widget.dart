@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../../../core/data/countries.dart';
 import '../../../../../../core/helper/validator.dart';
 import '../../../../../../core/strings/app_strings.dart';
+import '../../../../../../core/widgets/country_code_picker.dart';
 import '../../widgets/auth_fields.dart';
 
 class RegisterFormWidget extends StatelessWidget {
@@ -15,6 +17,8 @@ class RegisterFormWidget extends StatelessWidget {
     required TextEditingController lastNameController,
     required TextEditingController emailController,
     required TextEditingController phoneController,
+    required this.selectedCountry,
+    required this.onCountryChanged,
     required TextEditingController passwordController,
     required bool obscurePassword,
     required TextEditingController confirmPasswordController,
@@ -34,6 +38,8 @@ class RegisterFormWidget extends StatelessWidget {
   final TextEditingController _lastNameController;
   final TextEditingController _emailController;
   final TextEditingController _phoneController;
+  final Country selectedCountry;
+  final ValueChanged<Country> onCountryChanged;
   final TextEditingController _passwordController;
   final bool _obscurePassword;
   final TextEditingController _confirmPasswordController;
@@ -66,16 +72,58 @@ class RegisterFormWidget extends StatelessWidget {
           keyboardType: TextInputType.emailAddress,
         ),
         SizedBox(height: vSpaceSm),
-        CustomTextFieldWidget(
-          controller: _phoneController,
-          icon: Icons.phone,
-          formatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(9),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CountryCodePicker(
+              selected: selectedCountry,
+              onChanged: onCountryChanged,
+              style: CountryCodePickerStyle.field,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(15),
+                ],
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Theme
+                      .of(context)
+                      .inputDecorationTheme
+                      .fillColor,
+                  hintText: AppStrings.phoneNumber,
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  prefixIcon: const Icon(Icons.phone),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(
+                      color: Theme
+                          .of(context)
+                          .colorScheme
+                          .primary,
+                    ),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: Colors.red),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: const BorderSide(color: Colors.red),
+                  ),
+                ),
+                validator: AppValidator.phoneNumberValidator,
+              ),
+            ),
           ],
-          hintText: AppStrings.phoneNumber,
-          keyboardType: TextInputType.phone,
-          validator: AppValidator.phoneNumberValidator,
         ),
         SizedBox(height: vSpaceSm),
         PasswordInputField(

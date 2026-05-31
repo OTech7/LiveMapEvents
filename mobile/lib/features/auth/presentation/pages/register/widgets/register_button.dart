@@ -13,7 +13,7 @@ Widget buildRegisterButton({
   required TextEditingController lastNameController,
   required TextEditingController emailController,
   required TextEditingController phoneController,
-  required TextEditingController codeController,
+  required String dialCode,
   required GlobalKey<FormState> formKey,
   required TextEditingController passwordController,
 }) {
@@ -33,8 +33,7 @@ Widget buildRegisterButton({
         text: AppStrings.register,
         onPressed: () {
           if (formKey.currentState!.validate()) {
-            final fullPhoneNumber =
-                "${codeController.text}${phoneController.text}";
+            final fullPhoneNumber = '$dialCode${phoneController.text}';
             context.push(
               '/verification_screen',
               extra: {'phoneNumber': fullPhoneNumber},

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/colors.dart';
 import '../data/countries.dart';
+import 'flag_display.dart';
 
 /// A compact button that shows the currently-selected country (flag + dial
 /// code) and opens a searchable bottom sheet on tap.
@@ -55,7 +56,7 @@ class CountryCodePicker extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(selected.flag, style: const TextStyle(fontSize: 20)),
+            FlagDisplay(countryCode: selected.code, size: 20),
             const SizedBox(width: 6),
             Text(
               selected.dialCode,
@@ -145,10 +146,7 @@ class _CountryListSheetState extends State<_CountryListSheet> {
                   final c = filtered[i];
                   final isSelected = c.code == widget.selectedCode;
                   return ListTile(
-                    leading: Text(
-                      c.flag,
-                      style: const TextStyle(fontSize: 24),
-                    ),
+                    leading: FlagDisplay(countryCode: c.code, size: 28),
                     title: Text(c.name),
                     trailing: Text(
                       c.dialCode,
