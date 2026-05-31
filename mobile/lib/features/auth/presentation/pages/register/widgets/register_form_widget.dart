@@ -23,14 +23,15 @@ class RegisterFormWidget extends StatelessWidget {
     required bool obscurePassword,
     required TextEditingController confirmPasswordController,
     required bool obscureConfirmPassword,
-  }) : _firstNameController = firstNameController,
-       _lastNameController = lastNameController,
-       _emailController = emailController,
-       _phoneController = phoneController,
-       _passwordController = passwordController,
-       _obscurePassword = obscurePassword,
-       _confirmPasswordController = confirmPasswordController,
-       _obscureConfirmPassword = obscureConfirmPassword;
+  })
+      : _firstNameController = firstNameController,
+        _lastNameController = lastNameController,
+        _emailController = emailController,
+        _phoneController = phoneController,
+        _passwordController = passwordController,
+        _obscurePassword = obscurePassword,
+        _confirmPasswordController = confirmPasswordController,
+        _obscureConfirmPassword = obscureConfirmPassword;
 
   final double vSpaceLg;
   final TextEditingController _firstNameController;
