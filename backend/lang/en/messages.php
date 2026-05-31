@@ -55,6 +55,15 @@ return [
     'voucher_expired' => 'This voucher has expired.',
     'discount_percentage_exceeded' => 'Percentage discount cannot exceed 100.',
 
+    // Venues
+    'venues_fetched_successfully' => 'Venues fetched successfully.',
+    'venue_fetched_successfully' => 'Venue fetched successfully.',
+    'venue_created_successfully' => 'Venue created successfully.',
+    'venue_updated_successfully' => 'Venue updated successfully.',
+    'venue_deleted_successfully' => 'Venue deleted successfully.',
+    'venue_has_active_events' => 'Cannot delete a venue with upcoming published events. Cancel or delete the events first.',
+    'venue_frozen' => 'This venue has been suspended. New events and promotions cannot be created for it.',
+
     // Events
     'events_fetched_successfully' => 'Events fetched successfully.',
     'event_fetched_successfully' => 'Event fetched successfully.',

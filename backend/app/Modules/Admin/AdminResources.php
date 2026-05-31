@@ -14,6 +14,7 @@ final class AdminResources
     /** Single source of truth — order here = order in the sidebar. */
     public const RESOURCES = [
         \App\Modules\Admin\Resources\UserResource::class,
+        \App\Modules\Admin\Resources\VenueAdminResource::class,
         \App\Modules\Admin\Resources\InterestResource::class,
         \App\Modules\Admin\Resources\PromotionAdminResource::class,
         \App\Modules\Admin\Resources\EventAdminResource::class,

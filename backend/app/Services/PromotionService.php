@@ -35,9 +35,13 @@ class PromotionService
      */
     public function create(User $owner, array $data): Promotion
     {
-        Venue::where('id', $data['venue_id'])
+        $venue = Venue::where('id', $data['venue_id'])
             ->where('owner_id', $owner->id)
             ->firstOrFail();
+
+        if ($venue->isFrozen()) {
+            abort(403, __('messages.venue_frozen'));
+        }
 
         if (
             ($data['discount_type'] ?? null) === DiscountType::PERCENTAGE->value
@@ -105,10 +109,11 @@ class PromotionService
                     });
             })
             ->whereHas('venue', function ($q) use ($lat, $lng, $radius) {
-                $q->whereRaw(
-                    'ST_DWithin(location::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)',
-                    [$lng, $lat, $radius]
-                );
+                $q->whereNull('frozen_at')
+                    ->whereRaw(
+                        'ST_DWithin(location::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)',
+                        [$lng, $lat, $radius]
+                    );
             })
             ->with(['venue:id,name,type,address,city,location'])
             ->get()

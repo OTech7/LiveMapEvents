@@ -46,6 +46,23 @@ class Event extends Model
         return $this->hasOne(Pin::class);
     }
 
+    // ─── Computed attributes ──────────────────────────────────────────────────
+
+    /**
+     * True when the event is published AND currently in progress
+     * (starts_at has passed, ends_at has not yet passed).
+     *
+     * This is a pure computed value — no DB column.
+     */
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->publish_status === 'published'
+            && $this->starts_at !== null
+            && $this->ends_at !== null
+            && $this->starts_at->lte(now())
+            && $this->ends_at->gte(now());
+    }
+
     // ─── Scopes ───────────────────────────────────────────────────────────────
 
     /**
@@ -62,5 +79,15 @@ class Event extends Model
     public function scopeUpcoming($query)
     {
         return $query->where('starts_at', '>=', now());
+    }
+
+    /**
+     * Currently active events — published, already started, not yet ended.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('publish_status', 'published')
+            ->where('starts_at', '<=', now())
+            ->where('ends_at', '>=', now());
     }
 }
