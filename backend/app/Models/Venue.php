@@ -16,14 +16,28 @@ class Venue extends Model
         'type',
         'address',
         'city',
+        'notes',
         'location',
-        'is_active',
         'is_verified',
+        'frozen_at',
+        'freeze_reason',
     ];
 
     protected $casts = [
         'location' => Point::class,
+        'frozen_at' => 'datetime',
     ];
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * A frozen venue is suspended by an admin.
+     * New events/promotions cannot be created for it and it is hidden from discovery.
+     */
+    public function isFrozen(): bool
+    {
+        return $this->frozen_at !== null;
+    }
 
     public function owner()
     {

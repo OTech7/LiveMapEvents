@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\Business\EventController as BusinessEventController;
 use App\Http\Controllers\Api\V1\Business\PromotionController as BusinessPromotionController;
 use App\Http\Controllers\Api\V1\Business\ScannerController;
+use App\Http\Controllers\Api\V1\Business\VenueController as BusinessVenueController;
 use App\Http\Controllers\Api\V1\InterestController;
 use App\Http\Controllers\Api\V1\PinController;
 use App\Http\Controllers\Api\V1\ProfileController;
@@ -43,6 +44,15 @@ Route::prefix('v1')->middleware('lang')->group(function () {
         });
 
         Route::get('/pins/nearby', [PinController::class, 'nearby']);
+
+        // ── Business owner: manage their venues ──────────────────────────────
+        Route::prefix('business/venues')->group(function () {
+            Route::get('/', [BusinessVenueController::class, 'index']);
+            Route::post('/', [BusinessVenueController::class, 'store']);
+            Route::get('{venue}', [BusinessVenueController::class, 'show']);
+            Route::put('{venue}', [BusinessVenueController::class, 'update']);
+            Route::delete('{venue}', [BusinessVenueController::class, 'destroy']);
+        });
 
         // ── Business owner: manage their promotions ───────────────────────────
         Route::prefix('business')->group(function () {

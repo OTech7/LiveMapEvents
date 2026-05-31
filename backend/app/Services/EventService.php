@@ -132,6 +132,10 @@ class EventService
             throw new ApiException(__('messages.venue_not_found_or_unauthorized'), 403);
         }
 
+        if ($venue->isFrozen()) {
+            throw new ApiException(__('messages.venue_frozen'), 403);
+        }
+
         return $venue;
     }
 }

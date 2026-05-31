@@ -46,6 +46,7 @@ class EventAdminResource extends AdminResource
             'starts_at',
             'ends_at',
             'publish_status',
+            'is_active',
             'is_online_event',
             'rsvp_limit',
             'created_at',
@@ -108,6 +109,8 @@ class EventAdminResource extends AdminResource
     {
         $data = $model->toArray();
         $data['venue_name'] = $model->venue?->name ?? '—';
+        // is_active is a computed accessor — toArray() won't include it automatically
+        $data['is_active'] = $model->is_active;
         return $data;
     }
 
