@@ -143,6 +143,27 @@ The Flutter app reads `GOOGLE_SERVER_CLIENT_ID` (the Web OAuth client ID) and `B
 `flutter_dotenv` on Android/iOS. The Web build doesn't read it — those values are baked in at build time via
 `--dart-define` in `mobile/Dockerfile.web`.
 
+### Google Maps API keys
+
+Both Maps SDK keys live in **Google Cloud Console → APIs & Services → Credentials**, with **Maps SDK for Android**
+and **Maps JavaScript API** enabled.
+
+**Android Maps key** — kept out of git in `mobile/android/local.properties` (already gitignored):
+
+```properties
+MAPS_API_KEY=AIzaSy...your-android-key...
+```
+
+Restrict the key to package `com.omar.mobile` + your debug-keystore SHA-1. Gradle reads `MAPS_API_KEY` from
+`local.properties` and injects it into `AndroidManifest.xml`'s `${MAPS_API_KEY}` slot at build time — no extra steps
+required, every `flutter run` / `flutter build apk` picks it up automatically.
+
+**Web Maps key** — currently hardcoded in `mobile/web/index.html` (committed). The key is restricted to allowed
+website referrers in Cloud Console, so it's safe to ship in client HTML. To rotate, edit the
+`<script src="...maps/api/js?key=...">`
+tag in that file. iOS uses the same one-line pattern in `mobile/ios/Runner/AppDelegate.swift` — both will move to a
+gitignored config file in a later cleanup pass.
+
 ### Building an APK
 
 ```bash

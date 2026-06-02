@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/constants/colors.dart';
+import '../../../../../core/data/countries.dart';
 import '../../../../../core/strings/app_strings.dart';
 import '../../../../../core/utils/navigation_helper.dart';
 import '../../bloc/auth_bloc.dart';
@@ -20,15 +21,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _codeController = TextEditingController(
-    text: "+963",
-  );
+  Country _selectedCountry = Countries.defaultCountry;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     _phoneController.dispose();
-    _codeController.dispose();
     super.dispose();
   }
 
@@ -93,14 +91,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: vSpaceLg),
                   LoginFieldsWidget(
-                    codeController: _codeController,
+                    selectedCountry: _selectedCountry,
+                    onCountryChanged: (c) =>
+                        setState(() => _selectedCountry = c),
                     size: size,
                     phoneController: _phoneController,
                   ),
                   SizedBox(height: vSpaceMd),
                   LoginButtonWidget(
                     formKey: _formKey,
-                    codeController: _codeController,
+                    dialCode: _selectedCountry.dialCode,
                     phoneController: _phoneController,
                     size: size,
                   ),

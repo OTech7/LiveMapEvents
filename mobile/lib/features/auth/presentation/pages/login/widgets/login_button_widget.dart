@@ -9,15 +9,14 @@ class LoginButtonWidget extends StatelessWidget {
   const LoginButtonWidget({
     super.key,
     required GlobalKey<FormState> formKey,
-    required TextEditingController codeController,
+    required this.dialCode,
     required TextEditingController phoneController,
     required this.size,
   }) : _formKey = formKey,
-       _codeController = codeController,
        _phoneController = phoneController;
 
   final GlobalKey<FormState> _formKey;
-  final TextEditingController _codeController;
+  final String dialCode;
   final TextEditingController _phoneController;
   final Size size;
 
@@ -31,8 +30,7 @@ class LoginButtonWidget extends StatelessWidget {
               ? null
               : () {
                   if (_formKey.currentState!.validate()) {
-                    final fullPhoneNumber =
-                        "${_codeController.text}${_phoneController.text}";
+                    final fullPhoneNumber = '$dialCode${_phoneController.text}';
                     context.read<AuthBloc>().add(SendOTPEvent(fullPhoneNumber));
                   }
                 },

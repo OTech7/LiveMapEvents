@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/colors.dart';
+import '../../../../../core/data/countries.dart';
 import '../../../../../core/strings/app_strings.dart';
 import 'widgets/go_login_button.dart';
 import 'widgets/register_button.dart';
@@ -23,9 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  final TextEditingController _countryCodeController = TextEditingController(
-    text: "+963",
-  );
+  Country _selectedCountry = Countries.defaultCountry;
   final bool _obscurePassword = true;
   final bool _obscureConfirmPassword = true;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -38,7 +37,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _countryCodeController.dispose();
     super.dispose();
   }
 
@@ -84,6 +82,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     lastNameController: _lastNameController,
                     emailController: _emailController,
                     phoneController: _phoneController,
+                    selectedCountry: _selectedCountry,
+                    onCountryChanged: (c) =>
+                        setState(() => _selectedCountry = c),
                     passwordController: _passwordController,
                     obscurePassword: _obscurePassword,
                     confirmPasswordController: _confirmPasswordController,
@@ -94,7 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     lastNameController: _lastNameController,
                     emailController: _emailController,
                     phoneController: _phoneController,
-                    codeController: _countryCodeController,
+                    dialCode: _selectedCountry.dialCode,
                     formKey: _formKey,
                     passwordController: _passwordController,
                   ),
